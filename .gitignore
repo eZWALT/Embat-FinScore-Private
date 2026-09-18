@@ -216,3 +216,20 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Local datasets (keep folder markers and READMEs)
+data/**/*.csv
+data/**/*.tsv
+data/**/*.parquet
+data/**/*.xlsx
+data/**/*.xls
+data/**/*.json
+data/**/*.jsonl
+data/**/*.arrow
+data/**/*.feather
+data/**/*.zip
+data/**/*.gz
+data/**/*.7z
+!data/**/.gitkeep
+!data/**/README.md
+!data/data_dictionary.md
