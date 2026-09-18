@@ -241,3 +241,11 @@ data/raw/output/
 
 # Artefactos locales del pipeline
 *.pkl
+
+# Overnight run artifacts (keep the split)
+overnight/runs/*
+!overnight/runs/.gitkeep
+overnight/candidates/*
+!overnight/candidates/.gitkeep
+overnight/cache/*
+!overnight/cache/.gitkeep

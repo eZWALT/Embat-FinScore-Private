@@ -25,6 +25,7 @@ FICO-like **company health score**. Four goals: signals → 0–100 index → ex
 | 2–3. Score 0–100 + explain | `product/score/` |
 | 4. Web + LLM (company user) | `product/web/` |
 | App folder | `product/README.md` — Docker/runtime still empty |
+| Overnight score bake-off | `overnight/README.md` |
 | Public sibling | `../Embat-FinScore` (GitHub: `eZWALT/Embat-FinScore`) |
 
 ## Memory (three teammates)
