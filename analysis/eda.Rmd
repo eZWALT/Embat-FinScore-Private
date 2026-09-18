@@ -41,6 +41,7 @@ data_dir <- "../data"
 db_path <- file.path(data_dir, "embat.duckdb")
 if (!file.exists(db_path)) stop("Falta ", db_path, ". Ejecuta `python analysis/build_db.py` desde la raíz del proyecto.")
 con <- dbConnect(duckdb::duckdb(), dbdir = db_path, read_only = TRUE)
+dbExecute(con, "SET search_path = 'clean,main'")   # tablas limpias primero (ver clean.dq_log); usa main para los datos crudos
 q <- function(sql) as.data.table(dbGetQuery(con, sql))
 ```
 

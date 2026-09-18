@@ -238,3 +238,6 @@ data/raw/output/
 # Base de datos local generada por analysis/build_db.py
 *.duckdb
 *.duckdb.wal
+
+# Artefactos locales del pipeline
+*.pkl

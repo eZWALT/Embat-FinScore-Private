@@ -36,6 +36,7 @@ out_dir  <- "outputs"
 db_path <- file.path(data_dir, "embat.duckdb")
 if (!file.exists(db_path)) stop("Falta ", db_path, ". Ejecuta `python analysis/build_db.py` desde la raíz del repo.")
 con <- dbConnect(duckdb::duckdb(), dbdir = db_path, read_only = TRUE)
+dbExecute(con, "SET search_path = 'clean,main'")   # tablas limpias primero (ver clean.dq_log); usa main para los datos crudos
 q <- function(sql) as.data.table(dbGetQuery(con, sql))
 dir.create(out_dir, showWarnings = FALSE)
 
@@ -226,6 +227,7 @@ inv_features <- function(inv) {
                   , .(concentration = max(a) / sum(a)), by = company_id]
       out <- merge(out, conc, by = "company_id", all = TRUE)
     } else out[, concentration := NA_real_]
+    if (i < 7) out[, c("delay_coll", "delay_paid") := NA_real_]   # faltan facturas emitidas antes de 2024-09 y pagadas tarde -> sesgo a retrasos cortos
     out[, month := m]
     out
   }), fill = TRUE)

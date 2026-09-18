@@ -10,6 +10,8 @@ from pathlib import Path
 
 import duckdb
 
+import clean_db
+
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
 DB_PATH = DATA / "embat.duckdb"
@@ -63,6 +65,8 @@ def main() -> int:
         n = con.execute(f"SELECT count(*) FROM {table}").fetchone()[0]
         print(f"{table:22s} {n:>10,d} filas  ({time.time() - t0:5.1f}s)")
 
+    print("\nLimpieza -> esquema `clean` (ver clean.dq_log)")
+    clean_db.run(con)
     con.execute("CHECKPOINT")
     con.close()
     print(f"\nBase creada: {DB_PATH} ({DB_PATH.stat().st_size / 1e6:.0f} MB)")
