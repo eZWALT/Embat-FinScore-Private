@@ -233,3 +233,4 @@ data/**/*.7z
 !data/**/.gitkeep
 !data/**/README.md
 !data/data_dictionary.md
+data/raw/output/
