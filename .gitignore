@@ -234,3 +234,7 @@ data/**/*.7z
 !data/**/README.md
 !data/data_dictionary.md
 data/raw/output/
+
+# Base de datos local generada por analysis/build_db.py
+*.duckdb
+*.duckdb.wal

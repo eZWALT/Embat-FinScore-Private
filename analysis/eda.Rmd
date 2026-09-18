@@ -1,0 +1,453 @@
+---
+title: "Embat FinScore — Exploratory Data Analysis"
+author: "Generated with Claude Code"
+date: "`r format(Sys.Date(), '%Y-%m-%d')`"
+output:
+  html_document:
+    theme: flatly
+    toc: true
+    toc_float: true
+    toc_depth: 3
+    code_folding: hide
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE, warning = FALSE, message = FALSE,
+  fig.width = 10, fig.height = 5.5
+)
+
+pkgs <- c("data.table", "dplyr", "ggplot2", "scales", "lubridate", "skimr", "naniar", "stringr", "DBI", "duckdb")
+to_install <- pkgs[!pkgs %in% rownames(installed.packages())]
+if (length(to_install)) install.packages(to_install, repos = "https://cloud.r-project.org")
+
+library(data.table)
+library(dplyr)
+library(ggplot2)
+library(scales)
+library(lubridate)
+library(skimr)
+library(naniar)
+library(stringr)
+library(DBI)
+library(duckdb)
+
+theme_set(theme_minimal(base_size = 11))
+
+data_dir <- "../data"
+
+# Base DuckDB generada con: python analysis/build_db.py
+db_path <- file.path(data_dir, "embat.duckdb")
+if (!file.exists(db_path)) stop("Falta ", db_path, ". Ejecuta `python analysis/build_db.py` desde la raíz del proyecto.")
+con <- dbConnect(duckdb::duckdb(), dbdir = db_path, read_only = TRUE)
+q <- function(sql) as.data.table(dbGetQuery(con, sql))
+```
+
+# Overview
+
+Synthetic dataset: **1,286 companies** across **250 business groups**, 24 months of financial
+history (2024-09-01 to 2026-09-01). See `data/data_dictionary.md` for the full schema.
+
+Files:
+
+| file | rows (approx) | notes |
+|---|---|---|
+| groups.csv | 250 | 1 row / group |
+| companies.csv | 1,286 | 1 row / company |
+| banking_products.csv | 5,987 | bank accounts, cards, etc. |
+| debt_products.csv | 2,239 | loans, leasing, factoring, etc. |
+| debt_schedule_config.csv | 87 | amortization terms |
+| balances.csv | 7,996 | balance snapshot as of 2026-09-01 |
+| transactions.csv | 2,556,437 | **large (~450MB)** — bank transactions |
+| invoices.csv | 897,894 | **large (~165MB)** — ERP invoices |
+
+All tables are read from the local DuckDB database (`data/embat.duckdb`, built from the CSVs with
+`python analysis/build_db.py`) and converted to `data.table`.
+
+---
+
+# 1. Groups
+
+```{r groups-load}
+groups <- q("SELECT * FROM groups")
+str(groups)
+skim(groups)
+```
+
+```{r groups-eda}
+groups[, .N, by = erp][order(-N)]
+
+ggplot(groups, aes(x = n_companies_in_sample)) +
+  geom_histogram(binwidth = 1, fill = "#4C72B0") +
+  scale_x_continuous(breaks = scales::pretty_breaks()) +
+  labs(title = "Group size distribution (companies per group)",
+       x = "n_companies_in_sample", y = "Count of groups")
+
+summary(groups$n_companies_in_sample)
+```
+
+---
+
+# 2. Companies
+
+```{r companies-load}
+companies <- q("SELECT * FROM companies")
+companies[, created_at := as_datetime(created_at)]
+str(companies)
+```
+
+```{r companies-missing}
+gg_miss_var(as.data.frame(companies), show_pct = TRUE) +
+  labs(title = "Missingness by column — companies.csv")
+```
+
+```{r companies-eda}
+companies[, .N, by = country][order(-N)]
+companies[, .N, by = currency][order(-N)]
+companies[, .N, by = erp][order(-N)]
+
+ggplot(companies, aes(x = as_date(created_at))) +
+  geom_histogram(binwidth = 30, fill = "#55A868") +
+  labs(title = "Company onboarding over time", x = "created_at", y = "New companies (30-day bins)")
+
+# companies per group, cross-check against groups.csv
+comp_per_group <- companies[, .N, by = group_id]
+summary(comp_per_group$N)
+```
+
+---
+
+# 3. Banking products (accounts, cards, etc.)
+
+```{r banking-load}
+banking <- q("SELECT * FROM banking_products")
+banking[, created_at := as_datetime(created_at)]
+str(banking)
+```
+
+```{r banking-eda}
+banking[, .N, by = type][order(-N)]
+
+ggplot(banking, aes(y = reorder(type, type, length))) +
+  geom_bar(fill = "#4C72B0") +
+  labs(title = "Banking product type distribution", y = NULL, x = "Count")
+
+top_banks <- banking[, .N, by = bank_name][order(-N)][1:15]
+ggplot(top_banks, aes(x = N, y = reorder(bank_name, N))) +
+  geom_col(fill = "#C44E52") +
+  labs(title = "Top 15 banks by product count", x = "Count", y = NULL)
+
+banking[, .N, by = currency][order(-N)]
+
+ggplot(banking, aes(x = as_date(created_at))) +
+  geom_histogram(binwidth = 30, fill = "#8172B2") +
+  labs(title = "Banking product creation over time", x = "created_at", y = "Count (30-day bins)")
+```
+
+---
+
+# 4. Debt products (loans, leasing, factoring, etc.)
+
+```{r debt-load}
+debt <- q("SELECT * FROM debt_products")
+debt[, created_at := as_datetime(created_at)]
+str(debt)
+```
+
+```{r debt-eda}
+debt[, .N, by = type][order(-N)]
+
+ggplot(debt, aes(y = reorder(type, type, length))) +
+  geom_bar(fill = "#4C72B0") +
+  labs(title = "Debt product type distribution", y = NULL, x = "Count")
+
+# granted / outstanding are often negative (liabilities); look at magnitude
+debt_amt <- melt(debt, id.vars = c("product_id", "type"),
+                  measure.vars = c("granted", "outstanding", "liquidity"),
+                  variable.name = "metric", value.name = "value", na.rm = TRUE)
+
+ggplot(debt_amt, aes(x = abs(value))) +
+  geom_histogram(bins = 60, fill = "#DD8452") +
+  scale_x_log10(labels = scales::comma) +
+  facet_wrap(~metric, scales = "free_y") +
+  labs(title = "Debt amounts by metric (log10 abs scale)", x = "abs(value)", y = "Count")
+
+debt_amt[, .(median = median(value), mean = mean(value), n = .N), by = .(type, metric)]
+
+# outstanding vs granted utilization, by type
+util <- debt[!is.na(granted) & !is.na(outstanding) & granted != 0]
+util[, utilization := outstanding / granted]
+ggplot(util, aes(x = type, y = utilization)) +
+  geom_boxplot(outlier.alpha = 0.2, fill = "#4C72B0") +
+  coord_cartesian(ylim = c(-1, 2)) +
+  labs(title = "Outstanding / granted ratio by debt type", x = NULL, y = "utilization")
+```
+
+---
+
+# 5. Debt schedule config (amortization terms)
+
+```{r schedule-load}
+schedule <- q("SELECT * FROM debt_schedule_config")
+schedule[, `:=`(next_payment_date = as_datetime(next_payment_date),
+                 last_payment_date = as_datetime(last_payment_date))]
+str(schedule)
+```
+
+```{r schedule-eda}
+schedule[, .N, by = amortization_type]
+schedule[, .N, by = interest_calc_method]
+schedule[, .N, by = amortising_frequency]
+schedule[, .N, by = interest_type]
+
+ggplot(schedule, aes(x = annual_interest_rate_or_spread, fill = interest_type)) +
+  geom_histogram(bins = 20, position = "identity", alpha = 0.6) +
+  labs(title = "Interest rate / spread distribution", x = "annual_interest_rate_or_spread")
+
+ggplot(schedule, aes(x = total_periods)) +
+  geom_histogram(bins = 30, fill = "#55A868") +
+  labs(title = "Total periods (installments) distribution")
+
+schedule[, pct_repaid := 1 - outstanding_balance / granted_balance]
+summary(schedule$pct_repaid)
+```
+
+---
+
+# 6. Balances (snapshot as of 2026-09-01)
+
+```{r balances-load}
+balances <- q("SELECT * FROM balances")
+balances[, date := as_datetime(date)]
+str(balances)
+```
+
+```{r balances-missing}
+gg_miss_var(as.data.frame(balances), show_pct = TRUE) +
+  labs(title = "Missingness by column — balances.csv")
+```
+
+```{r balances-eda}
+summary(balances$balance)
+
+ggplot(balances[abs(balance) > 1], aes(x = balance)) +
+  geom_histogram(bins = 80, fill = "#4C72B0") +
+  scale_x_continuous(
+    trans = scales::pseudo_log_trans(base = 10),
+    labels = scales::comma
+  ) +
+  labs(title = "Balance distribution (pseudo-log x-scale, |balance| > 1)")
+
+# join to product type for context
+bal_typed <- merge(balances,
+                    rbind(banking[, .(product_id, type, label_source = "banking")],
+                          debt[, .(product_id, type, label_source = "debt")]),
+                    by = "product_id", all.x = TRUE)
+
+bal_typed[, .(median_balance = median(balance), n = .N), by = type][order(-n)]
+
+ggplot(bal_typed[!is.na(type)], aes(x = type, y = balance)) +
+  geom_boxplot(outlier.alpha = 0.15, fill = "#DD8452") +
+  scale_y_continuous(
+    trans = scales::pseudo_log_trans(base = 10),
+    labels = scales::comma
+  ) +
+  labs(title = "Balance by product type (pseudo-log y-scale)", x = NULL)
+```
+
+---
+
+# 7. Transactions (large file — 2.5M rows)
+
+```{r tx-load}
+tx <- q("SELECT * FROM transactions")
+tx[, `:=`(date = as_datetime(date), value_date = as_datetime(value_date))]
+cat("Rows:", format(nrow(tx), big.mark = ","), " | Cols:", ncol(tx), "\n")
+str(tx)
+```
+
+```{r tx-missing}
+tx_missing_summary <- sapply(tx, function(col) mean(is.na(col) | (is.character(col) & col == "")))
+data.table(column = names(tx_missing_summary), pct_missing = round(tx_missing_summary * 100, 2))[order(-pct_missing)]
+```
+
+```{r tx-volume-over-time}
+tx[, month := floor_date(date, "month")]
+tx_monthly <- tx[, .(n_tx = .N, total_amount = sum(amount)), by = month][order(month)]
+
+ggplot(tx_monthly, aes(x = month, y = n_tx)) +
+  geom_col(fill = "#4C72B0") +
+  labs(title = "Transaction volume by month", x = NULL, y = "Number of transactions")
+
+ggplot(tx_monthly, aes(x = month, y = total_amount)) +
+  geom_col(fill = "#C44E52") +
+  scale_y_continuous(labels = scales::comma) +
+  labs(title = "Net transaction amount by month", x = NULL, y = "Sum(amount)")
+```
+
+```{r tx-amount-dist}
+summary(tx$amount)
+
+ggplot(tx[abs(amount) > 1], aes(x = amount)) +
+  geom_histogram(bins = 100, fill = "#8172B2") +
+  scale_x_continuous(
+    trans = scales::pseudo_log_trans(base = 10),
+    labels = scales::comma
+  ) +
+  labs(title = "Transaction amount distribution (pseudo-log x-scale)")
+
+tx[, .(n = .N), by = .(inflow = amount > 0)][, pct := n / sum(n)][]
+```
+
+```{r tx-status-category}
+tx[, .N, by = status][order(-N)]
+tx[, .N, by = accounting_status][order(-N)]
+
+top_cat <- tx[, .N, by = category][order(-N)][1:20]
+ggplot(top_cat, aes(x = N, y = reorder(category, N))) +
+  geom_col(fill = "#55A868") +
+  labs(title = "Top 20 transaction categories", x = "Count", y = NULL)
+```
+
+```{r tx-counterparty}
+tx[, has_counterparty := !is.na(counterparty_id)]
+tx[, .N, by = has_counterparty][, pct := N / sum(N)][]
+
+top_counterparties <- tx[has_counterparty == TRUE, .N, by = counterparty_id][order(-N)][1:15]
+top_counterparties
+```
+
+```{r tx-per-company}
+tx_per_company <- tx[, .(n_tx = .N, net_amount = sum(amount)), by = company_id]
+summary(tx_per_company$n_tx)
+
+ggplot(tx_per_company, aes(x = n_tx)) +
+  geom_histogram(bins = 60, fill = "#4C72B0") +
+  scale_x_log10(labels = scales::comma) +
+  labs(title = "Transactions per company (log10 x-scale)")
+```
+
+---
+
+# 8. Invoices (large file — ~900K rows)
+
+```{r inv-load}
+inv <- q("SELECT * FROM invoices")
+inv[, `:=`(issuance_date = as_datetime(issuance_date),
+           due_date = as_datetime(due_date),
+           payment_date = as_datetime(payment_date))]
+cat("Rows:", format(nrow(inv), big.mark = ","), " | Cols:", ncol(inv), "\n")
+str(inv)
+```
+
+```{r inv-missing}
+inv_missing_summary <- sapply(inv, function(col) mean(is.na(col) | (is.character(col) & col == "")))
+data.table(column = names(inv_missing_summary), pct_missing = round(inv_missing_summary * 100, 2))[order(-pct_missing)]
+```
+
+```{r inv-doctype-status}
+inv[, .N, by = document_type][order(-N)]
+inv[, .N, by = status][order(-N)]
+inv[, .N, by = currency][order(-N)][1:10]
+```
+
+```{r inv-volume-over-time}
+inv[, month := floor_date(issuance_date, "month")]
+inv_monthly <- inv[, .(n_inv = .N, total_amount = sum(amount, na.rm = TRUE)), by = month][order(month)]
+
+ggplot(inv_monthly, aes(x = month, y = n_inv)) +
+  geom_col(fill = "#4C72B0") +
+  labs(title = "Invoice volume by month (issuance_date)", x = NULL, y = "Number of invoices")
+```
+
+```{r inv-amounts}
+summary(inv$amount)
+summary(inv$pending_amount)
+
+ggplot(inv[abs(amount) > 1], aes(x = amount)) +
+  geom_histogram(bins = 100, fill = "#DD8452") +
+  scale_x_continuous(
+    trans = scales::pseudo_log_trans(base = 10),
+    labels = scales::comma
+  ) +
+  labs(title = "Invoice amount distribution (pseudo-log x-scale)")
+
+# payment behaviour: days late = payment_date - due_date, paid invoices only
+inv_paid <- inv[status == "paid" & !is.na(payment_date) & !is.na(due_date)]
+inv_paid[, days_late := as.numeric(difftime(payment_date, due_date, units = "days"))]
+
+summary(inv_paid$days_late)
+
+ggplot(inv_paid[abs(days_late) < 120], aes(x = days_late)) +
+  geom_histogram(binwidth = 2, fill = "#4C72B0") +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "red") +
+  labs(title = "Days late (payment_date - due_date), paid invoices, clipped to +/-120d",
+       x = "Days late", y = "Count")
+```
+
+```{r inv-per-company}
+inv_per_company <- inv[, .(n_inv = .N, net_amount = sum(amount, na.rm = TRUE)), by = company_id]
+summary(inv_per_company$n_inv)
+
+ggplot(inv_per_company, aes(x = n_inv)) +
+  geom_histogram(bins = 60, fill = "#55A868") +
+  scale_x_log10(labels = scales::comma) +
+  labs(title = "Invoices per company (log10 x-scale)")
+```
+
+---
+
+# 9. Cross-file joins
+
+```{r cross-joins}
+# companies with number of banking/debt products, transactions, invoices, and net balance
+company_summary <- companies[, .(company_id, group_id, country, currency)]
+
+company_summary <- merge(company_summary, banking[, .(n_banking_products = .N), by = company_id],
+                          by = "company_id", all.x = TRUE)
+company_summary <- merge(company_summary, debt[, .(n_debt_products = .N), by = company_id],
+                          by = "company_id", all.x = TRUE)
+company_summary <- merge(company_summary, tx_per_company[, .(company_id, n_tx, net_tx_amount = net_amount)],
+                          by = "company_id", all.x = TRUE)
+company_summary <- merge(company_summary, inv_per_company[, .(company_id, n_inv, net_inv_amount = net_amount)],
+                          by = "company_id", all.x = TRUE)
+company_summary <- merge(company_summary, balances[, .(total_balance = sum(balance, na.rm = TRUE)), by = company_id],
+                          by = "company_id", all.x = TRUE)
+
+for (col in c("n_banking_products", "n_debt_products", "n_tx", "n_inv")) {
+  company_summary[is.na(get(col)), (col) := 0]
+}
+
+head(company_summary, 15)
+skim(company_summary)
+```
+
+```{r cross-correlations}
+num_cols <- c("n_banking_products", "n_debt_products", "n_tx", "n_inv", "total_balance")
+cor_mat <- cor(company_summary[, ..num_cols], use = "pairwise.complete.obs")
+round(cor_mat, 2)
+
+ggplot(company_summary, aes(x = n_banking_products, y = n_tx)) +
+  geom_point(alpha = 0.3, color = "#4C72B0") +
+  scale_y_log10(labels = scales::comma) +
+  labs(title = "Transaction count vs. number of banking products per company")
+```
+
+```{r cross-groups}
+group_summary <- merge(groups, companies[, .(n_companies_actual = .N), by = group_id],
+                        by = "group_id", all.x = TRUE)
+group_summary[n_companies_in_sample != n_companies_actual]  # sanity check, should be empty/small
+```
+
+---
+
+# 10. Summary of findings
+
+Use this section to jot down the key takeaways once the notebook has been run end to end, e.g.:
+
+- Data volume and time coverage per file
+- Missingness hot-spots worth handling before modeling
+- Skew/outliers in amount fields (log-scale needed almost everywhere)
+- Relationship between activity (transactions/invoices) and portfolio size per company
+- Any inconsistencies surfaced by the cross-file sanity checks in Section 9

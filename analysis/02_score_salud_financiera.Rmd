@@ -1,0 +1,902 @@
+---
+title: "X Ray · Score de salud financiera y producto encima"
+subtitle: "HackSpain 2026 — Reto de Embat"
+date: "`r format(Sys.Date(), '%Y-%m-%d')`"
+output:
+  html_document:
+    theme: flatly
+    toc: true
+    toc_float: true
+    toc_depth: 3
+    code_folding: hide
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, fig.width = 10, fig.height = 5.5)
+
+pkgs <- c("data.table", "ggplot2", "scales", "lubridate", "DBI", "duckdb")
+to_install <- pkgs[!pkgs %in% rownames(installed.packages())]
+if (length(to_install)) install.packages(to_install, repos = "https://cloud.r-project.org")
+
+library(data.table)
+library(ggplot2)
+library(scales)
+library(lubridate)
+library(DBI)
+library(duckdb)
+
+theme_set(theme_minimal(base_size = 11))
+set.seed(2026)
+
+data_dir <- "../data"
+out_dir  <- "outputs"
+
+# Base DuckDB generada con: python analysis/build_db.py
+db_path <- file.path(data_dir, "embat.duckdb")
+if (!file.exists(db_path)) stop("Falta ", db_path, ". Ejecuta `python analysis/build_db.py` desde la raíz del repo.")
+con <- dbConnect(duckdb::duckdb(), dbdir = db_path, read_only = TRUE)
+q <- function(sql) as.data.table(dbGetQuery(con, sql))
+dir.create(out_dir, showWarnings = FALSE)
+
+AS_OF   <- as.Date("2026-09-01")
+MONTHS  <- seq(as.Date("2024-09-01"), as.Date("2026-08-01"), by = "month")  # M1..M24
+LAST_M  <- MONTHS[length(MONTHS)]
+```
+
+# 0. Qué resuelve este notebook
+
+El reto pide un **score de salud financiera** (el motor), que se lea como **trayectoria**, que sea
+**explicable**, que funcione en **60–80 empresas ocultas** y que tenga un **producto vendible** encima.
+Este notebook recorre el camino completo con los datos de `data/`:
+
+| Pregunta del reto | Dónde se contesta |
+|---|---|
+| Quién está sano / mejorando / empezando a torcerse | §4 Trayectoria y estados |
+| Bache o caída | §5 |
+| Por qué ha cambiado | §6 Explicación |
+| Cuándo se vio venir (anticipación) | §7 |
+| Monitor que avisa (bonus) | §8 |
+| Producto + comprador | §9 |
+
+**Decisiones de diseño que se derivan de los datos** (ver §1):
+
+1. **No hay etiquetas** (no sabemos quién quiebra ni quién mejora). Un modelo supervisado no es viable;
+   se construye un score **interpretable por pilares**, con una referencia de percentiles **congelada**
+   que se aplica igual a empresas nunca vistas (→ generalización al test oculto).
+2. **El score de cada mes solo usa información hasta ese mes** (sin mirar el futuro), para que la trayectoria y
+   la anticipación sean honestas.
+3. **Las facturas solo cubren una parte de las empresas** y `payment_date` es poco fiable: el pilar de cobros y
+   pagos es opcional y el score se renormaliza sobre los pilares disponibles.
+4. Como no hay verdad-terreno, la validación usa **eventos proxy** sobre la caja futura, con validación por
+   **grupo empresarial** para evitar fugas entre filiales.
+
+> Tiempo de ejecución orientativo: unos minutos (la lectura desde DuckDB es rápida; el cálculo del panel es lo que más tarda).
+
+---
+
+# 1. Carga y auditoría de datos (lo que condiciona el diseño)
+
+```{r load}
+companies <- q("SELECT * FROM companies")
+groups    <- q("SELECT * FROM groups")
+banking   <- q("SELECT * FROM banking_products")
+debt      <- q("SELECT * FROM debt_products")
+balances  <- q("SELECT * FROM balances")
+
+# Solo se traen las columnas necesarias; las fechas se convierten a DATE en la base.
+tx <- q('SELECT company_id, product_id, CAST("date" AS DATE) AS date, amount, status, category, counterparty_id
+         FROM transactions')
+
+inv <- q("SELECT company_id, document_type, CAST(issuance_date AS DATE) AS issuance_date,
+                 CAST(due_date AS DATE) AS due_date, CAST(payment_date AS DATE) AS payment_date,
+                 amount, status, counterparty_id
+          FROM invoices")
+cat(sprintf("transactions: %s filas | invoices: %s filas\n",
+            format(nrow(tx), big.mark = ","), format(nrow(inv), big.mark = ",")))
+```
+
+## 1.1 Mapa de categorías de transacción
+
+Cada categoría del banco se asigna a un bloque económico. Las **transferencias** (probablemente entre cuentas propias)
+y la **inversión de tesorería** se excluyen de la caja operativa; las categorías sin etiqueta (`-` o vacío) quedan como `other`.
+
+```{r catmap}
+CAT_MAP <- c(
+  collection = "op_in", bulk_collection = "op_in", cash_settlement = "op_in", cash_settlements = "op_in",
+  pos_settlement = "op_in", collection_refund = "op_in",
+  payment = "op_out", bulk_payment = "op_out", utility = "op_out", payment_refund = "op_out",
+  salary = "op_out", social_security = "op_out", tax = "op_out", tax_refund = "op_out",
+  cash_withdrawal = "op_out", pos_withdrawal = "op_out",
+  fee = "fin_cost", interest_charge = "fin_cost",
+  debt_repayment = "debt_service",
+  transfer = "transfer", investment_deployment = "invest", investment_return = "invest"
+)
+
+prep_tx <- function(tx) {
+  tx[, date := as.Date(date)]
+  tx[, month := floor_date(date, "month")]
+  tx[, grp := unname(CAT_MAP[category])]
+  tx[is.na(grp), grp := "other"]
+  invisible(tx)
+}
+
+prep_inv <- function(inv) {
+  inv[, `:=`(iss = as.Date(issuance_date),
+             due = as.Date(due_date),
+             pay = as.Date(payment_date))]
+  inv[, `:=`(side = fifelse(amount > 0, "AR", "AP"), abs_amt = abs(amount))]  # AR = emitida (a cobrar), AP = recibida (a pagar)
+  inv[, valid_paid := status == "paid" & !is.na(pay) & pay >= iss & pay <= AS_OF]
+  inv[, paid_dt := as.Date(NA)]
+  inv[valid_paid == TRUE, paid_dt := pay]
+  inv[, keep := document_type == "invoice" & status != "cancel" & !is.na(iss) & !is.na(due) &
+                amount != 0 & (status != "paid" | valid_paid)]
+  inv[keep == TRUE & due < iss, due := iss]
+  invisible(inv)
+}
+
+prep_tx(tx)
+prep_inv(inv)
+
+tx[, .(n = .N, importe_neto = sum(amount)), by = grp][order(-n)]
+```
+
+## 1.2 Hallazgos de calidad de datos
+
+```{r audit}
+cat("Empresas en companies.csv:", nrow(companies), "\n")
+cat("Empresas con transacciones:", uniqueN(tx$company_id), "\n")
+cat("Empresas con facturas:", uniqueN(inv$company_id),
+    sprintf("(%.0f%%) -> el pilar de cobros/pagos es OPCIONAL\n", 100 * uniqueN(inv$company_id) / nrow(companies)))
+cat(sprintf("Transacciones con contraparte resuelta: %.1f%%\n", 100 * mean(!is.na(tx$counterparty_id))))
+cat(sprintf("Transacciones sin categoria util ('-' o vacia): %.1f%%\n", 100 * mean(tx$grp == "other")))
+
+# payment_date: sucio y placeholder en las facturas no pagadas
+paid <- inv[status == "paid"]
+cat(sprintf("\nFacturas 'paid' con payment_date fuera de [emision, 2026-09-01]: %.1f%%\n",
+            100 * mean(!paid$valid_paid, na.rm = TRUE)))
+unpaid <- inv[status %in% c("overdue", "pending") & !is.na(pay) & !is.na(due)]
+cat(sprintf("Facturas overdue/pending con payment_date == due_date (placeholder): %.1f%%\n",
+            100 * mean(unpaid$pay == unpaid$due)))
+cat("-> payment_date solo se usa si status == 'paid' y cae dentro de la ventana; el resto se trata como 'abierta'.\n")
+```
+
+```{r history}
+hist_len <- tx[, .(first_month = min(month), n_months = uniqueN(month)), by = company_id]
+ggplot(hist_len, aes(first_month)) +
+  geom_histogram(binwidth = 30, fill = "#4C72B0") +
+  labs(title = "Primer mes con actividad por empresa", x = NULL, y = "Empresas")
+```
+
+Hay empresas con historia corta (alta tardía): el score empieza cuando hay ventana suficiente (3 meses) y
+lleva un indicador de cobertura de pilares.
+
+---
+
+# 2. De los datos a señales (feature engineering mensual, sin mirar al futuro)
+
+Cada señal se calcula **por empresa y mes con ventanas hacia atrás** (3 meses; 6 para volatilidad/crecimiento/concentración).
+
+| Pilar | Señal | Cálculo | Fuente |
+|---|---|---|---|
+| Liquidez | `runway` | saldo de caja reconstruido / gasto operativo medio mensual | balances + transacciones |
+| | `d_runway` | cambio del colchón en 3 meses | idem |
+| | `neg_liq` | % de meses (de los últimos 3) con saldo negativo | idem |
+| Caja operativa | `coverage` | cobros / pagos operativos (3 m) | transacciones |
+| | `net_margin` | (cobros − pagos) / cobros | transacciones |
+| Estabilidad | `volatility` | desv. típica de la caja neta mensual / cobros (6 m) | transacciones |
+| | `growth` | cobros 3 m vs. los 3 m anteriores | transacciones |
+| | `concentration` | peso del mayor cliente en facturación (6 m) | facturas |
+| Carga financiera | `fin_cost_r` | (comisiones + intereses) / cobros | transacciones |
+| | `debt_serv_r` | cuotas de deuda / cobros | transacciones |
+| Cobros y pagos | `ar_overdue` | % de facturas emitidas abiertas ya vencidas | facturas |
+| | `ap_overdue` | % de facturas recibidas abiertas ya vencidas | facturas |
+| | `delay_coll` | retraso medio de cobro (días vs. vencimiento) | facturas |
+| | `delay_paid` | retraso medio de pago a proveedores | facturas |
+
+**Saldo histórico reconstruido:** `balances.csv` solo da el saldo final (2026-09-01). Se retrocede
+restando los movimientos posteriores de cada cuenta: `saldo(fin de mes m) = saldo_final − Σ movimientos posteriores a m`.
+
+**Convención de signo en facturas (supuesto):** `amount > 0` = emitida (cliente nos debe), `< 0` = recibida (debemos). Se comprueba abajo.
+
+```{r inv-features}
+inv_features <- function(inv) {
+  k <- inv[keep == TRUE]
+  rbindlist(lapply(seq_along(MONTHS), function(i) {
+    if (i < 3) return(NULL)                       # ventana de 3 meses incompleta -> sin dato
+    m  <- MONTHS[i]
+    e  <- ceiling_date(m, "month") - 1
+    w0 <- m %m-% months(2)
+    o   <- k[iss >= w0 & iss <= e & (is.na(paid_dt) | paid_dt > e)]     # abiertas a fin de mes
+    tot <- o[, .(open_amt = sum(abs_amt)), by = .(company_id, side)]
+    ov  <- o[due < e, .(ov_amt = sum(abs_amt)), by = .(company_id, side)]
+    x <- merge(tot, ov, by = c("company_id", "side"), all.x = TRUE)
+    x[is.na(ov_amt), ov_amt := 0]
+    x[, od_share := ov_amt / open_amt]
+    dly <- k[!is.na(paid_dt) & paid_dt >= w0 & paid_dt <= e,
+             .(delay = pmax(-30, pmin(120, weighted.mean(as.numeric(paid_dt - due), abs_amt)))),
+             by = .(company_id, side)]
+    x <- merge(x, dly, by = c("company_id", "side"), all = TRUE)
+    ar  <- x[side == "AR", .(company_id, ar_overdue = od_share, delay_coll = delay)]
+    ap  <- x[side == "AP", .(company_id, ap_overdue = od_share, delay_paid = delay)]
+    out <- merge(ar, ap, by = "company_id", all = TRUE)
+    if (i >= 6) {
+      conc <- k[side == "AR" & iss >= m %m-% months(5) & iss <= e & !is.na(counterparty_id),
+                .(a = sum(abs_amt)), by = .(company_id, counterparty_id)][
+                  , .(concentration = max(a) / sum(a)), by = company_id]
+      out <- merge(out, conc, by = "company_id", all = TRUE)
+    } else out[, concentration := NA_real_]
+    out[, month := m]
+    out
+  }), fill = TRUE)
+}
+
+liquidity_by_month <- function(tx, banking, balances) {
+  cash_types <- c("checking", "saving", "tpv")
+  bp  <- banking[type %in% cash_types, .(product_id, company_id)]
+  bal <- merge(balances[, .(product_id, balance)], bp, by = "product_id")
+  flow <- tx[product_id %in% bal$product_id, .(flow = sum(amount)), by = .(product_id, month)]
+  grid <- CJ(product_id = bal$product_id, month = c(MONTHS, LAST_M %m+% months(1)))
+  grid <- merge(grid, flow, by = c("product_id", "month"), all.x = TRUE)
+  grid[is.na(flow), flow := 0]
+  grid <- merge(grid, bal, by = "product_id")
+  setorder(grid, product_id, month)
+  grid[, after := rev(cumsum(rev(flow))) - flow, by = product_id]   # movimientos posteriores al mes
+  grid[, end_bal := balance - after]
+  grid[month <= LAST_M, .(liq = sum(end_bal)), by = .(company_id, month)]
+}
+
+build_features <- function(tx, inv, banking, balances) {
+  mth <- tx[month <= LAST_M,
+            .(op_in = sum(amount[grp == "op_in"]), op_out = -sum(amount[grp == "op_out"]),
+              fin_cost = -sum(amount[grp == "fin_cost"]), debt_service = -sum(amount[grp == "debt_service"]),
+              n_tx = .N), by = .(company_id, month)]
+  fm <- mth[, .(first_m = min(month)), by = company_id]
+  P <- CJ(company_id = fm$company_id, month = MONTHS)
+  P <- merge(P, fm, by = "company_id")[month >= first_m]
+  P <- merge(P, mth, by = c("company_id", "month"), all.x = TRUE)
+  for (v in c("op_in", "op_out", "fin_cost", "debt_service", "n_tx")) set(P, which(is.na(P[[v]])), v, 0)
+  setorder(P, company_id, month)
+
+  P[, `:=`(in3 = frollsum(op_in, 3), out3 = frollsum(op_out, 3),
+           fc3 = frollsum(fin_cost, 3), ds3 = frollsum(debt_service, 3)), by = company_id]
+  P[, net_m := op_in - op_out]
+  P[, `:=`(sd6 = frollapply(net_m, 6, sd), in6 = frollmean(op_in, 6), in3_l3 = shift(in3, 3)), by = company_id]
+  P[, `:=`(coverage   = pmin(3, in3 / pmax(out3, 1)),
+           net_margin = fifelse(in3 > 0, pmax(-1, pmin(1, (in3 - out3) / in3)), -1),
+           growth     = fifelse(!is.na(in3_l3) & in3_l3 > 0, pmax(-1, pmin(1, in3 / in3_l3 - 1)), NA_real_),
+           volatility = pmin(3, sd6 / pmax(in6, 1)),
+           fin_cost_r = pmin(1, pmax(0, fc3 / pmax(in3, 1))),
+           debt_serv_r = pmin(2, pmax(0, ds3 / pmax(in3, 1))))]
+
+  P <- merge(P, liquidity_by_month(tx, banking, balances), by = c("company_id", "month"), all.x = TRUE)
+  setorder(P, company_id, month)
+  P[, runway := pmax(-6, pmin(24, liq / pmax(out3 / 3, 1)))]
+  P[, `:=`(d_runway = pmax(-12, pmin(12, runway - shift(runway, 3))),
+           neg_liq  = frollmean(as.numeric(liq < 0), 3)), by = company_id]
+
+  P <- merge(P, inv_features(inv), by = c("company_id", "month"), all.x = TRUE)
+  setorder(P, company_id, month)
+  P
+}
+
+P <- build_features(tx, inv, banking, balances)
+cat("Panel empresa-mes:", nrow(P), "filas,", uniqueN(P$company_id), "empresas\n")
+```
+
+```{r sign-check}
+# Comprobacion del supuesto de signo: las facturas emitidas (AR) deben acompanar a los cobros
+# y las recibidas (AP) a los pagos.
+chk <- inv[keep == TRUE & valid_paid == TRUE,
+           .(ar = sum(abs_amt[side == "AR"]), ap = sum(abs_amt[side == "AP"])), by = company_id]
+cash <- P[, .(cash_in = sum(op_in), cash_out = sum(op_out)), by = company_id]
+chk <- merge(chk, cash, by = "company_id")
+data.table(
+  par = c("AR vs cobros", "AP vs cobros", "AP vs pagos", "AR vs pagos"),
+  spearman = round(c(cor(chk$ar, chk$cash_in, method = "spearman"), cor(chk$ap, chk$cash_in, method = "spearman"),
+                     cor(chk$ap, chk$cash_out, method = "spearman"), cor(chk$ar, chk$cash_out, method = "spearman")), 3))
+```
+
+Si `AR vs cobros` no supera a `AP vs cobros`, hay que invertir el supuesto de signo en `prep_inv`.
+
+```{r liq-check}
+# Diagnostico de la reconstruccion de saldos
+P[!is.na(liq), .(pct_liquidez_negativa = mean(liq < 0), empresas_con_saldo = uniqueN(company_id))]
+P[, .(pct_con_liquidez = mean(!is.na(liq)), pct_con_facturas = mean(!is.na(ar_overdue) | !is.na(ap_overdue)))]
+```
+
+---
+
+# 3. El score
+
+## 3.1 Definición
+
+- Cada **señal** se convierte a 0–100 mediante su **percentil en una referencia congelada** (`ref`), con dirección
+  (más es mejor / peor). Es un método sin parámetros ajustados al test: la referencia se ajusta con las empresas
+  conocidas y se **reutiliza tal cual** para las ocultas.
+- Cada **pilar** = media de sus señales disponibles; el **score** = media ponderada de los pilares disponibles
+  (los pesos se renormalizan si falta el pilar de facturas).
+- `neg_liq` es una proporción y se convierte directamente (`100·(1−x)`), para no confundir un "0 %" muy repetido con un percentil.
+
+```{r sig-defs}
+SIG <- data.table(
+  signal    = c("runway", "d_runway", "neg_liq", "coverage", "net_margin", "volatility", "growth",
+                "concentration", "fin_cost_r", "debt_serv_r", "ar_overdue", "ap_overdue", "delay_coll", "delay_paid"),
+  pillar    = c("liquidez", "liquidez", "liquidez", "caja", "caja", "estabilidad", "estabilidad",
+                "estabilidad", "financiera", "financiera", "cobros", "cobros", "cobros", "cobros"),
+  direction = c(1, 1, -1, 1, 1, -1, 1, -1, -1, -1, -1, -1, -1, -1),
+  type      = c("pct", "pct", "share", rep("pct", 11)),
+  label     = c("colchón de caja (meses de gasto)", "variación del colchón (3 m)", "meses con saldo negativo",
+                "cobertura cobros/pagos", "margen de caja operativa", "volatilidad de la caja",
+                "crecimiento de cobros", "concentración de clientes", "comisiones e intereses / cobros",
+                "cuotas de deuda / cobros", "% facturas emitidas vencidas", "% facturas recibidas vencidas",
+                "retraso medio de cobro (días)", "retraso medio de pago (días)")
+)
+PILLAR_W <- c(liquidez = 0.30, caja = 0.25, estabilidad = 0.15, financiera = 0.10, cobros = 0.20)
+PILLAR_LABEL <- c(liquidez = "Liquidez", caja = "Caja operativa", estabilidad = "Estabilidad y crecimiento",
+                  financiera = "Carga financiera", cobros = "Cobros y pagos")
+stopifnot(abs(sum(PILLAR_W) - 1) < 1e-9)
+SIG
+```
+
+```{r score-fn}
+fit_ref <- function(P, sig = SIG, max_n = 20000) {
+  setNames(lapply(sig$signal, function(s) {
+    v <- P[[s]]; v <- v[is.finite(v)]
+    if (length(v) > max_n) v <- sample(v, max_n)
+    sort(v)
+  }), sig$signal)
+}
+
+run_score <- function(P, ref, sig = SIG, pw = PILLAR_W) {
+  L <- melt(P[, c("company_id", "month", sig$signal), with = FALSE],
+            id.vars = c("company_id", "month"), variable.name = "signal", value.name = "value",
+            variable.factor = FALSE)
+  L <- L[is.finite(value)]
+  L <- merge(L, sig, by = "signal")
+  L[, sig_score := NA_real_]
+  for (s in sig[type == "pct", signal]) {
+    r <- ref[[s]]; idx <- which(L$signal == s)
+    v <- L$value[idx]
+    pct <- (findInterval(v, r, left.open = TRUE) + findInterval(v, r)) / 2 / length(r)   # percentil (rango medio)
+    set(L, idx, "sig_score", 100 * fifelse(L$direction[idx] == 1, pct, 1 - pct))
+  }
+  L[type == "share", sig_score := 100 * (1 - value)]
+
+  Pl <- L[, .(pillar_score = mean(sig_score), n_sig = .N), by = .(company_id, month, pillar)]
+  Pl[, w := unname(pw[pillar])]
+  Pl[, w_eff := w / sum(w), by = .(company_id, month)]
+  Sc <- Pl[, .(score = sum(w_eff * pillar_score), cov_w = sum(w)), by = .(company_id, month)]
+  Sc <- Sc[cov_w >= 0.5]                                   # exige al menos la mitad del peso
+  L <- merge(L, Pl[, .(company_id, month, pillar, n_sig, w_eff)], by = c("company_id", "month", "pillar"))
+  L[, contrib := w_eff / n_sig * sig_score]                # contribucion de cada senal al score (suma = score)
+  Pl[, mi := match(month, MONTHS)]
+  list(Sc = Sc, L = L, Pl = Pl)
+}
+
+ref <- fit_ref(P)
+res <- run_score(P, ref)
+```
+
+```{r contrib-check}
+# La suma de contribuciones por senal reproduce exactamente el score (base de la explicabilidad)
+chk <- merge(res$L[, .(s = sum(contrib)), by = .(company_id, month)], res$Sc, by = c("company_id", "month"))
+cat("Max |suma contribuciones - score| =", max(abs(chk$s - chk$score)), "\n")
+```
+
+## 3.2 Distribución del score
+
+```{r score-dist}
+ggplot(res$Sc, aes(score)) +
+  geom_histogram(bins = 50, fill = "#4C72B0") +
+  labs(title = "Distribución del score (empresa-mes)", x = "score (0-100)", y = NULL)
+
+ggplot(res$Sc[, .(mediana = median(score), p10 = quantile(score, .1), p90 = quantile(score, .9)), by = month],
+       aes(month)) +
+  geom_ribbon(aes(ymin = p10, ymax = p90), fill = "#4C72B0", alpha = 0.2) +
+  geom_line(aes(y = mediana), color = "#4C72B0", linewidth = 1) +
+  labs(title = "Score a lo largo del tiempo (mediana y banda p10-p90)", x = NULL, y = "score")
+```
+
+Si la mediana derivara de forma sistemática en el tiempo sería señal de un artefacto de ventana (p. ej. sesgo de
+truncado al inicio del histórico), no de salud real.
+
+## 3.3 Generalización a empresas no vistas (validación por grupo)
+
+La referencia se reajusta **sin** las empresas del pliegue y se puntúan las empresas apartadas. Se divide por
+**grupo empresarial** (las filiales de un holding se parecen y no deben repartirse entre train y test).
+
+```{r group-folds}
+gid <- companies[, .(company_id, group_id)]
+grp_ids <- unique(gid$group_id)
+fold_of_group <- setNames(sample(rep(1:5, length.out = length(grp_ids))), grp_ids)
+gid[, fold := fold_of_group[group_id]]
+Pf <- merge(P, gid[, .(company_id, fold)], by = "company_id")
+
+fold_res <- rbindlist(lapply(1:5, function(k) {
+  ref_k <- fit_ref(Pf[fold != k])
+  sk <- run_score(Pf[fold == k], ref_k)$Sc
+  m <- merge(sk[, .(company_id, month, score_holdout = score)], res$Sc[, .(company_id, month, score_full = score)],
+             by = c("company_id", "month"))
+  data.table(fold = k, n_empresas = uniqueN(m$company_id),
+             spearman = cor(m$score_holdout, m$score_full, method = "spearman"),
+             mae_puntos = mean(abs(m$score_holdout - m$score_full)))
+}))
+fold_res
+```
+
+Spearman ≈ 1 y error de pocos puntos indican que el score **no depende de qué empresas se usaron para fijar la referencia**.
+(Esto valida la estabilidad del método; la validez predictiva se mide en §7.)
+
+## 3.4 Sensibilidad a los pesos
+
+```{r sens}
+alt_w <- c(liquidez = 0.2, caja = 0.2, estabilidad = 0.2, financiera = 0.2, cobros = 0.2)
+res_alt <- run_score(P, ref, SIG, alt_w)
+m <- merge(res$Sc[month == LAST_M, .(company_id, s = score)], res_alt$Sc[month == LAST_M, .(company_id, s_alt = score)],
+           by = "company_id")
+cat("Spearman ranking último mes, pesos priori vs. pesos iguales:", round(cor(m$s, m$s_alt, method = "spearman"), 3), "\n")
+```
+
+---
+
+# 4. Trayectoria y estados
+
+El score de nivel se complementa con la **dirección**:
+
+- `delta3`: variación en 3 meses. `trend6`: pendiente (mínimos cuadrados) de los últimos 6 meses, expresada en puntos por ventana.
+- `traj_score = 0.75·nivel + 0.25·componente_tendencia` (la tendencia se mapea a 0-100 con `50 + 2.5·trend6`). Ambos pesos son
+  hiperparámetros a afinar con el leaderboard.
+- **Estados** (usan solo información hasta el mes): Sólida, Mejorando, Empezando a torcerse, Deteriorada, Estable.
+
+```{r traj}
+slope <- function(y) {
+  ok <- !is.na(y)
+  if (sum(ok) < 4) return(NA_real_)
+  x <- seq_along(y)[ok]; yy <- y[ok]
+  sum((x - mean(x)) * (yy - mean(yy))) / sum((x - mean(x))^2)
+}
+
+make_traj <- function(Sc) {
+  Tj <- merge(CJ(company_id = unique(Sc$company_id), month = MONTHS), Sc, by = c("company_id", "month"), all.x = TRUE)
+  setorder(Tj, company_id, month)
+  Tj[, mi := match(month, MONTHS)]
+  Tj[, `:=`(delta3 = score - shift(score, 3),
+            trend6 = 5 * frollapply(score, 6, slope),
+            base6  = shift(frollapply(score, 6, function(y) median(y, na.rm = TRUE)), 1)), by = company_id]
+  Tj[, traj_component := pmax(0, pmin(100, 50 + 2.5 * trend6))]
+  Tj[, traj_score := fifelse(is.na(trend6), score, 0.75 * score + 0.25 * traj_component)]
+  Tj[, state := fcase(
+    is.na(score), NA_character_,
+    score >= 65 & (is.na(trend6) | trend6 > -8), "Sólida",
+    trend6 >= 8, "Mejorando",
+    score < 40 | (trend6 <= -8 & score < 50), "Deteriorada",
+    trend6 <= -8, "Empezando a torcerse",
+    default = "Estable")]
+  Tj
+}
+
+Traj <- make_traj(res$Sc)
+STATE_COL <- c("Sólida" = "#2E7D32", "Mejorando" = "#66BB6A", "Estable" = "#9E9E9E",
+               "Empezando a torcerse" = "#FB8C00", "Deteriorada" = "#C62828")
+
+Traj[month == LAST_M & !is.na(state), .N, by = state][order(-N)]
+```
+
+```{r state-time}
+st <- Traj[!is.na(state), .N, by = .(month, state)]
+st[, pct := N / sum(N), by = month]
+st[, state := factor(state, levels = names(STATE_COL))]
+ggplot(st, aes(month, pct, fill = state)) +
+  geom_col() +
+  scale_fill_manual(values = STATE_COL) +
+  scale_y_continuous(labels = percent) +
+  labs(title = "Reparto de estados por mes", x = NULL, y = NULL, fill = NULL)
+```
+
+## 4.1 El caso "dos empresas, tres puntos de diferencia"
+
+Busco en los datos un par como Northbrook / Velasco: **mismo score hoy, trayectorias opuestas**.
+
+```{r pair}
+last <- Traj[month == LAST_M & !is.na(score) & !is.na(trend6)]
+n <- nrow(last)
+pp <- CJ(i = seq_len(n), j = seq_len(n))
+pp[, `:=`(a = last$company_id[i], b = last$company_id[j], sa = last$score[i], sb = last$score[j],
+          ta = last$trend6[i], tb = last$trend6[j])]
+pp <- pp[abs(sa - sb) <= 3 & ta >= 8 & tb <= -8]
+pair <- pp[which.max(ta - tb)]
+pair[, .(mejora = a, score_mejora = round(sa, 1), tendencia_mejora = round(ta, 1),
+         deterioro = b, score_deterioro = round(sb, 1), tendencia_deterioro = round(tb, 1))]
+
+ex_pair <- Traj[company_id %in% c(pair$a, pair$b)]
+ex_pair[, rol := fifelse(company_id == pair$a, "Mejorando", "Torciéndose")]
+ggplot(ex_pair, aes(month, score, color = paste(company_id, "-", rol))) +
+  geom_line(linewidth = 1.1) + geom_point() +
+  labs(title = "Mismo score hoy, trayectorias opuestas", x = NULL, y = "score", color = NULL)
+```
+
+```{r spaghetti}
+samp <- sample(unique(Traj[!is.na(score)]$company_id), 40)
+ggplot(Traj[company_id %in% samp & !is.na(score)], aes(month, score, group = company_id)) +
+  geom_line(alpha = 0.5, color = "#4C72B0") +
+  labs(title = "Trayectorias de 40 empresas al azar", x = NULL, y = "score")
+```
+
+---
+
+# 5. ¿Bache o caída?
+
+Para cada **caída** (score ≥ 8 puntos por debajo de su mediana de los 6 meses anteriores) miramos, con perspectiva, si
+**se recupera** a los 3 meses (bache) o **persiste** (deterioro), y cuántos **pilares** cayeron a la vez.
+Hipótesis: un deterioro estructural afecta a varios pilares; un bache, a uno.
+
+```{r worst-pillar-fn}
+pillar_moves <- function(Pl) {
+  lag <- Pl[, .(company_id, pillar, mi = mi + 3, pillar_lag = pillar_score)]
+  Pd <- merge(Pl[, .(company_id, pillar, mi, pillar_score)], lag, by = c("company_id", "pillar", "mi"))
+  Pd[, d3 := pillar_score - pillar_lag]
+  Pd
+}
+Pd <- pillar_moves(res$Pl)
+worst <- Pd[, .(worst_pillar_d3 = min(d3), worst_pillar = pillar[which.min(d3)], n_down = sum(d3 <= -8)),
+            by = .(company_id, mi)]
+```
+
+```{r bache}
+D <- Traj[, .(company_id, mi, score, base6)]
+D[, drop := score - base6]
+D[, onset := drop <= -8 & (is.na(shift(drop)) | shift(drop) > -8), by = company_id]
+Dl <- D[, .(company_id, mi = mi - 3, score_f3 = score)]                 # score 3 meses despues, alineado a t
+E <- merge(D[onset == TRUE], Dl, by = c("company_id", "mi"))
+E <- merge(E, worst[, .(company_id, mi, n_down)], by = c("company_id", "mi"), all.x = TRUE)
+E[, recuperacion := score_f3 - base6]
+E[, tipo := fifelse(recuperacion >= -3, "Bache (se recupera)", "Deterioro (persiste)")]
+
+E[, .(n = .N, caida_media = round(mean(drop), 1), pilares_a_la_baja = round(mean(n_down, na.rm = TRUE), 2)), by = tipo]
+
+ggplot(E, aes(tipo, n_down)) +
+  geom_boxplot(fill = "#8172B2", outlier.alpha = 0.3) +
+  labs(title = "Nº de pilares que caen ≥8 pts, según el tipo de caída", x = NULL, y = "pilares a la baja")
+```
+
+**Cómo se usa en producción (sin ver el futuro):** una caída abre una *alerta temprana* en el mes t;
+se **confirma** como deterioro si a los 2 meses el score sigue ≥4 puntos por debajo de su base, y se archiva como bache si se recupera.
+Esto separa la alerta rápida (barata) de la decisión (que espera confirmación).
+
+---
+
+# 6. Explicación: por qué esta empresa saca este número
+
+Como el score es una suma ponderada de percentiles, **cada señal aporta una parte exacta** (`contrib`).
+El cambio entre dos meses se explica restando contribuciones.
+
+```{r explain}
+explain_company <- function(cid, m = LAST_M, k = 3, top = 3, res_obj = res, Traj_obj = Traj) {
+  m <- as.Date(m); mk <- m %m-% months(k)
+  a <- res_obj$L[company_id == cid & month == m, .(signal, value, contrib)]
+  b <- res_obj$L[company_id == cid & month == mk, .(signal, value0 = value, contrib0 = contrib)]
+  d <- merge(SIG[, .(signal, pillar, label)], a, by = "signal", all.x = TRUE)
+  d <- merge(d, b, by = "signal", all.x = TRUE)
+  d[is.na(contrib), contrib := 0]; d[is.na(contrib0), contrib0 := 0]
+  d[, delta := contrib - contrib0]
+  s <- Traj_obj[company_id == cid & month == m]; s0 <- Traj_obj[company_id == cid & month == mk]
+  cat(sprintf("%s | %s | score %.0f (%+.0f vs hace %d meses) | estado: %s\n",
+              cid, format(m, "%Y-%m"), s$score, s$score - s0$score, k, s$state))
+  fmt <- function(x) if (is.na(x)) "s/d" else format(round(x, 2), nsmall = 2)
+  peor <- head(d[delta < 0][order(delta)], top)
+  mejor <- head(d[delta > 0][order(-delta)], top)
+  if (nrow(peor)) { cat("  Lo que ha empeorado:\n")
+    for (i in seq_len(nrow(peor))) cat(sprintf("   - %s: %s -> %s (%+.1f pts)\n", peor$label[i], fmt(peor$value0[i]), fmt(peor$value[i]), peor$delta[i])) }
+  if (nrow(mejor)) { cat("  Lo que ha mejorado:\n")
+    for (i in seq_len(nrow(mejor))) cat(sprintf("   - %s: %s -> %s (%+.1f pts)\n", mejor$label[i], fmt(mejor$value0[i]), fmt(mejor$value[i]), mejor$delta[i])) }
+  invisible(d)
+}
+
+explain_company(pair$b)   # la empresa que se tuerce
+explain_company(pair$a)   # la que mejora
+```
+
+```{r pillar-bars}
+pl_last <- res$Pl[month == LAST_M & company_id %in% c(pair$a, pair$b)]
+pl_last[, pillar := PILLAR_LABEL[pillar]]
+ggplot(pl_last, aes(pillar, pillar_score, fill = company_id)) +
+  geom_col(position = "dodge") +
+  coord_flip() +
+  labs(title = "Puntuación por pilar (último mes)", x = NULL, y = "0-100", fill = NULL)
+```
+
+---
+
+# 7. Anticipación y capacidad predictiva (con eventos proxy)
+
+No hay etiquetas de quiebra o mejora, así que se define la **verdad-terreno proxy** con la caja *futura*:
+
+- **Caída** de actividad: los cobros a 3 meses a 6 meses vista son ≤ 60 % de los actuales.
+- **Subida**: ≥ 150 % de los actuales.
+
+Se mide si el score/la tendencia **en el mes t** (solo con datos ≤ t) separa a las empresas que sufrirán cada evento.
+*Limitación:* es una validación interna con un proxy; no sustituye al test oculto.
+
+```{r auc-fn}
+auc <- function(score, y) {
+  ok <- !is.na(score) & !is.na(y)
+  s <- score[ok]; y <- y[ok]
+  n1 <- sum(y == 1); n0 <- sum(y == 0)
+  if (n1 == 0 || n0 == 0) return(NA_real_)
+  r <- rank(s)
+  (sum(r[y == 1]) - n1 * (n1 + 1) / 2) / (n1 * n0)
+}
+```
+
+```{r events}
+size_floor <- quantile(P$in3, 0.10, na.rm = TRUE)      # ignora empresas casi inactivas
+Fw <- P[, .(company_id, month, in3, in3_l3, growth)]
+setorder(Fw, company_id, month)
+Fw[, in3_f6 := shift(in3, 6, type = "lead"), by = company_id]
+Fw[, `:=`(crash = as.integer(in3 >= size_floor & in3_f6 <= 0.6 * in3),
+          boom  = as.integer(in3 >= size_floor & in3_f6 >= 1.5 * in3))]
+
+Ev <- merge(Traj[, .(company_id, month, score, trend6, delta3, traj_score)],
+            Fw[, .(company_id, month, crash, boom, growth)], by = c("company_id", "month"))
+Ev <- Ev[!is.na(score) & !is.na(crash)]
+Ev[, .(meses_empresa = .N, tasa_caida = mean(crash), tasa_subida = mean(boom))]
+
+auc_tab <- rbindlist(list(
+  data.table(evento = "Caída de cobros (t+6)", predictor = c("score (nivel)", "trend6", "delta3", "traj_score", "baseline: growth"),
+             AUC = c(auc(-Ev$score, Ev$crash), auc(-Ev$trend6, Ev$crash), auc(-Ev$delta3, Ev$crash),
+                     auc(-Ev$traj_score, Ev$crash), auc(-Ev$growth, Ev$crash))),
+  data.table(evento = "Subida de cobros (t+6)", predictor = c("score (nivel)", "trend6", "delta3", "traj_score", "baseline: growth"),
+             AUC = c(auc(Ev$score, Ev$boom), auc(Ev$trend6, Ev$boom), auc(Ev$delta3, Ev$boom),
+                     auc(Ev$traj_score, Ev$boom), auc(Ev$growth, Ev$boom)))
+))
+auc_tab[, AUC := round(AUC, 3)]
+auc_tab
+```
+
+AUC > 0.5 en **ambas** filas significa que el sistema detecta el deterioro *y* la mejora ("las dos caras").
+La fila `baseline: growth` (solo la variación reciente de cobros) es el listón a superar: el valor del score multi-señal es la diferencia.
+
+```{r auc-plot}
+ggplot(auc_tab, aes(AUC, predictor, fill = evento)) +
+  geom_col(position = "dodge") +
+  geom_vline(xintercept = 0.5, linetype = "dashed") +
+  coord_cartesian(xlim = c(0.4, 1)) +
+  labs(title = "Capacidad predictiva a 6 meses (AUC)", x = "AUC", y = NULL, fill = NULL)
+```
+
+## 7.1 Cuántos meses antes se ve venir
+
+Para no medir una tautología, la anticipación se calcula con un **score sin la señal `growth`** (que es precisamente la
+que define el evento): así solo cuentan las señales de liquidez, financieras y de cobros.
+El **inicio del evento** es el primer mes en que los cobros a 3 meses caen ≥ 40 % frente a los 3 meses previos.
+
+```{r monitor-fn}
+alerts_fn <- function(Tj, worst) {
+  A <- merge(Tj[, .(company_id, month, mi, score, delta3, state)], worst, by = c("company_id", "mi"), all.x = TRUE)
+  setorder(A, company_id, mi)
+  A[, prev_state := shift(state), by = company_id]
+  A[, alert := (delta3 <= -10) | (state == "Deteriorada" & prev_state != "Deteriorada") | (worst_pillar_d3 <= -25)]
+  A[is.na(alert), alert := FALSE]
+  A[, alert_new := alert & !(shift(alert, 1, fill = FALSE) | shift(alert, 2, fill = FALSE)), by = company_id]
+  A
+}
+
+res_ex  <- run_score(P, ref, SIG[signal != "growth"], PILLAR_W)
+Traj_ex <- make_traj(res_ex$Sc)
+Pd_ex   <- pillar_moves(res_ex$Pl)
+worst_ex <- Pd_ex[, .(worst_pillar_d3 = min(d3), worst_pillar = pillar[which.min(d3)], n_down = sum(d3 <= -8)),
+                  by = .(company_id, mi)]
+alerts_ex <- alerts_fn(Traj_ex, worst_ex)
+```
+
+```{r lead-time}
+onset <- Fw[!is.na(in3_l3) & in3_l3 >= size_floor & in3 <= 0.6 * in3_l3, .(E = min(month)), by = company_id]
+cand <- merge(onset, alerts_ex[alert_new == TRUE, .(company_id, A = month)], by = "company_id", allow.cartesian = TRUE)
+cand <- cand[A <= E & A >= E %m-% months(6)]
+lead <- cand[, .(A = min(A)), by = .(company_id, E)]
+lead[, lead_m := match(E, MONTHS) - match(A, MONTHS)]
+
+cat(sprintf("Empresas con caída de actividad: %d\n", nrow(onset)))
+cat(sprintf("  con alerta en los 6 meses previos (o el mismo mes): %d (%.0f%%)\n", nrow(lead), 100 * nrow(lead) / nrow(onset)))
+cat(sprintf("  con alerta al menos 1 mes antes: %d (%.0f%%)\n", sum(lead$lead_m >= 1), 100 * sum(lead$lead_m >= 1) / nrow(onset)))
+cat(sprintf("  antelación mediana entre las detectadas: %.1f meses\n", median(lead$lead_m)))
+
+ggplot(lead, aes(lead_m)) +
+  geom_bar(fill = "#4C72B0") +
+  labs(title = "Antelación de la alerta respecto al inicio de la caída de cobros", x = "meses de antelación", y = "empresas")
+```
+
+```{r lift}
+# Precision de las alertas: ¿es mas probable una caida posterior tras una alerta que en un mes cualquiera?
+first_E <- onset[, .(company_id, E)]
+Al <- merge(alerts_ex[!is.na(score), .(company_id, month, alert_new)], first_E, by = "company_id", all.x = TRUE)
+Al[, crash6 := !is.na(E) & E > month & E <= month %m+% months(6)]
+lift <- Al[, .(tasa_caida_6m = mean(crash6)), by = alert_new]
+lift[, lift_vs_base := tasa_caida_6m / Al[, mean(crash6)]]
+lift
+```
+
+---
+
+# 8. Monitor que avisa solo (bonus)
+
+Reglas (con cooldown de 3 meses para no repetir): caída de ≥10 puntos en 3 meses · entrada en estado *Deteriorada* ·
+un pilar que se desploma ≥25 puntos. Cada alerta se acompaña de sus **motivos** (§6).
+
+```{r monitor}
+worst_full <- worst
+alerts <- alerts_fn(Traj, worst_full)
+
+al_m <- alerts[alert_new == TRUE, .N, by = month]
+ggplot(al_m, aes(month, N)) +
+  geom_col(fill = "#C44E52") +
+  labs(title = "Alertas nuevas por mes", x = NULL, y = "empresas")
+
+feed <- alerts[alert_new == TRUE & month == LAST_M,
+               .(company_id, score = round(score, 1), delta3 = round(delta3, 1), estado = state,
+                 pilar_mas_afectado = PILLAR_LABEL[worst_pillar], caida_pilar = round(worst_pillar_d3, 1))][order(delta3)]
+head(feed, 15)
+```
+
+---
+
+# 9. Producto y comprador
+
+## 9.1 Comprador
+
+**La propia empresa que genera los datos (Embat, plataforma de tesorería)** es el comprador natural: ya tiene el rastro
+financiero de sus clientes en tiempo real, y puede convertir el score en un módulo de producto para tres tipos de cliente final:
+
+| Comprador | Qué compra | Por qué le sale a cuenta |
+|---|---|---|
+| **CFO / tesorero (cliente de Embat)** | Cuadro de salud + agente de recomendaciones semanal sobre sus propios datos (§9.3) | Ve qué palanca mover (cobros, comisiones, deuda) antes de que sea un problema de caja |
+| **Bancos / prestamistas** (vía marketplace de crédito) | Empresas ordenadas por riesgo *actualizado*, con motivos | Riesgo real cada mes en vez de cuentas anuales; menos dossieres y menos morosidad |
+| **Aseguradoras de crédito comercial / factoring** | Prima y límite que se mueven con el score | Detectan el deterioro del cliente asegurado antes del siniestro (§7, §8) |
+
+**Producto propuesto: línea de circulante dinámica.** Un límite mensual y un precio por tramo de score,
+que se recalcula solo y se **frena** cuando salta una alerta.
+
+## 9.2 Límite dinámico y su backtest
+
+```{r policy}
+band_mult   <- function(s) fcase(s >= 75, 1.5, s >= 60, 1.0, s >= 45, 0.5, s >= 30, 0.2, default = 0)
+band_spread <- function(s) fcase(s >= 75, 250, s >= 60, 350, s >= 45, 500, s >= 30, 800, default = NA_real_)   # puntos basicos
+
+pol <- merge(Traj[, .(company_id, month, mi, score, traj_score, state)],
+             P[, .(company_id, month, in3)], by = c("company_id", "month"))
+pol[, avg_monthly_in := in3 / 3]
+pol[, limit_dyn := band_mult(traj_score) * avg_monthly_in]
+pol[, spread_bps := band_spread(traj_score)]
+
+latest <- pol[month == LAST_M & !is.na(score)]
+latest[, tramo := fcase(traj_score >= 75, "A (>=75)", traj_score >= 60, "B (60-75)", traj_score >= 45, "C (45-60)",
+                        traj_score >= 30, "D (30-45)", default = "E (<30, sin línea)")]
+latest[, .(empresas = .N, limite_total = round(sum(limit_dyn, na.rm = TRUE)), limite_medio = round(mean(limit_dyn, na.rm = TRUE)),
+           spread_bps = median(spread_bps, na.rm = TRUE)), by = tramo][order(tramo)]
+```
+
+**Backtest de la política dinámica frente a una revisión anual.** Se compara la exposición concedida
+a empresas que luego sufren una caída de actividad (≥40 % a 6 meses vista): límite fijado en el mes 12 y mantenido (revisión anual)
+frente a límite recalculado cada mes con el score.
+
+```{r policy-backtest}
+crash_flag <- Fw[, .(company_id, month, crash)]
+bt <- merge(pol, crash_flag, by = c("company_id", "month"))
+review <- pol[mi == 12, .(company_id, limit_static = limit_dyn)]
+bt <- merge(bt[mi >= 13 & mi <= 18 & !is.na(crash)], review, by = "company_id")
+bt[is.na(limit_dyn), limit_dyn := 0]; bt[is.na(limit_static), limit_static := 0]
+
+data.table(
+  politica = c("Revisión anual (límite fijo desde M12)", "Dinámica mensual (score)"),
+  exposicion_total = c(sum(bt$limit_static), sum(bt$limit_dyn)),
+  exposicion_a_empresas_que_caen = c(sum(bt$limit_static * bt$crash), sum(bt$limit_dyn * bt$crash))
+)[, pct_expuesto_a_caidas := round(100 * exposicion_a_empresas_que_caen / exposicion_total, 1)][]
+```
+
+Si `% expuesto a caídas` baja en la política dinámica, el score reduce la exposición a las empresas que se deterioran
+sin recortar de forma indiscriminada el crédito al resto: ése es el argumento de venta.
+
+## 9.3 Agente de recomendaciones (para el CFO)
+
+Reglas transparentes sobre las señales de la empresa; cada recomendación cita su evidencia.
+
+```{r recs}
+inv_k <- inv[keep == TRUE]
+
+recomendaciones <- function(cid) {
+  r <- P[company_id == cid & month == LAST_M]
+  if (!nrow(r)) return(data.table())
+  q <- function(s) quantile(P[month == LAST_M][[s]], 0.75, na.rm = TRUE)
+  out <- list()
+  add <- function(prio, accion, evidencia) out[[length(out) + 1]] <<- data.table(prioridad = prio, accion = accion, evidencia = evidencia)
+
+  if (!is.na(r$runway) && r$runway < 2)
+    add(1, "Activar línea de circulante o anticipo de facturas", sprintf("Colchón de caja = %.1f meses de gasto", r$runway))
+  if (!is.na(r$ar_overdue) && r$ar_overdue > q("ar_overdue")) {
+    top <- head(inv_k[company_id == cid & side == "AR" & is.na(paid_dt) & due < AS_OF & !is.na(counterparty_id),
+                      .(vencido = sum(abs_amt)), by = counterparty_id][order(-vencido)], 3)
+    add(1, "Reclamar cobros vencidos a los mayores morosos",
+        sprintf("%.0f%% de lo emitido abierto está vencido; top: %s", 100 * r$ar_overdue, paste(top$counterparty_id, collapse = ", ")))
+  }
+  if (!is.na(r$fin_cost_r) && r$fin_cost_r > q("fin_cost_r"))
+    add(2, "Renegociar comisiones e intereses bancarios", sprintf("Comisiones+intereses = %.1f%% de los cobros", 100 * r$fin_cost_r))
+  if (!is.na(r$debt_serv_r) && r$debt_serv_r > q("debt_serv_r"))
+    add(2, "Refinanciar o alargar deuda", sprintf("Las cuotas consumen %.0f%% de los cobros", 100 * r$debt_serv_r))
+  if (!is.na(r$concentration) && r$concentration > 0.5)
+    add(3, "Diversificar clientes", sprintf("Un solo cliente supone %.0f%% de la facturación (6 m)", 100 * r$concentration))
+  if (!is.na(r$growth) && r$growth < -0.2)
+    add(2, "Revisar caída de ingresos", sprintf("Cobros a 3 meses %+.0f%% vs. 3 meses previos", 100 * r$growth))
+  if (!length(out)) add(9, "Sin acciones urgentes", "Ninguna señal supera los umbrales")
+  rbindlist(out)[order(prioridad)]
+}
+
+recomendaciones(pair$b)
+```
+
+## 9.4 Qué enseñar en los 5 minutos de demo
+
+1. **Cartera** (`score_panel.csv`): lista de empresas con score, estado y semáforo.
+2. **Ficha de empresa**: trayectoria de 24 meses, pilares, y el *por qué* del último cambio (§6).
+3. **Monitor**: feed de alertas del último mes con su causa (§8).
+4. **Producto**: límite/precio recomendado para esa empresa y las 3 acciones del agente (§9.2–9.3).
+5. **Prueba de valor**: AUC en ambas direcciones, antelación mediana y reducción de exposición (§7, §9.2).
+
+---
+
+# 10. Exportación para la demo y el test oculto
+
+El pipeline completo es una función de las tablas crudas, de modo que las empresas ocultas se puntúan con
+**la misma referencia congelada**:
+
+```r
+# --- Puntuar empresas nuevas (mismo formato de CSV) ---
+# prep_tx(tx_new); prep_inv(inv_new)
+# P_new   <- build_features(tx_new, inv_new, banking_new, balances_new)
+# ref     <- readRDS("outputs/reference.rds")
+# res_new <- run_score(P_new, ref)
+# Traj_new <- make_traj(res_new$Sc)      # columnas: score, trend6, traj_score, state
+```
+
+```{r export}
+score_panel <- merge(Traj[!is.na(score), .(company_id, month, score, delta3, trend6, traj_score, state)],
+                     companies[, .(company_id, group_id, country, currency)], by = "company_id", all.x = TRUE)
+fwrite(score_panel, file.path(out_dir, "score_panel.csv"))
+
+pillars_wide <- dcast(res$Pl, company_id + month ~ pillar, value.var = "pillar_score")
+fwrite(pillars_wide, file.path(out_dir, "pillars.csv"))
+fwrite(res$L[, .(company_id, month, signal, label, pillar, value, sig_score, contrib)], file.path(out_dir, "signal_contrib.csv"))
+fwrite(alerts[alert_new == TRUE, .(company_id, month, score, delta3, state, worst_pillar, worst_pillar_d3)],
+       file.path(out_dir, "alerts.csv"))
+fwrite(latest[, .(company_id, month, score, traj_score, tramo, limit_dyn, spread_bps)], file.path(out_dir, "credit_line_latest.csv"))
+saveRDS(ref, file.path(out_dir, "reference.rds"))
+
+cat("Ficheros escritos en", normalizePath(out_dir), "\n")
+list.files(out_dir)
+```
+
+---
+
+# 11. Checklist frente a los requisitos del reto
+
+| Requisito | Estado | Dónde |
+|---|---|---|
+| Predicción sobre el test oculto | Pipeline listo: `build_features` → `run_score` con `reference.rds` | §3, §10 |
+| Señal en las dos direcciones | AUC de caída **y** de subida | §7 |
+| Trayectoria, no foto | `trend6`, `delta3`, `traj_score`, estados | §4 |
+| Explicación | Contribución exacta por señal y pilar | §6 |
+| Producto encima del score | Línea de circulante dinámica + agente de recomendaciones | §9 |
+| Comprador identificado | Embat, bancos y aseguradoras | §9.1 |
+| Demo navegable | **Pendiente**: montar app (Shiny/Streamlit) sobre `outputs/` | §9.4 |
+| Anticipación medida (bonus) | Antelación mediana y lift de alertas | §7.1 |
+| Monitor que avisa (bonus) | Reglas + feed con motivos | §8 |
+
+## Próximos pasos sugeridos
+
+1. Cuando esté disponible el **script de scoring/leaderboard**, afinar con él los pesos de pilares y el mix nivel/tendencia
+   (`0.75/0.25`) en lugar de fijarlos a ojo.
+2. Comprobar el **supuesto de signo de las facturas** y el tratamiento de **multimoneda** (aquí las cifras se usan sin convertir;
+   las ratios reducen el efecto, pero conviene revisarlo).
+3. Probar señales adicionales: estacionalidad (comparar con el mismo mes del año anterior), nómina y seguridad social como
+   indicador de actividad, nuevas deudas (`created_at` de `debt_products`) y calendario de amortización (`debt_schedule_config`).
+4. Construir la demo con `outputs/*.csv` (no requiere reprocesar las transacciones en directo).
