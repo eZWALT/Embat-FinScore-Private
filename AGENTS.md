@@ -1,14 +1,16 @@
 # AGENTS
 
 Private working repo for **HackSpain 2026 · X Ray (Embat)**.
-Working name here: **Aura**. Public face (late sync only): `../Embat-FinScore`.
+Public face (late sync only): `../Embat-FinScore`.
 
 Build in this repo. Do not grow this file with live status.
+
+FICO-like **company health score**. Four goals: signals → 0–100 index → explainability → company-facing web + LLM. Details: `.agents/persistent-memory/2026-09-18-2020-four-goals.md`.
 
 ## Read first
 
 1. This file (pointers only).
-2. `.agents/persistent-memory/` — journal. Start with `2026-09-18-initial-context.md`, then any newer dated files.
+2. `.agents/persistent-memory/` — journal. Start with `2026-09-18-initial-context.md`, then newer dated files.
 3. `data/data_dictionary.md` when touching data.
 
 ## Pointers
@@ -19,8 +21,10 @@ Build in this repo. Do not grow this file with live status.
 | Track dataset zip | https://f5xe6kyx7jpysotw.public.blob.vercel-storage.com/output_hackspain_data.zip |
 | Field dictionary | `data/data_dictionary.md` |
 | Dataset notes | `data/README.md` |
-| Analysis | `analysis/README.md` |
-| App folder | `product/README.md` — Dockerfile and package are empty |
+| 1. Signals | `analysis/` |
+| 2–3. Score 0–100 + explain | `product/score/` |
+| 4. Web + LLM (company user) | `product/web/` |
+| App folder | `product/README.md` — Docker/runtime still empty |
 | Public sibling | `../Embat-FinScore` (GitHub: `eZWALT/Embat-FinScore`) |
 
 ## Memory (three teammates)

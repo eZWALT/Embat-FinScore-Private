@@ -1,16 +1,12 @@
 # product/
 
-Application folder. Nothing here is implemented.
+Goals 2–4. Nothing is implemented. No image, CLI, model, or page.
 
-| File | State |
-|------|--------|
-| `Dockerfile` | Empty. No image, base, or `CMD` |
-| `.dockerignore` | Empty |
-| `pyproject.toml` / `uv.lock` | Package name only. No runtime deps |
-| `src/embat_finscore/` | Empty package |
+| Path | Goal |
+|------|------|
+| [`score/`](score/) | 2. Health index 0–100 (hard feature engineering + rationale). 3. Explainability |
+| [`web/`](web/) | 4. Webpage + LLM. User = the company that gives the data |
+| `Dockerfile` | Empty. No base image or `CMD` |
+| `src/embat_finscore/` | Empty package name only |
 
-```bash
-uv sync
-```
-
-Do not `docker build` until there is a real Dockerfile.
+Do not `docker build`. Do not assume a web or LLM stack.

@@ -1,8 +1,8 @@
 <div align="center">
 
-  <img src="assets/finscore-banner.png" alt="Aura — HackSpain 2026" width="100%"/>
+  <img src="assets/finscore-banner.png" alt="FinScore — HackSpain 2026" width="100%"/>
 
-  <h1>Aura</h1>
+  <h1>Embat-FinScore</h1>
 
   <p><strong>Private working repo · HackSpain 2026 · X Ray (Embat).</strong></p>
 
@@ -27,16 +27,23 @@
 
 ---
 
-Working name **Aura**. Track question: *¿Puede el dinero decir cómo está una empresa?*
+FICO-like **company health score**. Track question: *¿Puede el dinero decir cómo está una empresa?*
 
-Score the 24-month treasury trail, explain it, and sell something on top. Details and decisions live in [`.agents/persistent-memory/`](.agents/persistent-memory/), not in a long README.
+| # | Goal | Path |
+|---|------|------|
+| 1 | Signals from the treasury trail | [`analysis/`](analysis/) |
+| 2 | Health index 0–100 (feature engineering + rationale) | [`product/score/`](product/score/) |
+| 3 | Explainability | [`product/score/`](product/score/) |
+| 4 | Webpage + LLM; the **company** is the user and gives the data | [`product/web/`](product/web/) |
+
+Decisions live in [`.agents/persistent-memory/`](.agents/persistent-memory/). Nothing above is implemented yet.
 
 | Path | What |
 |------|------|
 | [`AGENTS.md`](AGENTS.md) | Pointers for agents and the three teammates |
-| [`data/`](data/) | Track dump (local) + committed dictionary |
-| [`analysis/`](analysis/) | Exploration (empty) |
-| [`product/`](product/) | Empty app folder (`Dockerfile` is empty) |
+| [`data/`](data/) | Track dump + dictionary |
+| [`analysis/`](analysis/) | Goal 1 (empty) |
+| [`product/`](product/) | Goals 2–4 (empty). `Dockerfile` is empty |
 | Public sibling | `eZWALT/Embat-FinScore` — publish at the end |
 
 Brief: [X Ray artifact](https://claude.ai/artifact/8N8Q7QMjprCUWxGAiJaWoP?sk=5wYke4E8ukAw6afs6TrG1g).  

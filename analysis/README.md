@@ -1,17 +1,10 @@
-# analysis/
+# analysis/ — goal 1: signals
 
-Exploration between `data/` and `product/`.
+Find signals in the X Ray treasury trail. Do not put a 0–100 formula here; that is `product/score/`.
 
-The X Ray brief asks the system to answer these **per company, per month**. Use this list as the analysis checklist; there are no results here yet.
+The brief still applies, per company, per month: who is healthy / improving / turning; dip vs fall; what moved; how many months earlier it showed.
 
-1. Who is healthy
-2. Who is improving
-3. Who is starting to turn
-4. One-month dip vs structural fall
-5. Why the score changed (which signal, when)
-6. How many months earlier the change was visible
-
-Hidden test: 60–80 companies the model must not train on. Split work should respect that once a split exists.
+Hidden test: 60–80 companies must not be used to fit anything. Split when one exists.
 
 ## Local database (DuckDB)
 
