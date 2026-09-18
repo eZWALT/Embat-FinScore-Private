@@ -36,7 +36,7 @@ Score the 24-month treasury trail, explain it, and sell something on top. Detail
 | [`AGENTS.md`](AGENTS.md) | Pointers for agents and the three teammates |
 | [`data/`](data/) | Track dump (local) + committed dictionary |
 | [`analysis/`](analysis/) | Exploration (empty) |
-| [`product/`](product/) | App scaffold (`uv`, Docker) |
+| [`product/`](product/) | Empty app folder (`Dockerfile` is empty) |
 | Public sibling | `eZWALT/Embat-FinScore` — publish at the end |
 
 Brief: [X Ray artifact](https://claude.ai/artifact/8N8Q7QMjprCUWxGAiJaWoP?sk=5wYke4E8ukAw6afs6TrG1g).  

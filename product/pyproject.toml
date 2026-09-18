@@ -18,9 +18,6 @@ dev = [
   "ruff>=0.6.0",
 ]
 
-[project.scripts]
-finscore = "embat_finscore.__main__:main"
-
 [tool.hatch.build.targets.wheel]
 packages = ["src/embat_finscore"]
 

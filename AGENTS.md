@@ -20,7 +20,7 @@ Build in this repo. Do not grow this file with live status.
 | Field dictionary | `data/data_dictionary.md` |
 | Dataset notes | `data/README.md` |
 | Analysis | `analysis/README.md` |
-| App (scaffold) | `product/README.md` |
+| App folder | `product/README.md` — Dockerfile and package are empty |
 | Public sibling | `../Embat-FinScore` (GitHub: `eZWALT/Embat-FinScore`) |
 
 ## Memory (three teammates)
