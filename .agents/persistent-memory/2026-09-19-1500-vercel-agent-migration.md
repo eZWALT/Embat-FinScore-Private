@@ -2,7 +2,7 @@
 
 - **Author:** Walter (agent)
 - **When:** 2026-09-19 ~15:00 CEST
-- **Reconcile:** pulled `f75c424` (Ruben, sidebar hash focus). Discarded uncommitted `poc/` UI churn. Public sibling still retired.
+- **Reconcile:** pulled `f75c424` (sidebar) then `dcfa7b8` (Neon is the hosted store). Discarded uncommitted `poc/` UI churn. Public sibling still retired. Watcher feed reads `createScoreRepository()` (Neon), not the JSON bundle at runtime.
 
 ## Decisions
 

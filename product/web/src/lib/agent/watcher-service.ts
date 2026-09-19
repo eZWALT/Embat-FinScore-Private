@@ -1,5 +1,5 @@
-import { LocalBundleRepository } from "@/lib/data/local-bundle-repository";
-import type { CompanyDetail } from "@/lib/data/types";
+import { createScoreRepository } from "@/lib/data/repository";
+import type { CompanyDetail, ScoreRepository } from "@/lib/data/types";
 
 import { buildWatcherPosts, type WatcherPost } from "./watcher-post";
 
@@ -16,7 +16,7 @@ export async function getWatcherFeed(
     return { asOf: "", posts: [], disclaimer: "" };
   }
 
-  const repo = new LocalBundleRepository();
+  const repo: ScoreRepository = createScoreRepository();
   const [manifest, companies, groups, feed] = await Promise.all([
     repo.getManifest(),
     repo.listCompanies(),

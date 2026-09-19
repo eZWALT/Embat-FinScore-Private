@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 import { WatcherChannel } from "@/components/watcher-channel";
 import { getWatcherFeed } from "@/lib/agent/watcher-service";
-import { LocalBundleRepository } from "@/lib/data/local-bundle-repository";
+import { createScoreRepository } from "@/lib/data/repository";
 
 export const metadata: Metadata = {
   title: "Watcher · Health Sentinel",
@@ -20,7 +20,7 @@ export default async function WatcherPage({ searchParams }: { searchParams: Sear
   const companyId = first(params.company) ?? "";
   const groupId = first(params.group) ?? "";
 
-  const repo = new LocalBundleRepository();
+  const repo = createScoreRepository();
   const [companies, groups, feed] = await Promise.all([
     repo.listCompanies(),
     repo.listGroups(),
