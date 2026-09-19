@@ -16,3 +16,13 @@ export function AgentBusy({ className, label = "Cargando" }: { className?: strin
     </span>
   );
 }
+
+/** Sweep under a tool block. Sits below the row even when the ring is already spinning. */
+export function AgentShimmer({ className }: { className?: string }) {
+  return (
+    <span
+      aria-hidden="true"
+      className={cn("agent-bar-shimmer mt-1.5 block h-0.5 w-full rounded-full", className)}
+    />
+  );
+}
