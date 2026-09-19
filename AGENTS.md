@@ -47,6 +47,17 @@ Guardrails: holdout `analysis/splits/holdout_companies.csv` is never fit on. Y i
 | Night run status | `overnight/README.md` + `overnight/CONTRACT.md` |
 | Public sibling | `../Embat-FinScore` (GitHub: `eZWALT/Embat-FinScore`) |
 
+## What goes to the web app's storage
+
+Port **only two things** to the storage of the web app (and of any agent that explains the data): the **export bundle** and the **clean-only DuckDB**. Nothing else: not the raw CSVs (647 MB), not `data/embat.duckdb` (420 MB, holds the raw `main` copy too), not the feature store, not the repo's `analysis/` outputs.
+
+| Piece | What it is | Size (full data) | Made by | Used for |
+|---|---|---|---|---|
+| Export bundle | Static JSON: scores, items, reasons with EUR, alerts with owner/action, control charts, clusters, forecast | 53 MB raw, ~6 MB gzipped | `python -m product.score.export --csv-folder <dir> --out <bundle>` | The app screens, and explaining a score or an alert (contract: `product/score/DATA_CONTRACT.md`) |
+| Clean-only DuckDB | Schema `clean` only: cleaned tables plus `clean.dq_log` | 220 MB, ~104 MB gzipped | `python -m product.score.clean_db --work-dir <pipeline work dir> --out <file.duckdb>` | Questions about the records behind a number (invoices, transactions, balances, debt). Open it read-only. Query `clean`, never a raw copy |
+
+Together about 273 MB. The bundle alone cannot answer questions about individual records; the DuckDB alone would make an agent recompute scores instead of reading their explanations. Both are immutable per run: a new CSV drop is a new bundle and a new file. Neither is committed except the 12-company `product/score/sample_bundle/`. Run commands need `PYTHONUTF8=1 PYTHONPATH=<repo>/.venv/Lib/site-packages:<repo>`.
+
 ## Memory (three teammates)
 
 After meaningful work, **add a new file** (do not rewrite history in old ones):

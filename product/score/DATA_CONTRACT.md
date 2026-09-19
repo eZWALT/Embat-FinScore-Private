@@ -20,6 +20,8 @@ python -m product.score.export --validate <bundle_dir>      # also run automatic
 
 About 50 s on the full data. Full bundle: 1,286 companies, 52 MB raw, about 6 MB gzipped (`--detail-months 6` is smaller). Bundles are immutable: a new run is a new bundle, and `manifest.generated_at` / `scorecard_version` say which. Do not commit the full bundle; the sample is enough for development. Ship the full one with the app build or host the folder as static files (Vercel Blob, S3) and set `BUNDLE_URL` as in the loader example. One company file is about 40 KB; the two indexes the feed and portfolio need (`companies.json`, `alerts.json`) are 0.6 and 2.7 MB raw.
 
+**Storage:** ship the bundle plus the clean-only DuckDB (`python -m product.score.clean_db --work-dir <pipeline work dir> --out <file>`, schema `clean` only, 220 MB) and nothing else; the bundle explains scores and alerts, the DuckDB answers questions about the records behind them. See `AGENTS.md`.
+
 The monitor's parameters (chart floors, clusters, funnel laws, ranking model) and the measured alert statistics are **fitted on train companies and committed** in `analysis/monitor/` (`monitor_params.json`, `monitor_stats.json`, `y7_rank_model.txt`, `forecast_params.json`). The export applies them, it never re-fits, so a run on new CSVs uses the same rules.
 
 ## Layout
