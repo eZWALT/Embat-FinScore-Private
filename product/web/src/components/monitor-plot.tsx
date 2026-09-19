@@ -6,6 +6,7 @@ import { cn } from "cn";
 
 import { PlotCard, PlotChart, SignalLegend, controlRows, type PlotRow } from "@/components/plot-parts";
 import { Segmented, type SegmentedOption } from "@/components/segmented";
+import type { MonthContribution } from "@/lib/data/contributions";
 import type { DashboardCompany } from "@/lib/data/types";
 import type { CompanyMonitor, ControlSeries } from "@/lib/data/monitor-service";
 
@@ -99,6 +100,12 @@ export function MonitorPlot({
   const [loaded, setLoaded] = useState<{ companyId: string; monitor: CompanyMonitor } | null>(null);
   const [failure, setFailure] = useState<{ companyId: string; message: string } | null>(null);
 
+  const [contributed, setContributed] = useState<{
+    companyId: string;
+    byMonth: Record<string, MonthContribution>;
+  } | null>(null);
+
+  const contributions = contributed?.companyId === company.companyId ? contributed.byMonth : null;
   const monitor = loaded?.companyId === company.companyId ? loaded.monitor : null;
   const failed = !monitor && failure?.companyId === company.companyId ? failure.message : null;
   const needsMonitor = view === "own" || view === "cluster" || (view === "score" && showForecast);
@@ -121,6 +128,22 @@ export function MonitorPlot({
       cancelled = true;
     };
   }, [needsMonitor, monitor, company.companyId]);
+
+  // What each category contributed, month by month, for the tooltip. Without it the tooltip still shows the index.
+  useEffect(() => {
+    if (contributions) return;
+    let cancelled = false;
+    fetch(`/api/contributions?company=${encodeURIComponent(company.companyId)}`)
+      .then(async (res) => {
+        if (!res.ok) return;
+        const byMonth = (await res.json()) as Record<string, MonthContribution>;
+        if (!cancelled) setContributed({ companyId: company.companyId, byMonth });
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [contributions, company.companyId]);
 
   const peers = useMemo(() => (view === "peers" ? peerSeries(company, companies) : null), [view, company, companies]);
   const series = view === "own" ? monitor?.own : view === "cluster" ? monitor?.cluster : view === "peers" ? peers : null;
@@ -184,6 +207,7 @@ export function MonitorPlot({
         forecast={view === "score" && showForecast && !!monitor?.forecast}
         loading={loading}
         hidden={empty}
+        contributions={contributions}
       />
       {isControl && series ? <SignalLegend persistent={view !== "peers"} /> : null}
     </PlotCard>

@@ -21,7 +21,9 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import { formatDecimal, formatSigned } from "@/lib/display";
 import { formatMonth } from "@/lib/format-month";
+import type { MonthContribution } from "@/lib/data/contributions";
 import type { ControlSeries } from "@/lib/data/monitor-service";
 
 /** One month of a plot. `band` is a [low, high] range drawn as a shaded area. */
@@ -60,6 +62,57 @@ function signalDot({ cx, cy, index, payload }: DotProps) {
       stroke="var(--destructive)"
       strokeWidth={2}
     />
+  );
+}
+
+function tooltipMonth(_: unknown, payload?: readonly { payload?: PlotRow }[]) {
+  const month = payload?.[0]?.payload?.month;
+  return month ? formatMonth(String(month)) : "";
+}
+
+/** The plot's own tooltip (month and values) with what each category contributed to the index that month underneath. */
+function ContributionTooltip({
+  contributions,
+  ...props
+}: React.ComponentProps<typeof ChartTooltipContent> & { contributions: Record<string, MonthContribution> }) {
+  if (!props.active || !props.payload?.length) return null;
+  const month = props.payload[0]?.payload?.month;
+  const detail = month ? contributions[String(month)] : undefined;
+
+  return (
+    <div className="grid min-w-56 gap-2 rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl">
+      <ChartTooltipContent
+        {...props}
+        indicator="line"
+        labelFormatter={tooltipMonth}
+        className="min-w-0 border-0 bg-transparent p-0 shadow-none"
+      />
+      {detail ? (
+        <div className="grid gap-1 border-t border-border/50 pt-1.5">
+          <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">Aportación al índice (pts)</p>
+          {detail.categories.map((category) => (
+            <div key={category.id} className="grid grid-cols-[minmax(0,1fr)_3rem_2.5rem] items-center gap-2">
+              <span className="truncate text-muted-foreground">{category.label}</span>
+              <span className="h-1.5 overflow-hidden rounded-full bg-muted" aria-hidden="true">
+                <span
+                  className="block h-full rounded-full bg-[var(--chart-1)]"
+                  style={{ width: `${Math.max(0, Math.min(100, category.points))}%` }}
+                />
+              </span>
+              <span className="text-right font-mono tabular-nums">
+                {category.score === null ? "—" : formatDecimal(category.points, 1)}
+              </span>
+            </div>
+          ))}
+          {detail.guardAdjustment !== 0 ? (
+            <div className="grid grid-cols-[minmax(0,1fr)_2.5rem] items-center gap-2 text-destructive">
+              <span className="truncate">Tope de seguridad</span>
+              <span className="text-right font-mono tabular-nums">{formatSigned(detail.guardAdjustment, 1)}</span>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+    </div>
   );
 }
 
@@ -112,6 +165,7 @@ export function PlotChart({
   forecast = false,
   loading = false,
   hidden = false,
+  contributions = null,
 }: {
   rows: PlotRow[];
   control: boolean;
@@ -123,6 +177,8 @@ export function PlotChart({
   loading?: boolean;
   /** Draw nothing (the card shows why). */
   hidden?: boolean;
+  /** Per-month category contributions, by month. Adds them to the tooltip of a score plot. */
+  contributions?: Record<string, MonthContribution> | null;
 }) {
   const config = {
     value: { label: valueLabel, color: "var(--chart-1)" },
@@ -151,13 +207,11 @@ export function PlotChart({
               <ChartTooltip
                 cursor={{ stroke: "var(--foreground)", strokeOpacity: 0.4, strokeWidth: 1.5 }}
                 content={
-                  <ChartTooltipContent
-                    indicator="line"
-                    labelFormatter={(_, payload) => {
-                      const month = payload?.[0]?.payload?.month;
-                      return month ? formatMonth(String(month)) : "";
-                    }}
-                  />
+                  contributions && !zeroLine ? (
+                    <ContributionTooltip contributions={contributions} />
+                  ) : (
+                    <ChartTooltipContent indicator="line" labelFormatter={tooltipMonth} />
+                  )
                 }
               />
               <Area
