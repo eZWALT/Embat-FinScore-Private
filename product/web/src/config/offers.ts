@@ -23,7 +23,6 @@ export interface Posture {
   /** Short badge text. */
   label: string;
   tone: Tone;
-  headline: string;
 }
 
 export const POSTURES: Posture[] = [
@@ -32,28 +31,24 @@ export const POSTURES: Posture[] = [
     minScore: 75,
     label: "Ofrecer",
     tone: "positive",
-    headline: "Buen momento para crecer con esta empresa",
   },
   {
     id: "selective",
     minScore: 55,
     label: "Selectivo",
     tone: "neutral",
-    headline: "Ofrecer de forma selectiva",
   },
   {
     id: "careful",
     minScore: 35,
     label: "Prudente",
     tone: "caution",
-    headline: "Ofrecer solo con garantías",
   },
   {
     id: "protect",
     minScore: 0,
     label: "No ofrecer",
     tone: "negative",
-    headline: "No ofrecer crédito nuevo",
   },
 ];
 

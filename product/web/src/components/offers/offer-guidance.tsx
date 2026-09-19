@@ -95,7 +95,6 @@ export function OfferGuidanceCard({ company }: { company: DashboardCompany }) {
           </CardTitle>
           <PostureBadge posture={posture} className="h-6 px-2.5 text-xs" />
         </div>
-        <p className="text-sm text-muted-foreground">{posture.headline}</p>
         <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 pt-1">
           <div className="min-w-0 space-y-1.5">
             <p
@@ -185,14 +184,14 @@ export function OfferStrip({ companies }: { companies: DashboardCompany[] }) {
               <span className="truncate text-xs" title={company.companyId}>{companyLabel(company.companyId)}</span>
               <PostureBadge posture={guidance.posture} />
             </div>
-            <p className="mt-1 text-xs text-muted-foreground">
-              {guidance.suggestions.length > 0
-                ? guidance.suggestions
-                    .slice(0, 2)
-                    .map((suggestion) => suggestion.product.name)
-                    .join(" · ")
-                : guidance.posture.headline}
-            </p>
+            {guidance.suggestions.length > 0 ? (
+              <p className="mt-1 text-xs text-muted-foreground">
+                {guidance.suggestions
+                  .slice(0, 2)
+                  .map((suggestion) => suggestion.product.name)
+                  .join(" · ")}
+              </p>
+            ) : null}
           </li>
         ))}
       </ul>
