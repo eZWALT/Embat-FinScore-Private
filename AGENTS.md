@@ -2,13 +2,38 @@
 
 The one repo for **HackSpain 2026 · X Ray (Embat)**. Private now; it will be made public as is at the end. The former public sibling `eZWALT/Embat-FinScore` is retired: do not sync to it.
 
-Build in this repo. Do not grow this file with live status.
+Build in this repo. This file is **pointers and rules**. Do not grow it with live status, benches, or “step done” notes — those go in `.agents/persistent-memory/`.
 
 FICO-like **company health score**. Four goals: signals → 0–100 index → explainability → company-facing web + LLM. Details: `.agents/persistent-memory/2026-09-18-2020-four-goals.md`.
 
-## Plan (agreed 2026-09-19; supersedes the overnight "no 0–100 formula / no `product/`" rule)
+## Read first
 
-Do the steps in order. Rationale and caveats: `.agents/persistent-memory/2026-09-19-1100-plan-fico-monitor.md` (revised). Candidate variables: `2026-09-19-1130-night-variables-for-score.md`. Top-customer alert numbers: `2026-09-19-1300-y7-alert-grade-eval.md`. Mark a step done in the journal, not here.
+1. This file.
+2. `.agents/README.md` — which journal files still bind. Do not start from the 180+ night notes.
+3. `product/score/METHOD.md` — what the score and monitor actually do.
+4. `data/data_dictionary.md` when touching data.
+
+## Pointers
+
+| What | Where |
+|------|--------|
+| Challenge brief | https://claude.ai/artifact/8N8Q7QMjprCUWxGAiJaWoP?sk=5wYke4E8ukAw6afs6TrG1g |
+| Track dataset zip | https://f5xe6kyx7jpysotw.public.blob.vercel-storage.com/output_hackspain_data.zip |
+| Field dictionary + dataset notes | `data/data_dictionary.md`, `data/README.md` |
+| **Method (plain language)** | `product/score/METHOD.md` |
+| Score 0–100, reasons, `score_new` | `product/score/` |
+| Bundle contract + inspector | `product/score/DATA_CONTRACT.md`, `product/score/inspector/` |
+| **Hosted product (Health Sentinel)** | `product/web/` on Vercel. Reads Neon. |
+| **Agents (prompts, tools, retrieval)** | `product/web/src/lib/agent/` — prompts are markdown files, never strings in source. Map: `prompts/prompt_map.md`. |
+| Neon (app Postgres) | `infra/neon/` |
+| Cleaning + feature store + Y | `analysis/` (`build_db.py`, `clean_db.py`, `features/`) |
+| Clusters, charts, alerts, forecast | `analysis/monitor/` |
+| Frozen Streamlit | `poc/` — do not add features there |
+| Night harness (closed) | `overnight/README.md`, `overnight/CONTRACT.md` |
+
+## Plan (rules, agreed 2026-09-19)
+
+This table is the **rule set**, not a kanban. Rationale: `.agents/persistent-memory/2026-09-19-1100-plan-fico-monitor.md`. Candidate variables: `2026-09-19-1130-night-variables-for-score.md`. Top-customer alert numbers: `2026-09-19-1300-y7-alert-grade-eval.md`. Mark progress in the journal.
 
 The night did feature and outcome discovery; from here we **select and combine**. No model training, no new feature hunting.
 
@@ -21,30 +46,6 @@ The night did feature and outcome discovery; from here we **select and combine**
 | 5 | **Product (Health Sentinel)** | Live hosted demo in `product/web/` | Embat as buyer, TellMe skill; write the buyer rationale in one paragraph (premium module on data Embat already holds). Alert + plain-language reasons + owner (tesorero / CFO / Cobros) + action, built on steps 2–4. Watches companies, and customers/suppliers only if counterparty IDs map to `company_id` (verify). Stack is Next.js (App Router) on Vercel; the app reads **Neon Postgres** via server-only `DATABASE_URL` (never `NEXT_PUBLIC_`). Schema, load, and validation live in `infra/neon/`. Must stay a live URL, not a laptop notebook. |
 
 Guardrails: holdout `analysis/splits/holdout_companies.csv` is never fit on. Y is never built from the X that predicts it. No look-ahead. Do not reuse the Y3 recovery outcome (`2026-09-19-1015-y3-recovery-mechanical.md`). No claims on the hidden test.
-
-## Read first
-
-1. This file (pointers only).
-2. `.agents/persistent-memory/` — journal. Start with `2026-09-18-initial-context.md`, then newer dated files.
-3. `data/data_dictionary.md` when touching data.
-
-## Pointers
-
-| What | Where |
-|------|--------|
-| Challenge brief | https://claude.ai/artifact/8N8Q7QMjprCUWxGAiJaWoP?sk=5wYke4E8ukAw6afs6TrG1g |
-| Track dataset zip | https://f5xe6kyx7jpysotw.public.blob.vercel-storage.com/output_hackspain_data.zip |
-| Field dictionary | `data/data_dictionary.md` |
-| Dataset notes | `data/README.md` |
-| 1. Signals | `analysis/` |
-| 2–3. Score 0–100 + explain | `product/score/` (v0 dummy card: `PYTHONPATH=. python -m product.score`) |
-| 4. Web + LLM (company user) | `product/web/` on Vercel. Reads Neon. `poc/` (Streamlit) is frozen — do not add features there. |
-| Neon (app Postgres) | `infra/neon/` |
-| **Method, in plain language (cleaning, 17 items, score, monitor, decisions, limits)** | `product/score/METHOD.md` |
-| Bundle inspector (visual check of an export bundle) | `product/score/inspector/` |
-| **Agents (prompts, tools, retrieval)** | `product/web/src/lib/agent/` — prompts are markdown files, never strings in source. Watcher format: `prompts/watcher_format.md`. |
-| Feature store / Y / models | `analysis/` + plan `.agents/persistent-memory/2026-09-18-2350-feature-store-and-y-plan.md` |
-| Night run status | `overnight/README.md` + `overnight/CONTRACT.md` |
 
 ## What goes to the web app's storage
 
@@ -75,17 +76,18 @@ Build Watcher and Ask **inside the existing product**, not as extra tabs. Vigila
 | `prompts/tools_catalog.md` | **TOOLS** | When/in/out for every retrieval. UI labels in `tool-catalog.ts`. |
 | `prompts/clean_schema.md` | **RECORDS** | Ask only: pipeline `clean.*`; hosted as Neon `core` |
 
-Tools read **Neon** at runtime: `api` / `analytics` for scores, reasons, alerts (never recompute a score). Record questions go to `core` (invoices, transactions, balances, debt) through a guarded `SELECT` + `LIMIT` 200. DuckDB is a load/audit artifact, not the app's database. The same SQL guard applies if a local clean DuckDB is used in development.
+Tools read **Neon** at runtime: `api` / `analytics` for scores, reasons, alerts (never recompute a score). Record questions go to `core` (invoices, transactions, balances, debt) through a guarded `SELECT` + `LIMIT 200`. DuckDB is a load/audit artifact, not the app's database. The same SQL guard applies if a local clean DuckDB is used in development.
 
 Watcher opening: last **3 calendar months**, one `WatcherPost` each, built by `watcher-post.ts` (deterministic, same template every time from the five monitor rules). Same object is what production precomputes **offline** per company and per group when the monthly bundle is exported — first paint must not call the LLM. Live model = thread replies. UI shows tool calls as a tools icon plus `(tool_name)`.
 
 ## Memory (three teammates)
 
-After meaningful work, **add a new file** (do not rewrite history in old ones):
+Index first: `.agents/README.md`. After meaningful work, **add a new file** (do not rewrite history in old ones):
 
 ```text
 .agents/persistent-memory/YYYY-MM-DD-HHmm-<slug>.md
 ```
 
 Each entry: author, timestamp, what changed, decisions, still-unknown.
+If the entry is still-binding (a rule another agent must not miss), add one line to `.agents/README.md`.
 Put facts that can rot in the journal, not here.

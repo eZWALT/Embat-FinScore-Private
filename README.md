@@ -9,7 +9,7 @@
   <p>
     <a href="AGENTS.md"><strong>AGENTS.md</strong></a>
     ·
-    <a href=".agents/persistent-memory/2026-09-18-initial-context.md"><strong>Memory</strong></a>
+    <a href=".agents/README.md"><strong>Memory</strong></a>
     ·
     <a href="data/data_dictionary.md"><strong>Dictionary</strong></a>
     ·
@@ -18,7 +18,7 @@
 
   <p>
     <img alt="License" src="https://img.shields.io/badge/license-MIT-blue.svg">
-    <img alt="Status" src="https://img.shields.io/badge/status-scaffold-orange.svg">
+    <img alt="Status" src="https://img.shields.io/badge/status-working-green.svg">
     <img alt="HackSpain" src="https://img.shields.io/badge/HackSpain-2026-111111.svg">
     <img alt="Track" src="https://img.shields.io/badge/track-X%20Ray%20%2F%20Embat-0f172a.svg">
   </p>
@@ -36,14 +36,17 @@ FICO-like **company health score**. Track question: *¿Puede el dinero decir có
 | 3 | Explainability | [`product/score/`](product/score/) |
 | 4 | Webpage + LLM; the **company** is the user and gives the data | [`product/web/`](product/web/) |
 
-Decisions live in [`.agents/persistent-memory/`](.agents/persistent-memory/). Nothing above is implemented yet.
+Decisions live in [`.agents/`](.agents/README.md). Method: [`product/score/METHOD.md`](product/score/METHOD.md). Hosted app: [`product/web/`](product/web/).
 
 | Path | What |
 |------|------|
-| [`AGENTS.md`](AGENTS.md) | Pointers for agents and the three teammates |
+| [`AGENTS.md`](AGENTS.md) | Pointers and rules for agents and the three teammates |
+| [`.agents/README.md`](.agents/README.md) | Which journal files still bind |
 | [`data/`](data/) | Track dump + dictionary |
-| [`analysis/`](analysis/) | Goal 1 (empty) |
-| [`product/`](product/) | Goals 2–4 (empty). `Dockerfile` is empty |
+| [`analysis/`](analysis/) | Cleaning, feature store, monitor |
+| [`product/`](product/) | Scorecard + Health Sentinel (`product/web/` on Vercel) |
+| [`infra/neon/`](infra/neon/) | Postgres load for the hosted app |
+
 Brief: [X Ray artifact](https://claude.ai/artifact/8N8Q7QMjprCUWxGAiJaWoP?sk=5wYke4E8ukAw6afs6TrG1g).  
 Dataset: [output_hackspain_data.zip](https://f5xe6kyx7jpysotw.public.blob.vercel-storage.com/output_hackspain_data.zip).
 
