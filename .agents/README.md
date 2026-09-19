@@ -48,6 +48,7 @@ Add a new dated file after meaningful work. Do not rewrite old ones. If the new 
 | `persistent-memory/2026-09-20-0025-landing-team-screen.md` | Landing Team is `#team`: same-viewport fade to portraits + CEO/CTO/CSO, not a scroll. |
 | `persistent-memory/2026-09-20-0100-thinking-brain-followups.md` | Pregunta chips after the answer + tools. Brain = DeepSeek `thinking` on. |
 | `persistent-memory/2026-09-20-0112-tool-call-caps.md` | Same tool catalog. Cap 2 calls/tool/turn; stop at 6 steps or 8 calls. |
+| `persistent-memory/2026-09-20-0115-thinking-no-verbose.md` | Brain on: drop the length cap. Do not ask for a longer reply. |
 
 Plain-language method (not a journal file): `product/score/METHOD.md`.
 
