@@ -5,7 +5,7 @@ export const CATEGORY_LABELS: Record<CategoryId, string> = {
   amounts_owed: "Liquidez y deuda",
   stability: "Estabilidad",
   new_credit: "Nuevo crédito",
-  mix: "Mix de clientes",
+  mix: "Combinación de clientes",
 };
 
 const REASON_LABELS: Record<string, string> = {
@@ -32,11 +32,11 @@ export function topReasonInSpanish(
   reason: { item: string; points: number; eur: number | null } | undefined,
 ) {
   if (guard === "dark") {
-    return "No hay movimientos bancarios recientes; el score se limita a 30 por seguridad.";
+    return "No hay movimientos bancarios recientes; la puntuación se limita a 30 por seguridad.";
   }
 
   if (guard === "fading") {
-    return "Las entradas de caja han caído frente al histórico propio; el score se limita a 50.";
+    return "Las entradas de caja han caído frente al histórico propio; la puntuación se limita a 50.";
   }
 
   if (!reason) return null;
@@ -52,8 +52,8 @@ export function topReasonInSpanish(
       }).format(reason.eur)}.`
     : "";
 
-  return `${label} representa la principal dimensión que limita el score (${impact} puntos).${amount}`;
+  return `${label} representa la principal dimensión que limita la puntuación (${impact} puntos).${amount}`;
 }
 
 export const MONITORING_DISCLAIMER =
-  "Score documentado y explicable calculado sobre el historial de tesorería de la empresa. Es una ayuda de monitorización, no un predictor de insolvencia; en los resultados aceptados no supera un baseline de tamaño empresarial.";
+  "Puntuación documentada y explicable calculada sobre el historial de tesorería de la empresa. Es una ayuda de monitorización, no un predictor de insolvencia; en los resultados aceptados no supera una referencia de tamaño empresarial.";

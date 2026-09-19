@@ -71,9 +71,34 @@ function buildChartRows(selected: DashboardCompany[]) {
   });
 }
 
+function yDomainForSelection(
+  rows: Record<string, string | number | null>[],
+  companyIds: string[],
+): [number, number] {
+  let min = Infinity;
+  let max = -Infinity;
+  for (const row of rows) {
+    for (const id of companyIds) {
+      const value = row[id];
+      if (typeof value !== "number" || Number.isNaN(value)) continue;
+      min = Math.min(min, value);
+      max = Math.max(max, value);
+    }
+  }
+  if (!Number.isFinite(min) || !Number.isFinite(max)) return [0, 100];
+  if (min === max) {
+    return [Math.max(0, min - 5), Math.min(100, max + 5)];
+  }
+  const pad = Math.max(2, (max - min) * 0.1);
+  return [Math.max(0, Math.floor(min - pad)), Math.min(100, Math.ceil(max + pad))];
+}
+
+const LIST_CAP = 80;
+
 export function HealthScoreView({ data }: { data: DashboardData }) {
   const [selectedIds, setSelectedIds] = useState<string[]>(() => defaultSelection(data.companies));
   const [query, setQuery] = useState("");
+  const [open, setOpen] = useState(false);
 
   const selected = useMemo(
     () =>
@@ -85,14 +110,14 @@ export function HealthScoreView({ data }: { data: DashboardData }) {
 
   const matches = useMemo(() => {
     const needle = query.trim().toLowerCase();
-    if (needle.length < 2) return [];
     return data.companies
       .filter((company) => {
         if (selectedIds.includes(company.companyId)) return false;
+        if (!needle) return true;
         const haystack = `${company.companyId} ${company.groupId ?? ""}`.toLowerCase();
         return haystack.includes(needle);
       })
-      .slice(0, 8);
+      .slice(0, LIST_CAP);
   }, [data.companies, query, selectedIds]);
 
   const chartConfig = useMemo(() => {
@@ -107,6 +132,11 @@ export function HealthScoreView({ data }: { data: DashboardData }) {
   }, [selected]);
 
   const chartRows = useMemo(() => buildChartRows(selected), [selected]);
+  const yDomain = useMemo(
+    () => yDomainForSelection(chartRows, selected.map((company) => company.companyId)),
+    [chartRows, selected],
+  );
+  const showMidline = yDomain[0] <= 50 && yDomain[1] >= 50;
   const atCap = selectedIds.length >= MAX_SERIES;
 
   function addCompany(companyId: string) {
@@ -125,14 +155,14 @@ export function HealthScoreView({ data }: { data: DashboardData }) {
     <div className="space-y-4">
       <div>
         <p className="mb-2 text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
-          Health Score
+          Índice de salud
         </p>
         <h1 className="text-balance text-2xl font-semibold tracking-tight sm:text-3xl">
           Evolución del índice 0–100
         </h1>
       </div>
 
-      <Card>
+      <Card className="overflow-visible">
         <CardHeader className="flex-row items-center justify-between gap-4 space-y-0">
           <CardTitle className="text-base">Empresas</CardTitle>
           <div className="flex items-center gap-3">
@@ -147,20 +177,40 @@ export function HealthScoreView({ data }: { data: DashboardData }) {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="relative max-w-md">
-            <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Añadir empresa (COMP_0001…)"
-              className="pl-8"
-              aria-label="Añadir empresa"
-              disabled={atCap}
-            />
-            {matches.length > 0 ? (
-              <ul className="absolute z-20 mt-1 max-h-56 w-full overflow-y-auto rounded-lg border bg-popover p-1 shadow-md">
+          <div className="max-w-md space-y-2">
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={query}
+                onChange={(event) => {
+                  setQuery(event.target.value);
+                  setOpen(true);
+                }}
+                onFocus={() => setOpen(true)}
+                onClick={() => setOpen(true)}
+                onKeyDown={(event) => {
+                  if (event.key === "Escape") setOpen(false);
+                }}
+                onBlur={() => {
+                  window.setTimeout(() => setOpen(false), 120);
+                }}
+                placeholder="Añadir empresa (COMP_0001…)"
+                className="pl-8"
+                aria-label="Añadir empresa"
+                aria-expanded={open && !atCap}
+                autoComplete="off"
+                disabled={atCap}
+              />
+            </div>
+            {open && !atCap && matches.length > 0 ? (
+              <ul
+                role="listbox"
+                aria-label="Empresas coincidentes"
+                className="max-h-64 overflow-y-auto rounded-lg border bg-popover p-1 shadow-md"
+                onMouseDown={(event) => event.preventDefault()}
+              >
                 {matches.map((company) => (
-                  <li key={company.companyId}>
+                  <li key={company.companyId} role="option">
                     <button
                       type="button"
                       onClick={() => addCompany(company.companyId)}
@@ -177,7 +227,7 @@ export function HealthScoreView({ data }: { data: DashboardData }) {
             ) : null}
           </div>
 
-          {query.trim().length >= 2 && matches.length === 0 && !atCap ? (
+          {open && query.trim().length > 0 && matches.length === 0 && !atCap ? (
             <p className="text-xs text-muted-foreground">Ninguna empresa coincide con “{query}”.</p>
           ) : null}
 
@@ -222,9 +272,9 @@ export function HealthScoreView({ data }: { data: DashboardData }) {
 
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base">Evolución del Health Score</CardTitle>
+          <CardTitle className="text-base">Evolución del índice de salud</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Escala fija 0–100. Los huecos son meses sin score.
+            El eje vertical se ajusta a las empresas visibles. Los huecos son meses sin puntuación.
           </p>
         </CardHeader>
         <CardContent>
@@ -234,13 +284,25 @@ export function HealthScoreView({ data }: { data: DashboardData }) {
             </div>
           ) : (
             <ClientOnly fallback={<div className="h-[min(70vh,560px)] w-full" />}>
-              <ChartContainer config={chartConfig} className="h-[min(70vh,560px)] w-full aspect-auto">
+              <ChartContainer
+                config={chartConfig}
+                className="h-[min(70vh,560px)] w-full aspect-auto [&_.recharts-curve.recharts-tooltip-cursor]:stroke-foreground/50"
+              >
                 <LineChart data={chartRows} margin={{ top: 12, right: 16, left: -12, bottom: 0 }}>
                   <CartesianGrid vertical={false} strokeDasharray="3 3" />
                   <XAxis dataKey="label" tickLine={false} axisLine={false} minTickGap={28} />
-                  <YAxis domain={[0, 100]} tickLine={false} axisLine={false} ticks={[0, 25, 50, 75, 100]} />
-                  <ReferenceLine y={50} stroke="var(--border)" strokeDasharray="4 4" />
-                  <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="line" />} />
+                  <YAxis domain={yDomain} tickLine={false} axisLine={false} tickCount={5} width={36} />
+                  {showMidline ? (
+                    <ReferenceLine y={50} stroke="var(--border)" strokeDasharray="4 4" />
+                  ) : null}
+                  <ChartTooltip
+                    cursor={{
+                      stroke: "var(--foreground)",
+                      strokeOpacity: 0.45,
+                      strokeWidth: 1.5,
+                    }}
+                    content={<ChartTooltipContent indicator="dot" />}
+                  />
                   {selected.map((company, index) => (
                     <Line
                       key={company.companyId}

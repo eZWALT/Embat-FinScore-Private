@@ -15,7 +15,7 @@ export default function Error({ reset }: { reset: () => void }) {
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            Comprueba que el bundle local existe y vuelve a intentarlo.
+            Comprueba que los datos están disponibles y vuelve a intentarlo.
           </p>
           <Button onClick={reset}>Reintentar</Button>
         </CardContent>

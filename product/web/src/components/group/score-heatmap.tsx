@@ -24,7 +24,7 @@ function Cell({
         <button
           type="button"
           onClick={onClick}
-          aria-label={`${label}, ${formatMonth(month)}: ${score === null ? "sin score" : score.toFixed(0)}`}
+          aria-label={`${label}, ${formatMonth(month)}: ${score === null ? "sin puntuación" : score.toFixed(0)}`}
           className={cn(
             "h-5 w-full rounded-[3px] outline-none transition-opacity hover:opacity-80 focus-visible:ring-2 focus-visible:ring-ring",
             color ? "" : "bg-muted",
@@ -37,7 +37,7 @@ function Cell({
         <span className="text-background/70">·</span>
         <span>{formatMonth(month)}</span>
         <span className="text-background/70">·</span>
-        <span className="font-mono tabular-nums">{score === null ? "sin score" : score.toFixed(1)}</span>
+        <span className="font-mono tabular-nums">{score === null ? "sin puntuación" : score.toFixed(1)}</span>
       </TooltipContent>
     </Tooltip>
   );
@@ -145,7 +145,7 @@ export function HeatmapLegend() {
       <span className="h-2 w-28 rounded-full" style={{ background: `linear-gradient(to right, ${stops})` }} />
       <span>100</span>
       <span className="ml-2 inline-block size-2.5 rounded-[2px] bg-muted" />
-      <span>sin score</span>
+      <span>sin puntuación</span>
     </div>
   );
 }
