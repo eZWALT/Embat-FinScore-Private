@@ -24,9 +24,6 @@ export async function streamAgentResponse({
   if (!helmcodeApiKey()) {
     return Response.json({ error: "HELMCODE_API_KEY is not set" }, { status: 503 });
   }
-  if (!process.env.DATABASE_URL) {
-    return Response.json({ error: "DATABASE_URL is not set" }, { status: 503 });
-  }
 
   const uiMessages = coerceUiMessages(messages);
   if (!uiMessages.length) {
