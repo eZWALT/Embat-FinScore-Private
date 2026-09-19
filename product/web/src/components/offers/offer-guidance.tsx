@@ -1,15 +1,18 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ChevronRight, Handshake } from "lucide-react";
 
 import { cn } from "cn";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { companyLabel } from "@/components/group/labels";
+import { Segmented, type SegmentedOption } from "@/components/segmented";
 import type { Posture, Tone } from "@/config/offers";
 import { guidanceFor } from "@/lib/offers";
+import type { CompanySize } from "@/lib/data/size";
 import type { DashboardCompany } from "@/lib/data/types";
+import { formatMoney } from "@/lib/display";
 
 const TONE: Record<Tone, string> = {
   positive: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400",
@@ -26,10 +29,38 @@ export function PostureBadge({ posture, className }: { posture: Posture; classNa
   );
 }
 
+type Stretch = "low" | "high";
+
+const STRETCH: SegmentedOption<Stretch>[] = [
+  { value: "low", label: "Prudente" },
+  { value: "high", label: "Ambicioso" },
+];
+
 /** Deep view: the posture and each product that fits. Hover a product for the numbers that make it fit. */
 export function OfferGuidanceCard({ company }: { company: DashboardCompany }) {
-  const guidance = useMemo(() => guidanceFor(company), [company]);
-  const { posture, suggestions } = guidance;
+  const [stretch, setStretch] = useState<Stretch>("low");
+  const [loaded, setLoaded] = useState<{ key: string; size: CompanySize } | null>(null);
+  const key = `${company.companyId}|${company.latestMonth}`;
+  const size = loaded?.key === key ? loaded.size : null;
+
+  // The company's size comes from its bank records. Without it (no database, records not loaded) the card stays as it was.
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`/api/size?company=${encodeURIComponent(company.companyId)}&month=${encodeURIComponent(company.latestMonth)}`)
+      .then(async (res) => {
+        if (!res.ok) return;
+        const body = (await res.json()) as CompanySize;
+        if (!cancelled) setLoaded({ key, size: body });
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [key, company.companyId, company.latestMonth]);
+
+  const guidance = useMemo(() => guidanceFor(company, size), [company, size]);
+  const { posture, suggestions, magnitude, tooSmallFor } = guidance;
+  const sized = suggestions.some((suggestion) => suggestion.amount);
 
   return (
     <Card id="ofertas" className="scroll-mt-20">
@@ -42,18 +73,55 @@ export function OfferGuidanceCard({ company }: { company: DashboardCompany }) {
           <PostureBadge posture={posture} className="h-6 px-2.5 text-xs" />
         </div>
         <p className="text-sm text-muted-foreground">{posture.headline}</p>
+        {size ? (
+          <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 pt-1">
+            <p
+              className="text-xs text-muted-foreground"
+              title={`Media mensual de los últimos 3 meses (${size.from} → ${size.to}), según los movimientos bancarios.`}
+            >
+              {magnitude ? (
+                <>
+                  Tamaño: <span className="font-medium text-foreground">{magnitude.label}</span> · ingresos de ≈{" "}
+                  {formatMoney(size.monthlyInflow, company.currency)} al mes
+                </>
+              ) : (
+                "Sin ingresos recientes: no se puede estimar el tamaño."
+              )}
+            </p>
+            {sized ? (
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                Importe orientativo
+                <Segmented options={STRETCH} value={stretch} onChange={setStretch} ariaLabel="Magnitud del importe" />
+              </div>
+            ) : null}
+          </div>
+        ) : null}
       </CardHeader>
       <CardContent>
         {suggestions.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            {posture.id === "protect" ? "Ningún producto nuevo en esta situación." : "Ningún producto concreto encaja ahora con estos números."}
+            {posture.id === "protect"
+              ? "Ningún producto nuevo en esta situación."
+              : tooSmallFor > 0
+                ? "Los productos que encajan con su situación son demasiado grandes para el tamaño de esta empresa."
+                : "Ningún producto concreto encaja ahora con estos números."}
           </p>
         ) : (
           <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-            {suggestions.map(({ product, because }) => (
-              <li key={product.id} className="rounded-xl border bg-background px-4 py-3" title={because.join(" · ")}>
+            {suggestions.map(({ product, because, amount }) => (
+              <li
+                key={product.id}
+                className="rounded-xl border bg-background px-4 py-3"
+                title={[...because, ...(amount ? [`Importe: ${amount.basis}`] : [])].join(" · ")}
+              >
                 <p className="text-sm font-medium">{product.name}</p>
                 <p className="mt-0.5 text-sm text-muted-foreground">{product.pitch}</p>
+                {amount ? (
+                  <p className="mt-2 flex flex-wrap items-baseline gap-x-2 text-sm">
+                    <span className="font-mono font-medium tabular-nums">≈ {formatMoney(amount[stretch], company.currency)}</span>
+                    <span className="text-xs text-muted-foreground">{amount.basis}</span>
+                  </p>
+                ) : null}
               </li>
             ))}
           </ul>

@@ -70,6 +70,39 @@ export const ADJUSTMENTS = {
 
 export type Range = { min?: number; max?: number };
 
+/**
+ * SIZE. Where the company's bank records are available, its size sets which products make sense and roughly how much to
+ * offer: 1,000 and 1,000,000 are not the same conversation. Size is the mean monthly operating inflow over the last
+ * 3 months, in the company's own currency (the bands below read as euros; other currencies are not converted).
+ */
+export interface Magnitude {
+  id: string;
+  label: string;
+  /** Monthly inflow from which this band starts. The list is read from the largest down. */
+  minMonthlyInflow: number;
+}
+
+export const MAGNITUDES: Magnitude[] = [
+  { id: "micro", label: "Micro", minMonthlyInflow: 0 },
+  { id: "small", label: "Pequeña", minMonthlyInflow: 10_000 },
+  { id: "medium", label: "Mediana", minMonthlyInflow: 100_000 },
+  { id: "large", label: "Grande", minMonthlyInflow: 1_000_000 },
+  { id: "xlarge", label: "Muy grande", minMonthlyInflow: 10_000_000 },
+];
+
+/** What an indicative amount is a multiple of. */
+export type Basis = "inflow" | "outflow" | "cash";
+
+/** A product is only suggested to companies at least this big (when the size is known). */
+export type SizeFloor = { minMonthlyInflow?: number; minCash?: number };
+
+/** Indicative amount: `low` (prudent) to `high` (ambitious) times the basis. Months of inflow or outflow, a share of cash. */
+export interface Ticket {
+  basis: Basis;
+  low: number;
+  high: number;
+}
+
 export interface ProductRule {
   id: string;
   name: string;
@@ -85,6 +118,10 @@ export interface ProductRule {
     /** Suggest only for these trajectories. */
     trajectories?: Trajectory[];
   };
+  /** Smallest company this makes sense for. Ignored when the size is unknown. */
+  size?: SizeFloor;
+  /** How much to offer, roughly. Leave out for products that are priced case by case. */
+  ticket?: Ticket;
 }
 
 export const PRODUCTS: ProductRule[] = [
@@ -94,6 +131,8 @@ export const PRODUCTS: ProductRule[] = [
     pitch: "Financiar expansión o maquinaria a plazo largo.",
     postures: ["grow"],
     when: { score: { min: 75 }, categories: { stability: { min: 70 } }, trajectories: ["improving", "stable"] },
+    size: { minMonthlyInflow: 20_000 },
+    ticket: { basis: "inflow", low: 1, high: 3 },
   },
   {
     id: "credit_line",
@@ -101,6 +140,8 @@ export const PRODUCTS: ProductRule[] = [
     pitch: "Cubrir desfases de tesorería con una póliza revolving.",
     postures: ["grow", "selective"],
     when: { score: { min: 60 }, categories: { amounts_owed: { min: 65 } } },
+    size: { minMonthlyInflow: 5_000 },
+    ticket: { basis: "outflow", low: 0.5, high: 1.5 },
   },
   {
     id: "confirming",
@@ -108,6 +149,8 @@ export const PRODUCTS: ProductRule[] = [
     pitch: "Pagar a proveedores en plazo y ofrecerles anticipo.",
     postures: ["grow", "selective"],
     when: { categories: { payment_history: { min: 60 } } },
+    size: { minMonthlyInflow: 20_000 },
+    ticket: { basis: "outflow", low: 1, high: 2 },
   },
   {
     id: "deposits",
@@ -115,6 +158,8 @@ export const PRODUCTS: ProductRule[] = [
     pitch: "Rentabilizar la liquidez sobrante.",
     postures: ["grow", "selective"],
     when: { categories: { amounts_owed: { min: 85 } } },
+    size: { minCash: 20_000 },
+    ticket: { basis: "cash", low: 0.3, high: 0.7 },
   },
   {
     id: "credit_insurance",
@@ -122,6 +167,8 @@ export const PRODUCTS: ProductRule[] = [
     pitch: "Protegerse del impago de su cliente principal.",
     postures: ["grow", "selective", "careful"],
     when: { categories: { mix: { max: 55 } } },
+    size: { minMonthlyInflow: 10_000 },
+    ticket: { basis: "inflow", low: 1, high: 3 },
   },
   {
     id: "factoring",
@@ -129,6 +176,8 @@ export const PRODUCTS: ProductRule[] = [
     pitch: "Liquidez con las facturas como garantía.",
     postures: ["selective", "careful"],
     when: { score: { min: 35 }, categories: { amounts_owed: { max: 65 } } },
+    size: { minMonthlyInflow: 5_000 },
+    ticket: { basis: "inflow", low: 0.5, high: 1.5 },
   },
   {
     id: "refinancing",
@@ -136,5 +185,6 @@ export const PRODUCTS: ProductRule[] = [
     pitch: "Reordenar vencimientos con garantías nuevas.",
     postures: ["careful"],
     when: { score: { min: 35 }, categories: { amounts_owed: { max: 50 } } },
+    size: { minMonthlyInflow: 10_000 },
   },
 ];
