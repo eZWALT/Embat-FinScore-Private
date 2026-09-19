@@ -33,12 +33,15 @@ export function QuickList({
   picked,
   max,
   onToggle,
+  single = false,
 }: {
   companies: DashboardCompany[];
   query: string;
   picked: string[];
   max: number;
   onToggle: (companyId: string) => void;
+  /** Picking a row chooses it instead of ticking it: no checkboxes, no cap, no hint about comparing. */
+  single?: boolean;
 }) {
   const [sort, setSort] = useState<{ key: SortKey; dir: "asc" | "desc" }>({ key: "score", dir: "desc" });
   const [shown, setShown] = useState(PAGE);
@@ -61,7 +64,7 @@ export function QuickList({
     });
   }, [companies, query, sort]);
 
-  const atCap = picked.length >= max;
+  const atCap = !single && picked.length >= max;
 
   function chooseSort(key: SortKey) {
     setShown(PAGE);
@@ -119,8 +122,9 @@ export function QuickList({
               >
                 <span
                   className={cn(
-                    "grid size-4 shrink-0 place-items-center rounded border transition-colors duration-150",
-                    isPicked ? "border-foreground bg-foreground text-background" : "border-input",
+                    "grid size-4 shrink-0 place-items-center transition-colors duration-150",
+                    !single && "rounded border",
+                    !single && (isPicked ? "border-foreground bg-foreground text-background" : "border-input"),
                   )}
                   aria-hidden="true"
                 >
@@ -156,9 +160,11 @@ export function QuickList({
           </li>
         ) : null}
       </ul>
+      {single ? null : (
       <p className="text-xs text-muted-foreground">
         {rows.length} empresas · marca hasta {max} para compararlas.
       </p>
+      )}
     </div>
   );
 }

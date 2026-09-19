@@ -79,9 +79,6 @@ export function HealthScoreView({
           <HealthIndexHelp />
         </p>
         <h1 className="text-balance text-2xl font-semibold tracking-tight sm:text-3xl">Comparar empresas</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Busca por nombre o grupo y marca hasta {MAX_SERIES} empresas para ver su evolución juntas.
-        </p>
       </div>
 
       <ComparePanel

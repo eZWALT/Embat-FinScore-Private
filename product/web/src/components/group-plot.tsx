@@ -8,25 +8,10 @@ import type { GroupOverview } from "@/lib/data/group-service";
 
 type GroupView = "mean" | "own" | "groups";
 
-const COPY: Record<GroupView, { title: string; hint: string; unit: string; center: string }> = {
-  mean: {
-    title: "Evolución de la media del grupo",
-    hint: "Media del índice de las empresas puntuadas del grupo, mes a mes.",
-    unit: "Media del grupo",
-    center: "Normalidad",
-  },
-  own: {
-    title: "Control intra-grupo",
-    hint: "La media del grupo frente a su propia normalidad reciente. Fuera de la banda es un cambio inusual para este grupo.",
-    unit: "Media del grupo",
-    center: "Normalidad",
-  },
-  groups: {
-    title: "Control inter-grupo",
-    hint: "Cambio de la media en 3 meses frente a los límites de grupos de tamaño parecido: los grupos pequeños tienen límites más anchos.",
-    unit: "Cambio en 3 meses",
-    center: "Esperado",
-  },
+const COPY: Record<GroupView, { title: string; unit: string; center: string }> = {
+  mean: { title: "Evolución de la media del grupo", unit: "Media del grupo", center: "Normalidad" },
+  own: { title: "Media vs tendencia histórica", unit: "Media del grupo", center: "Normalidad" },
+  groups: { title: "Cambio vs grupos similares", unit: "Cambio en 3 meses", center: "Esperado" },
 };
 
 /** The main plot of the group view: the mean, and its two control charts when the group has 3 or more scored members. */
@@ -36,8 +21,8 @@ export function GroupPlot({ overview }: { overview: GroupOverview }) {
   const options: SegmentedOption<GroupView>[] = overview.limitsAvailable
     ? [
         { value: "mean", label: "Media" },
-        { value: "own", label: "Intra-grupo" },
-        { value: "groups", label: "Inter-grupo" },
+        { value: "own", label: "vs tendencia histórica" },
+        { value: "groups", label: "vs grupos similares" },
       ]
     : [];
   const active: GroupView = options.some((option) => option.value === view) ? view : "mean";
@@ -60,13 +45,11 @@ export function GroupPlot({ overview }: { overview: GroupOverview }) {
   return (
     <PlotCard
       title={copy.title}
-      asOfMonth={overview.asOfMonth}
       views={
         options.length > 0 ? (
           <Segmented options={options} value={active} onChange={setView} ariaLabel="Vista del gráfico" className="min-w-max" />
         ) : undefined
       }
-      hint={copy.hint}
       notice={
         empty
           ? "Este gráfico de control necesita más historial (al menos 7 meses puntuados)."

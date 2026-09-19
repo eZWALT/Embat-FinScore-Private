@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { ArrowDownRight, ArrowUpRight, Layers, Minus, TriangleAlert } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, Layers, Minus } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AppHeader } from "@/components/app-header";
 import { AlertsTable } from "@/components/alerts-table";
+import { CompanyPicker } from "@/components/company-picker";
 import { EntityCombobox } from "@/components/entity-combobox";
 import { GroupView } from "@/components/group-view";
 import { HealthIndexHelp } from "@/components/health-index-help";
@@ -18,7 +19,6 @@ import { QuickAnalysis } from "@/components/quick/quick-analysis";
 import { Segmented, type SegmentedOption } from "@/components/segmented";
 import {
   companyLabel,
-  confidenceLabels,
   formatPoints,
   groupLabel,
   scoreColor,
@@ -275,18 +275,7 @@ export function HealthDashboard({
                     {entity === "company" ? "Empresa analizada" : "Grupo analizado"}
                   </p>
                   {entity === "company" ? (
-                    <EntityCombobox
-                      ariaLabel="Empresa analizada"
-                      options={data.companies.map((candidate) => ({
-                        value: candidate.companyId,
-                        label: companyLabel(candidate.companyId),
-                        detail: `${candidate.score.toFixed(0)} pts`,
-                      }))}
-                      value={companyId}
-                      onChange={(value) => value && selectCompany(value)}
-                      placeholder="Elige una empresa"
-                      searchPlaceholder="Buscar empresa (p. ej. 0462)"
-                    />
+                    <CompanyPicker companies={data.companies} value={companyId} onChange={selectCompany} />
                   ) : (
                     <EntityCombobox
                       ariaLabel="Grupo analizado"
@@ -349,7 +338,7 @@ export function HealthDashboard({
                 ) : null}
               </section>
 
-              <section className="mt-6 grid gap-4 sm:grid-cols-3">
+              <section className="mt-6 grid gap-4 sm:grid-cols-2">
                 <Card>
                   <CardHeader className="pb-2">
                     <CardTitle className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
@@ -408,33 +397,10 @@ export function HealthDashboard({
                     <Badge variant="secondary">{trajectoryLabels[company.trajectory]}</Badge>
                   </CardContent>
                 </Card>
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-xs font-medium text-muted-foreground">Confianza</CardTitle>
-                  </CardHeader>
-                  <CardContent className="flex h-11 items-center justify-between gap-3">
-                    <span className="font-medium">{confidenceLabels[company.confidence]}</span>
-                    <span className="font-mono text-xs text-muted-foreground">{Math.round(company.coverage * 100)}% cobertura</span>
-                  </CardContent>
-                </Card>
-              </section>
-
-              <section
-                id="senales"
-                aria-label="Principal señal a revisar"
-                className="mt-4 flex scroll-mt-20 items-start gap-3 rounded-xl border bg-card px-4 py-3"
-              >
-                <TriangleAlert className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-                <div className="min-w-0">
-                  <p className="text-xs font-medium text-muted-foreground">Principal señal a revisar</p>
-                  <p className="mt-1 text-sm leading-6">
-                    {company.topReason ?? "No hay una señal dominante para este periodo."}
-                  </p>
-                </div>
               </section>
 
               <div className="mt-4 space-y-4">
-                <MonitorPlot company={company} companies={data.companies} asOfMonth={data.asOfMonth} />
+                <MonitorPlot company={company} companies={data.companies} />
                 <OfferGuidanceCard company={company} />
                 <AlertsTable scope={{ company: company.companyId }} />
               </div>

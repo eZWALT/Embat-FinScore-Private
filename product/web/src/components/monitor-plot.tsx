@@ -13,35 +13,20 @@ type PlotView = "score" | "own" | "peers" | "cluster";
 
 const VIEWS: SegmentedOption<PlotView>[] = [
   { value: "score", label: "Índice" },
-  { value: "own", label: "Intra-empresa" },
-  { value: "peers", label: "Inter-empresa" },
-  { value: "cluster", label: "Inter-cluster" },
+  { value: "own", label: "vs tendencia histórica" },
+  { value: "peers", label: "vs empresas del grupo" },
+  { value: "cluster", label: "vs empresas similares" },
 ];
 
-const COPY: Record<PlotView, { title: string; hint: string; unit: string }> = {
-  score: {
-    title: "Evolución de la puntuación",
-    hint: "La dirección y persistencia importan tanto como el nivel actual.",
-    unit: "Índice",
-  },
-  own: {
-    title: "Control intra-empresa",
-    hint: "El índice frente a su propia normalidad reciente. Fuera de la banda es un cambio inusual para esta empresa.",
-    unit: "Índice",
-  },
-  peers: {
-    title: "Control inter-empresa",
-    hint: "El índice frente al resto de empresas: mediana y banda P10–P90 de cada mes.",
-    unit: "Índice",
-  },
-  cluster: {
-    title: "Control inter-cluster",
-    hint: "Diferencia con la mediana de su cluster de empresas con comportamiento parecido, en puntos. Fuera de la banda cambia su posición relativa.",
-    unit: "Diferencia con el cluster",
-  },
+const COPY: Record<PlotView, { title: string; unit: string }> = {
+  score: { title: "Evolución de la puntuación", unit: "Índice" },
+  own: { title: "Índice vs tendencia histórica", unit: "Índice" },
+  peers: { title: "Índice vs empresas del grupo", unit: "Índice" },
+  cluster: { title: "Diferencia vs empresas similares", unit: "Diferencia con empresas similares" },
 };
 
-const MIN_PEERS = 5;
+/** A group of fewer scored companies than this has no meaningful spread to compare against. */
+const MIN_PEERS = 3;
 
 function quantile(sorted: number[], q: number) {
   const pos = (sorted.length - 1) * q;
@@ -50,10 +35,12 @@ function quantile(sorted: number[], q: number) {
   return sorted[lo] + (sorted[hi] - sorted[lo]) * (pos - lo);
 }
 
-/** The company's score against every scored company, month by month: median and P10–P90. Computed here, not part of the monitor bundle. */
+/** The company's score against the companies of its own group, month by month: median and P10–P90. Computed here, not part of the monitor bundle. */
 function peerSeries(company: DashboardCompany, everyone: DashboardCompany[]): ControlSeries | null {
+  if (!company.groupId) return null;
   const byMonth = new Map<string, number[]>();
   for (const other of everyone) {
+    if (other.groupId !== company.groupId) continue;
     for (const point of other.scoreHistory) {
       const list = byMonth.get(point.month);
       if (list) list.push(point.score);
@@ -98,16 +85,14 @@ function scoreRows(company: DashboardCompany, monitor: CompanyMonitor | null, sh
 
 /**
  * The main plot of the company view. Score history, or a control chart of the score against the company's own history,
- * against every other company, or against its cluster. The forecast fan can be laid over the score.
+ * against the companies of its group, or against similar companies. The forecast fan can be laid over the score.
  */
 export function MonitorPlot({
   company,
   companies,
-  asOfMonth,
 }: {
   company: DashboardCompany;
   companies: DashboardCompany[];
-  asOfMonth: string;
 }) {
   const [view, setView] = useState<PlotView>("score");
   const [showForecast, setShowForecast] = useState(false);
@@ -156,14 +141,13 @@ export function MonitorPlot({
       ? "Esta empresa aún no tiene predicción: hacen falta al menos 4 meses puntuados."
       : empty
         ? view === "peers"
-          ? "No hay suficientes empresas puntuadas en estos meses para comparar."
+          ? "Hace falta un grupo con al menos 3 empresas puntuadas para comparar."
           : "Este gráfico necesita más historial (al menos 7 meses puntuados) o no está disponible para esta empresa."
         : null;
 
   return (
     <PlotCard
       title={copy.title}
-      asOfMonth={asOfMonth}
       views={<Segmented options={VIEWS} value={view} onChange={setView} ariaLabel="Vista del gráfico" className="min-w-max" />}
       aside={
         view === "score" ? (
@@ -189,21 +173,13 @@ export function MonitorPlot({
           </button>
         ) : null
       }
-      hint={
-        <>
-          {copy.hint}
-          {view === "score" && showForecast && monitor?.forecast
-            ? " Línea discontinua: mediana prevista; banda: intervalo del 80 %. Es una referencia, no una garantía."
-            : ""}
-        </>
-      }
       notice={notice}
     >
       <PlotChart
         rows={rows}
         control={isControl}
         valueLabel={copy.unit}
-        centerLabel={view === "peers" ? "Mediana" : "Normalidad"}
+        centerLabel={view === "peers" ? "Mediana del grupo" : "Normalidad"}
         zeroLine={view === "cluster"}
         forecast={view === "score" && showForecast && !!monitor?.forecast}
         loading={loading}

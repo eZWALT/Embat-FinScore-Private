@@ -6,6 +6,7 @@ import { ChevronRight, Handshake } from "lucide-react";
 import { cn } from "cn";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { companyLabel } from "@/components/group/labels";
 import type { Posture, Tone } from "@/config/offers";
 import { guidanceFor } from "@/lib/offers";
 import type { DashboardCompany } from "@/lib/data/types";
@@ -25,10 +26,10 @@ export function PostureBadge({ posture, className }: { posture: Posture; classNa
   );
 }
 
-/** Deep view: the posture, how to negotiate, and each product that fits with the reasons it fits. */
+/** Deep view: the posture and each product that fits. Hover a product for the numbers that make it fit. */
 export function OfferGuidanceCard({ company }: { company: DashboardCompany }) {
   const guidance = useMemo(() => guidanceFor(company), [company]);
-  const { posture, notes, suggestions } = guidance;
+  const { posture, suggestions } = guidance;
 
   return (
     <Card id="ofertas" className="scroll-mt-20">
@@ -40,15 +41,7 @@ export function OfferGuidanceCard({ company }: { company: DashboardCompany }) {
           </CardTitle>
           <PostureBadge posture={posture} className="h-6 px-2.5 text-xs" />
         </div>
-        <p className="text-sm font-medium">{posture.headline}</p>
-        <p className="text-sm text-muted-foreground">{posture.negotiation}</p>
-        {notes.length > 0 ? (
-          <ul className="space-y-0.5 text-xs text-muted-foreground">
-            {notes.map((note) => (
-              <li key={note}>· {note}</li>
-            ))}
-          </ul>
-        ) : null}
+        <p className="text-sm text-muted-foreground">{posture.headline}</p>
       </CardHeader>
       <CardContent>
         {suggestions.length === 0 ? (
@@ -58,22 +51,13 @@ export function OfferGuidanceCard({ company }: { company: DashboardCompany }) {
         ) : (
           <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {suggestions.map(({ product, because }) => (
-              <li key={product.id} className="rounded-xl border bg-background px-4 py-3">
+              <li key={product.id} className="rounded-xl border bg-background px-4 py-3" title={because.join(" · ")}>
                 <p className="text-sm font-medium">{product.name}</p>
                 <p className="mt-0.5 text-sm text-muted-foreground">{product.pitch}</p>
-                <ul className="mt-2 space-y-0.5 text-xs text-muted-foreground">
-                  {because.map((line) => (
-                    <li key={line}>· {line}</li>
-                  ))}
-                </ul>
               </li>
             ))}
           </ul>
         )}
-        <p className="mt-4 text-[11px] leading-5 text-muted-foreground">
-          Orientación comercial a partir del índice y sus categorías; no es una decisión de crédito. Umbrales y productos en{" "}
-          <code className="font-mono">config/offers.ts</code>.
-        </p>
       </CardContent>
     </Card>
   );
@@ -94,7 +78,7 @@ export function OfferStrip({ companies }: { companies: DashboardCompany[] }) {
         {rows.map(({ company, guidance }) => (
           <li key={company.companyId} className="min-w-0 rounded-lg border bg-background px-3 py-2">
             <div className="flex items-center justify-between gap-2">
-              <span className="truncate font-mono text-xs">{company.companyId}</span>
+              <span className="truncate text-xs" title={company.companyId}>{companyLabel(company.companyId)}</span>
               <PostureBadge posture={guidance.posture} />
             </div>
             <p className="mt-1 text-xs text-muted-foreground">

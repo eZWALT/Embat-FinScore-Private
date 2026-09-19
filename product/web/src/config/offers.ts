@@ -24,8 +24,6 @@ export interface Posture {
   label: string;
   tone: Tone;
   headline: string;
-  /** How to negotiate with a company in this posture. */
-  negotiation: string;
 }
 
 export const POSTURES: Posture[] = [
@@ -35,7 +33,6 @@ export const POSTURES: Posture[] = [
     label: "Ofrecer",
     tone: "positive",
     headline: "Buen momento para crecer con esta empresa",
-    negotiation: "Negociación colaborativa: precio competitivo, plazos largos y pocas garantías. Merece la pena fidelizarla.",
   },
   {
     id: "selective",
@@ -43,7 +40,6 @@ export const POSTURES: Posture[] = [
     label: "Selectivo",
     tone: "neutral",
     headline: "Ofrecer de forma selectiva",
-    negotiation: "Precio de mercado y garantías estándar. Productos ligados a su actividad real antes que crédito abierto.",
   },
   {
     id: "careful",
@@ -51,7 +47,6 @@ export const POSTURES: Posture[] = [
     label: "Prudente",
     tone: "caution",
     headline: "Ofrecer solo con garantías",
-    negotiation: "Negociación firme: prima de riesgo, garantías reforzadas, plazos cortos y revisión trimestral.",
   },
   {
     id: "protect",
@@ -59,7 +54,6 @@ export const POSTURES: Posture[] = [
     label: "No ofrecer",
     tone: "negative",
     headline: "No ofrecer crédito nuevo",
-    negotiation: "Sin crédito nuevo. Negociación dura: garantías reales, covenants y reducir la exposición existente.",
   },
 ];
 

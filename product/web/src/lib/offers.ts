@@ -12,14 +12,12 @@ import type { CategoryId, DashboardCompany } from "@/lib/data/types";
 
 export interface Suggestion {
   product: ProductRule;
-  /** The conditions that held, in words, e.g. "Liquidez y deuda 82 (mínimo 65)". */
+  /** The conditions that held, in words, e.g. "Liquidez y deuda 82 (mínimo 65)". Shown as a tooltip. */
   because: string[];
 }
 
 export interface OfferGuidance {
   posture: Posture;
-  /** Why the posture is not simply the one the score gives. */
-  notes: string[];
   suggestions: Suggestion[];
 }
 
@@ -54,28 +52,18 @@ function describe(label: string, value: number, range: Range): string {
 
 /** Posture and product suggestions for one company, from the rules in `config/offers.ts`. */
 export function guidanceFor(company: Guidable): OfferGuidance {
-  const notes: string[] = [];
   const byScore = POSTURES.find((posture) => company.score >= posture.minScore) ?? POSTURES[POSTURES.length - 1];
   let id: PostureId = byScore.id;
 
   if (company.guard === "dark") {
     id = ADJUSTMENTS.dark;
-    notes.push("Sin movimientos bancarios recientes: la puntuación no es fiable para ofrecer.");
   } else if (company.guard === "fading") {
-    const next = cappedAt(id, ADJUSTMENTS.fading);
-    if (next !== id) notes.push("Las entradas de caja han caído frente a su histórico: se rebaja la postura.");
-    id = next;
+    id = cappedAt(id, ADJUSTMENTS.fading);
   }
-  if (company.confidence === "low") {
-    const next = cappedAt(id, ADJUSTMENTS.lowConfidenceMax);
-    if (next !== id) notes.push("Confianza baja (datos escasos): no se sugiere la postura más abierta.");
-    id = next;
-  }
+  if (company.confidence === "low") id = cappedAt(id, ADJUSTMENTS.lowConfidenceMax);
   const { trajectories, steps } = ADJUSTMENTS.worsening;
   if (steps > 0 && trajectories.includes(company.trajectory) && id !== "protect") {
-    const next = ORDER[Math.min(ORDER.length - 1, ORDER.indexOf(id) + steps)];
-    if (next !== id) notes.push("Trayectoria a la baja: se baja un escalón.");
-    id = next;
+    id = ORDER[Math.min(ORDER.length - 1, ORDER.indexOf(id) + steps)];
   }
 
   const categoryScore = new Map<CategoryId, number | null>(company.categories.map((row) => [row.id, row.score]));
@@ -100,5 +88,5 @@ export function guidanceFor(company: Guidable): OfferGuidance {
     if (holds) suggestions.push({ product, because });
   }
 
-  return { posture: postureById(id), notes, suggestions };
+  return { posture: postureById(id), suggestions };
 }

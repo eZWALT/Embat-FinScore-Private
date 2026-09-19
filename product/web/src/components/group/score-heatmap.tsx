@@ -2,6 +2,7 @@
 
 import { cn } from "cn";
 
+import { SeverityBadge } from "@/components/alerts-table";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { companyLabel, formatDecimal, formatMonth, scoreColor, splitMonth } from "@/components/group/labels";
 import type { GroupMemberRow } from "@/lib/data/group-service";
@@ -56,11 +57,11 @@ export function ScoreHeatmap({
   selectedCompanyId: string | null;
   onSelectCompany: (companyId: string) => void;
 }) {
-  const gridTemplateColumns = `minmax(7.5rem, auto) repeat(${months.length}, minmax(1.5rem, 1fr))`;
+  const gridTemplateColumns = `minmax(7.5rem, auto) repeat(${months.length}, minmax(1.5rem, 1fr)) minmax(6.5rem, auto)`;
 
   return (
     <div className="overflow-x-auto">
-      <div className="grid min-w-[40rem] gap-x-1 gap-y-1" style={{ gridTemplateColumns }}>
+      <div className="grid min-w-[46rem] gap-x-1 gap-y-1" style={{ gridTemplateColumns }}>
         <div />
         {months.map((month) => {
           const [name, year] = splitMonth(month);
@@ -74,11 +75,13 @@ export function ScoreHeatmap({
             </div>
           );
         })}
+        <div className="flex items-end justify-end pb-0.5 pl-2 text-[10px] font-medium leading-3 text-muted-foreground">Alertas</div>
 
         <div className="flex items-center pr-2 text-xs font-medium">Media del grupo</div>
         {months.map((month, index) => (
           <Cell key={month} label="Media del grupo" month={month} score={meanScores[index] ?? null} />
         ))}
+        <div />
 
         <div className="col-span-full my-1 h-px bg-border" />
 
@@ -117,12 +120,12 @@ function MemberRow({
         onClick={onSelect}
         aria-pressed={selected}
         className={cn(
-          "flex h-5 items-center justify-between gap-2 rounded-sm pr-2 pl-1 text-left text-xs tabular-nums outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring",
+          "group flex h-5 items-center justify-between gap-2 rounded-sm pr-2 pl-1 text-left text-xs tabular-nums outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring",
           selected && "bg-muted font-medium",
         )}
         title={member.companyId}
       >
-        <span>{companyLabel(member.companyId)}</span>
+        <span className="underline decoration-muted-foreground/30 underline-offset-2 group-hover:decoration-foreground">{companyLabel(member.companyId)}</span>
         <span className="text-muted-foreground">{member.score.toFixed(0)}</span>
       </button>
       {months.map((month, index) => (
@@ -134,6 +137,10 @@ function MemberRow({
           onClick={onSelect}
         />
       ))}
+      <div className="flex h-5 items-center justify-end gap-1.5 pl-2">
+        <span className={cn("font-mono text-xs tabular-nums", member.nAlerts === 0 && "text-muted-foreground")}>{member.nAlerts}</span>
+        {member.maxAlertSeverity ? <SeverityBadge severity={member.maxAlertSeverity} /> : null}
+      </div>
     </>
   );
 }

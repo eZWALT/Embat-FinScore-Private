@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { TrendingDown, TrendingUp } from "lucide-react";
+import { ChevronLeft, ChevronRight, TrendingDown, TrendingUp } from "lucide-react";
 
 import { cn } from "cn";
 
@@ -18,6 +18,7 @@ import {
   kindLabels,
   ownerLabels,
   reasonLabels,
+  relabelEntities,
   severityBadgeVariant,
   severityLabels,
 } from "@/components/group/labels";
@@ -43,7 +44,7 @@ export function AlertsTable({ scope, onSelectCompany }: { scope: Scope; onSelect
   const isGroup = "group" in scope;
   const [result, setResult] = useState<{ key: string; data: EntityAlerts | null; error: string | null } | null>(null);
   const [filter, setFilter] = useState<Filter>("all");
-  const [shown, setShown] = useState(PAGE);
+  const [page, setPage] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -81,25 +82,14 @@ export function AlertsTable({ scope, onSelectCompany }: { scope: Scope; onSelect
   ];
 
   const visible = filter === "all" ? alerts : alerts.filter((alert) => alert.severity === filter);
-  const from = current?.data?.fromMonth;
+  const pages = Math.max(1, Math.ceil(visible.length / PAGE));
+  const at = Math.min(page, pages - 1);
+  const first = at * PAGE;
 
   return (
     <Card id="alerts" className="scroll-mt-20">
       <CardHeader className="gap-3">
-        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-          <CardTitle className="text-base">Alertas</CardTitle>
-          {current?.data ? (
-            <Badge variant="outline" className="font-normal text-muted-foreground">
-              {from ? `${formatMonth(from)} – ` : ""}
-              {formatMonth(current.data.asOfMonth)}
-            </Badge>
-          ) : null}
-        </div>
-        <p className="text-sm text-muted-foreground">
-          {isGroup
-            ? "Lo que ha saltado en el grupo y en sus empresas: qué pasa, por qué y quién debe hacer qué."
-            : "Lo que ha saltado en esta empresa: qué pasa, por qué y quién debe hacer qué."}
-        </p>
+        <CardTitle className="text-base">Alertas</CardTitle>
         {alerts.length > 0 ? (
           <div className="max-w-full overflow-x-auto">
             <Segmented
@@ -107,7 +97,7 @@ export function AlertsTable({ scope, onSelectCompany }: { scope: Scope; onSelect
               value={filter}
               onChange={(next) => {
                 setFilter(next);
-                setShown(PAGE);
+                setPage(0);
               }}
               ariaLabel="Filtrar por nivel"
               className="min-w-max"
@@ -138,15 +128,28 @@ export function AlertsTable({ scope, onSelectCompany }: { scope: Scope; onSelect
                 </tr>
               </thead>
               <tbody className="divide-y">
-                {visible.slice(0, shown).map((alert) => (
+                {visible.slice(first, first + PAGE).map((alert) => (
                   <AlertLine key={alert.alertId} alert={alert} showEntity={isGroup} onSelectCompany={onSelectCompany} />
                 ))}
               </tbody>
             </table>
-            {visible.length > shown ? (
-              <Button type="button" variant="ghost" size="sm" className="mt-2 w-full" onClick={() => setShown((count) => count + PAGE)}>
-                Mostrar más ({visible.length - shown})
-              </Button>
+            {pages > 1 ? (
+              <nav aria-label="Paginación de alertas" className="mt-3 flex items-center justify-between gap-3 border-t pt-3">
+                <p className="text-xs text-muted-foreground">
+                  {first + 1}–{Math.min(first + PAGE, visible.length)} de {visible.length}
+                </p>
+                <div className="flex items-center gap-1">
+                  <Button type="button" variant="outline" size="icon-sm" aria-label="Página anterior" disabled={at === 0} onClick={() => setPage(at - 1)}>
+                    <ChevronLeft />
+                  </Button>
+                  <span className="min-w-14 text-center font-mono text-xs tabular-nums text-muted-foreground">
+                    {at + 1} / {pages}
+                  </span>
+                  <Button type="button" variant="outline" size="icon-sm" aria-label="Página siguiente" disabled={at === pages - 1} onClick={() => setPage(at + 1)}>
+                    <ChevronRight />
+                  </Button>
+                </div>
+              </nav>
             ) : null}
           </div>
         )}
@@ -184,7 +187,7 @@ function AlertLine({
       </td>
       <td>
         <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">{kindLabels[alert.kind]}</p>
-        <p className="mt-0.5 font-medium leading-snug">{alert.title}</p>
+        <p className="mt-0.5 font-medium leading-snug">{relabelEntities(alert.title)}</p>
         {showEntity ? (
           alert.entityType === "company" && onSelectCompany ? (
             <button
@@ -207,7 +210,7 @@ function AlertLine({
         ) : null}
       </td>
       <td>
-        <p className="leading-snug">{alert.summary}</p>
+        <p className="leading-snug">{relabelEntities(alert.summary)}</p>
         {reasons.length > 0 ? (
           <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
             {reasons.map((reason) => (
@@ -222,7 +225,7 @@ function AlertLine({
       </td>
       <td>
         <p className="text-xs font-medium text-muted-foreground">{ownerLabels[alert.owner]}</p>
-        <p className="mt-0.5 leading-snug">{alert.action}</p>
+        <p className="mt-0.5 leading-snug">{relabelEntities(alert.action)}</p>
       </td>
     </tr>
   );

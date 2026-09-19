@@ -1,7 +1,6 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { CalendarDays } from "lucide-react";
 import {
   Area,
   CartesianGrid,
@@ -14,7 +13,6 @@ import {
 
 import { cn } from "cn";
 
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ClientOnly } from "@/components/client-only";
 import {
@@ -65,41 +63,30 @@ function signalDot({ cx, cy, index, payload }: DotProps) {
   );
 }
 
-/** Card frame shared by the company and group plots: title, as-of badge, view switch, an aside and the explanation. */
+/** Card frame shared by the company and group plots: title, view switch and an aside. */
 export function PlotCard({
   title,
-  asOfMonth,
   views,
   aside,
-  hint,
   notice,
   children,
 }: {
   title: string;
-  asOfMonth: string;
   views?: ReactNode;
   aside?: ReactNode;
-  hint: ReactNode;
   notice?: string | null;
   children: ReactNode;
 }) {
   return (
     <Card id="evolucion" className="scroll-mt-20">
       <CardHeader className="gap-3">
-        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-          <CardTitle className="text-base">{title}</CardTitle>
-          <Badge variant="outline" className="gap-1.5 font-normal text-muted-foreground">
-            <CalendarDays className="size-3" />
-            hasta {formatMonth(asOfMonth)}
-          </Badge>
-        </div>
+        <CardTitle className="text-base">{title}</CardTitle>
         {views || aside ? (
           <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
             <div className="max-w-full overflow-x-auto">{views}</div>
             {aside}
           </div>
         ) : null}
-        <p className="text-sm text-muted-foreground">{hint}</p>
       </CardHeader>
       <CardContent>
         {notice ? (
@@ -112,8 +99,9 @@ export function PlotCard({
 }
 
 /**
- * The plot itself. Plain lines on a fixed 0–100 scale, or a control chart: the value against a band and a centre line,
- * with the months outside the band marked in red (filled when the signal has persisted).
+ * The plot itself. Score lines and score control charts sit on a fixed 0–100 axis; only charts of differences
+ * (`zeroLine`) fit their axis. A control chart draws the value against a band and a centre line, with the months
+ * outside the band marked in red (filled when the signal has persisted).
  */
 export function PlotChart({
   rows,
@@ -129,7 +117,7 @@ export function PlotChart({
   control: boolean;
   valueLabel: string;
   centerLabel?: string;
-  /** Draw the 0 line: the values are differences around zero. */
+  /** The values are differences around zero, not scores: draw the 0 line and let the axis fit. Score plots are always 0–100. */
   zeroLine?: boolean;
   forecast?: boolean;
   loading?: boolean;
@@ -151,14 +139,14 @@ export function PlotChart({
               <CartesianGrid vertical={false} strokeDasharray="3 3" />
               <XAxis dataKey="month" tickFormatter={(month: string) => formatMonth(month)} tickLine={false} axisLine={false} minTickGap={28} />
               <YAxis
-                domain={control ? ["auto", "auto"] : [0, 100]}
-                ticks={control ? undefined : [0, 25, 50, 75, 100]}
-                tickFormatter={control ? (value: number) => String(Math.round(value)) : undefined}
+                domain={zeroLine ? ["auto", "auto"] : [0, 100]}
+                ticks={zeroLine ? undefined : [0, 25, 50, 75, 100]}
+                tickFormatter={zeroLine ? (value: number) => String(Math.round(value)) : undefined}
                 tickLine={false}
                 axisLine={false}
                 width={40}
               />
-              {!control ? <ReferenceLine y={50} stroke="var(--border)" strokeDasharray="4 4" /> : null}
+              {!zeroLine ? <ReferenceLine y={50} stroke="var(--border)" strokeDasharray="4 4" /> : null}
               {zeroLine ? <ReferenceLine y={0} stroke="var(--border)" strokeDasharray="4 4" /> : null}
               <ChartTooltip
                 cursor={{ stroke: "var(--foreground)", strokeOpacity: 0.4, strokeWidth: 1.5 }}

@@ -12,7 +12,7 @@ import {
 } from "recharts";
 
 import { ClientOnly } from "@/components/client-only";
-import { buildChartRows, SERIES_COLORS, yDomainForSelection } from "@/components/quick/series";
+import { buildChartRows, SERIES_COLORS } from "@/components/quick/series";
 import {
   type ChartConfig,
   ChartContainer,
@@ -38,17 +38,6 @@ export function QuickChart({
   onRangeChange: (range: MonthRange | null) => void;
 }) {
   const rows = useMemo(() => buildChartRows(companies), [companies]);
-  const ids = useMemo(() => companies.map((company) => company.companyId), [companies]);
-  // Round the fitted range to whole tens (or twenties) so the axis ticks are readable numbers.
-  const { yDomain, yTicks } = useMemo(() => {
-    const [min, max] = yDomainForSelection(rows, ids);
-    const step = max - min > 50 ? 20 : 10;
-    const lo = Math.max(0, Math.floor(min / step) * step);
-    const hi = Math.min(100, Math.ceil(max / step) * step);
-    const ticks: number[] = [];
-    for (let value = lo; value <= hi; value += step) ticks.push(value);
-    return { yDomain: [lo, hi] as [number, number], yTicks: ticks };
-  }, [rows, ids]);
   const config = useMemo(() => {
     const next: ChartConfig = {};
     companies.forEach((company, index) => {
@@ -134,10 +123,8 @@ export function QuickChart({
               axisLine={false}
               minTickGap={28}
             />
-            <YAxis domain={yDomain} ticks={yTicks} tickLine={false} axisLine={false} width={36} />
-            {yDomain[0] <= 50 && yDomain[1] >= 50 ? (
-              <ReferenceLine y={50} stroke="var(--border)" strokeDasharray="4 4" />
-            ) : null}
+            <YAxis domain={[0, 100]} ticks={[0, 25, 50, 75, 100]} tickLine={false} axisLine={false} width={36} />
+            <ReferenceLine y={50} stroke="var(--border)" strokeDasharray="4 4" />
             <ChartTooltip
               cursor={{ stroke: "var(--foreground)", strokeOpacity: 0.4, strokeWidth: 1.5 }}
               content={

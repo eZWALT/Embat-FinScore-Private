@@ -41,25 +41,3 @@ export function buildChartRows(selected: DashboardCompany[]) {
     return row;
   });
 }
-
-export function yDomainForSelection(
-  rows: Record<string, string | number | null>[],
-  companyIds: string[],
-): [number, number] {
-  let min = Infinity;
-  let max = -Infinity;
-  for (const row of rows) {
-    for (const id of companyIds) {
-      const value = row[id];
-      if (typeof value !== "number" || Number.isNaN(value)) continue;
-      min = Math.min(min, value);
-      max = Math.max(max, value);
-    }
-  }
-  if (!Number.isFinite(min) || !Number.isFinite(max)) return [0, 100];
-  if (min === max) {
-    return [Math.max(0, min - 5), Math.min(100, max + 5)];
-  }
-  const pad = Math.max(2, (max - min) * 0.1);
-  return [Math.max(0, Math.floor(min - pad)), Math.min(100, Math.ceil(max + pad))];
-}

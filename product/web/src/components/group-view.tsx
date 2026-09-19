@@ -7,7 +7,6 @@ import { AlertsTable } from "@/components/alerts-table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { GroupPlot } from "@/components/group-plot";
 import { HeatmapLegend, ScoreHeatmap } from "@/components/group/score-heatmap";
-import { MemberTable } from "@/components/group/member-table";
 import { companyLabel, formatPoints, groupLabel, scoreColor } from "@/components/group/labels";
 import type { GroupOverview } from "@/lib/data/group-service";
 
@@ -61,7 +60,7 @@ export function GroupView({
         {overview
           ? `${overview.nCompanies} ${overview.nCompanies === 1 ? "empresa" : "empresas"}${
               overview.members.length !== overview.nCompanies ? ` · ${overview.members.length} con puntuación` : ""
-            } · puntuación de cada una, mes a mes`
+            }`
           : "Cargando el grupo…"}
       </p>
     </section>
@@ -143,14 +142,11 @@ export function GroupView({
         <AlertsTable scope={{ group: groupId }} onSelectCompany={onSelectCompany} />
 
         <Card>
-          <CardHeader className="gap-1">
+          <CardHeader>
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <CardTitle className="text-base">Mapa de calor de la puntuación</CardTitle>
+              <CardTitle className="text-base">Empresas del grupo</CardTitle>
               <HeatmapLegend />
             </div>
-            <p className="text-sm text-muted-foreground">
-              Primera fila: media del grupo. Pasa el cursor por una celda para ver empresa, mes y puntuación; haz clic para abrir la empresa.
-            </p>
           </CardHeader>
           <CardContent>
             <ScoreHeatmap
@@ -160,16 +156,6 @@ export function GroupView({
               selectedCompanyId={highlightCompanyId}
               onSelectCompany={onSelectCompany}
             />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="gap-1">
-            <CardTitle className="text-base">Empresas del grupo</CardTitle>
-            <p className="text-sm text-muted-foreground">Ordenadas por puntuación actual, de menor a mayor.</p>
-          </CardHeader>
-          <CardContent>
-            <MemberTable members={overview.members} selectedCompanyId={highlightCompanyId} onSelectCompany={onSelectCompany} />
           </CardContent>
         </Card>
       </div>
