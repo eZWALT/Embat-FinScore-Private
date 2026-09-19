@@ -43,6 +43,7 @@ Never a second sentence. Never "the set holds" essays.
 - Owners: Treasurer / CFO / Collections only.
 - `info` alerts: do not list. The post may carry `n_info` for a muted count; the UI shows it as a caption, not a bullet.
 - If there are no bullets: that is valid. Do not write "Act / watch: none".
+- The renderer may draw a 6-month sparkline of the focus company under the bullets. You do not describe or caption that chart.
 
 ## JSON (what code stores)
 

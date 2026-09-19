@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 
 import { WatcherChannel } from "@/components/watcher-channel";
 import { getWatcherFeed } from "@/lib/agent/watcher-service";
@@ -8,6 +9,8 @@ export const metadata: Metadata = {
   title: "Watcher · Health Sentinel",
   description: "Last three months on a watch set, one fixed format.",
 };
+
+export const dynamic = "force-dynamic";
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
@@ -21,11 +24,16 @@ export default async function WatcherPage({ searchParams }: { searchParams: Sear
   const groupId = first(params.group) ?? "";
 
   const repo = createScoreRepository();
-  const [companies, groups, feed] = await Promise.all([
-    repo.listCompanies(),
-    repo.listGroups(),
-    getWatcherFeed(companyId ? [companyId] : [], groupId ? [groupId] : []),
-  ]);
+  const [companies, groups] = await Promise.all([repo.listCompanies(), repo.listGroups()]);
+
+  if (!companyId && !groupId && groups.length) {
+    const pick = [...groups].sort(
+      (a, b) => b.n_companies - a.n_companies || a.group_id.localeCompare(b.group_id),
+    )[0];
+    redirect(`/watcher?group=${encodeURIComponent(pick.group_id)}`);
+  }
+
+  const feed = await getWatcherFeed(companyId ? [companyId] : [], groupId ? [groupId] : []);
 
   return (
     <WatcherChannel

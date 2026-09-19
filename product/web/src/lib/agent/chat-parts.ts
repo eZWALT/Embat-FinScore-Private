@@ -1,5 +1,7 @@
 import { getToolName, isTextUIPart, isToolUIPart, type UIMessage } from "ai";
 
+import { isPlotSpec, type PlotSpec } from "./plot-spec";
+
 export type AgentContext = {
   companyId?: string;
   groupId?: string;
@@ -35,4 +37,16 @@ export function toolChipsFromParts(parts: UIMessage["parts"]): { id: string; nam
     chips.push({ id, name });
   }
   return chips;
+}
+
+export function plotsFromParts(parts: UIMessage["parts"]): PlotSpec[] {
+  const plots: PlotSpec[] = [];
+  for (const part of parts) {
+    if (!isToolUIPart(part)) continue;
+    if (getToolName(part) !== "plot_series") continue;
+    const output = "output" in part ? part.output : undefined;
+    const plot = output && typeof output === "object" && "plot" in output ? output.plot : output;
+    if (isPlotSpec(plot)) plots.push(plot);
+  }
+  return plots;
 }

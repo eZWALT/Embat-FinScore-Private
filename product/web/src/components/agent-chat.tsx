@@ -7,8 +7,9 @@ import { useMemo, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { AgentPlot } from "@/components/agent-plot";
 import { ToolCallChip } from "@/components/watcher-post-view";
-import { contextBody, type AgentContext } from "@/lib/agent/chat-parts";
+import { contextBody, plotsFromParts, type AgentContext } from "@/lib/agent/chat-parts";
 
 export function AgentChat({
   api,
@@ -100,6 +101,11 @@ export function AgentChat({
               }
               return null;
             })}
+            {message.role === "assistant"
+              ? plotsFromParts(message.parts).map((spec, index) => (
+                  <AgentPlot key={`${message.id}-plot-${index}`} spec={spec} />
+                ))
+              : null}
           </li>
         ))}
         {busy && messages.at(-1)?.role !== "assistant" ? (

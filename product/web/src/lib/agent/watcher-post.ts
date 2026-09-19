@@ -16,12 +16,19 @@ export interface WatcherBullet {
   text: string;
 }
 
+export interface WatcherSparkPoint {
+  month: string;
+  score: number;
+}
+
 export interface WatcherPost {
   month: string;
   line1: string;
   line2: string;
   bullets: WatcherBullet[];
   n_info: number;
+  /** Focus company, last 6 scored months up to this post. Renderer-only; not LLM prose. */
+  spark?: { id: string; points: WatcherSparkPoint[] };
 }
 
 const OWNER: Record<Owner, WatcherBullet["owner"]> = {
@@ -229,7 +236,21 @@ export function buildWatcherPost(input: {
     }
   }
 
-  return { month, line1, line2, bullets: bullets.slice(0, 4), n_info: nInfo };
+  const sparkPoints = focus
+    ? (details.get(focus.id)?.months ?? [])
+        .filter((m) => m.month <= month)
+        .slice(-6)
+        .map((m) => ({ month: m.month, score: m.score }))
+    : [];
+
+  return {
+    month,
+    line1,
+    line2,
+    bullets: bullets.slice(0, 4),
+    n_info: nInfo,
+    spark: focus && sparkPoints.length >= 2 ? { id: focus.id, points: sparkPoints } : undefined,
+  };
 }
 
 export function buildWatcherPosts(input: {
