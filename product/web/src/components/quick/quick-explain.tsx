@@ -55,7 +55,7 @@ export function QuickExplain({
   const busy = status === "submitted" || status === "streaming";
 
   return (
-    <section aria-label="Explicación del periodo" aria-live="polite" className="rounded-xl border bg-card px-4 py-3">
+    <section aria-label="Explicación del periodo" aria-live="polite" className="rounded-xl border bg-card px-4 py-3 animate-in fade-in-0 slide-in-from-bottom-2 duration-300 motion-reduce:animate-none">
       <div className="mb-2 flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-xs font-medium text-muted-foreground">

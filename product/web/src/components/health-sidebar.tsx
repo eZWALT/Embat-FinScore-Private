@@ -24,7 +24,6 @@ import {
   SidebarSeparator,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { ThemeSwitcher } from "@/components/theme-switcher";
 import type { DashboardData } from "@/lib/data/types";
 
 export type AppView = "overview" | "health-score";
@@ -41,6 +40,7 @@ export function HealthSidebar({
   view,
   onViewChange,
   onVigilancia,
+  hidden = false,
 }: {
   data: DashboardData;
   companyId: string;
@@ -48,11 +48,13 @@ export function HealthSidebar({
   view: AppView;
   onViewChange: (view: AppView) => void;
   onVigilancia?: () => void;
+  /** Quick mode: the sidebar slides out of the way instead of collapsing to icons. */
+  hidden?: boolean;
 }) {
   const { setOpenMobile } = useSidebar();
 
   return (
-    <Sidebar variant="inset" collapsible="icon">
+    <Sidebar variant="inset" collapsible={hidden ? "offcanvas" : "icon"} inert={hidden || undefined}>
       <SidebarHeader className="gap-3 p-3">
         <div className="flex h-10 items-center gap-3 px-1">
           <div className="grid size-8 shrink-0 place-items-center rounded-lg border bg-background">
@@ -132,11 +134,8 @@ export function HealthSidebar({
           <Database className="size-3.5 shrink-0" />
           <span className="group-data-[collapsible=icon]:hidden">Datos · {data.asOfMonth}</span>
         </div>
-        <div className="group-data-[collapsible=icon]:hidden">
-          <ThemeSwitcher />
-        </div>
       </SidebarFooter>
-      <SidebarRail />
+      {hidden ? null : <SidebarRail />}
     </Sidebar>
   );
 }
