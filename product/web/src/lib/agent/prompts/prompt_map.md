@@ -10,6 +10,7 @@ This is one stacked prompt. **Every file after this has one job.** Do not mix jo
 | 4 | **WORDING** | `wording_rules.md` | Frases fijas de Javi (español). Cómo decir, no qué recuperar. |
 | 5 | **FORMAT** | `watcher_format.md` | Forma de la ficha mensual. No la reescribas. |
 | 6 | **TOOLS** | `tools_catalog.md` | Qué recuperación llamar (`get_company`, `get_alerts`…). Hechos, no cuentas. |
+| 6b | **PLOTS** | `plots_catalog.md` | Ocho gráficos del producto/monitor. El servidor rellena los números. |
 | 7 | **RECORDS** | `clean_schema.md` (solo Ask) | Tablas `clean.*` / `core` para facturas y movimientos. |
 | 8 | **SESSION** | extra | `company_id` / `group_id` / `as_of` de este popup. |
 

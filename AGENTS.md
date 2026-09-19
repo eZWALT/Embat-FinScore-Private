@@ -74,6 +74,7 @@ Build Watcher and the chat **inside the existing product**, not as extra tabs. T
 | `prompts/wording_rules.md` | **WORDING** | Javi’s fixed Spanish claims |
 | `prompts/watcher_format.md` | **FORMAT** | **The** month-post shape: 1 line + 1 line + ≤4 bullets |
 | `prompts/tools_catalog.md` | **TOOLS** | When/in/out for every retrieval. UI labels in `tool-catalog.ts`. |
+| `prompts/plots_catalog.md` | **PLOTS** | Eight charts from the product/monitor. Server fills the numbers. |
 | `prompts/clean_schema.md` | **RECORDS** | Ask only: pipeline `clean.*`; hosted as Neon `core` |
 
 Tools read **Neon** at runtime: `api` / `analytics` for scores, reasons, alerts (never recompute a score). Record questions go to `core` (invoices, transactions, balances, debt) through a guarded `SELECT` + `LIMIT 200`. DuckDB is a load/audit artifact, not the app's database. The same SQL guard applies if a local clean DuckDB is used in development.

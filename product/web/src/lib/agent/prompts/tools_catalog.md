@@ -81,9 +81,10 @@ If a tool returns `{error}`, say so. Do not guess.
 
 ## `plot_series`
 
-**When:** the answer is a series you already have.
-**In:** `title`, `x` (YYYY-MM), `series` (name → values aligned with x), `kind?` line|bar, `markers?`, `band?`, `y_label?`.
-**Out:** the UI draws it. One or two plots per answer. Do not caption it in prose.
+**When:** the answer needs a chart that already exists on the product or in Javi’s monitor.
+**In:** `kind` (`score_history` \| `score_compare` \| `categories` \| `control_own` \| `control_cluster` \| `control_group` \| `forecast_fan` \| `group_members`) plus the ids in `plots_catalog.md`. No `x`, no `series`.
+**Out:** the server builds the spec from the score run; the UI draws it. One plot per answer.
+**Do not:** type values, plot invoices or inflows, or invent a ninth kind.
 
 ## Sentinel (Watcher replies)
 

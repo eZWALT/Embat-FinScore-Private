@@ -14,6 +14,7 @@ import type {
 } from "@/lib/data/types";
 
 import { neonQuery, coreIsMounted } from "./neon-sql";
+import { buildCatalogPlot, PLOT_KINDS } from "./plot-catalog";
 import { checkSql, toCoreSql, UnsafeQuery } from "./sql-guard";
 
 const ALERT_KINDS = [
@@ -598,36 +599,18 @@ const query_clean_db = tool({
 
 const plot_series = tool({
   description:
-    "Ask the UI to draw a chart. x: month labels (YYYY-MM). series: name -> values aligned with x (null allowed). kind: line | bar. markers: months to mark (e.g. alert months). band: optional {lower, upper} aligned with x. One or two plots per answer.",
+    "Draw one catalog chart. The server fills every number from the score run. kind: score_history | score_compare | categories | control_own | control_cluster | control_group | forecast_fan | group_members. Do not pass series or typed values.",
   inputSchema: z.object({
-    title: z.string(),
-    x: z.array(z.string()),
-    series: z.record(z.string(), z.array(z.number().nullable())),
-    kind: z.enum(["line", "bar"]).optional(),
-    markers: z.array(z.string()).optional(),
-    band: z
-      .object({
-        lower: z.array(z.number().nullable()),
-        upper: z.array(z.number().nullable()),
-      })
-      .optional(),
-    y_label: z.string().optional(),
+    kind: z.enum(PLOT_KINDS),
+    company_id: z.string().optional().describe("COMP_xxxx"),
+    group_id: z.string().optional().describe("GROUP_xxxx"),
+    company_ids: z.array(z.string()).max(8).optional(),
+    metric: z.enum(["score", "payment_history", "amounts_owed", "stability"]).optional(),
   }),
-  execute: async ({ title, x, series, kind = "line", markers, band, y_label }) => {
-    const n = x.length;
-    const bad = Object.entries(series)
-      .filter(([, values]) => values.length !== n)
-      .map(([name]) => name);
-    if (bad.length) return { error: `series not aligned with x: ${bad.join(", ")}` };
-    if (band && (band.lower.length !== n || band.upper.length !== n)) {
-      return { error: "band not aligned with x" };
-    }
-    return {
-      ok: true,
-      title,
-      points: n,
-      plot: { title, x, series, kind, markers: markers ?? [], band: band ?? null, y_label: y_label ?? null },
-    };
+  execute: async (input) => {
+    const plot = await buildCatalogPlot(input);
+    if ("error" in plot) return plot;
+    return { ok: true, title: plot.title, points: plot.x.length, kind: input.kind, plot };
   },
 });
 
