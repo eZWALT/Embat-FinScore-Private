@@ -7,6 +7,7 @@ import { cn } from "cn";
 import { Button } from "@/components/ui/button";
 import { formatPoints } from "@/components/group/labels";
 import { SERIES_COLORS } from "@/components/quick/series";
+import { OfferStrip } from "@/components/offers/offer-guidance";
 import { QuickChart, type MonthRange } from "@/components/quick/quick-chart";
 import { buildPrompt } from "@/components/quick/quick-explain";
 import type { DashboardCompany } from "@/lib/data/types";
@@ -93,6 +94,7 @@ export function ComparePanel({
                 </li>
               ))}
             </ul>
+            <OfferStrip companies={selected} />
           </>
         )}
       </div>

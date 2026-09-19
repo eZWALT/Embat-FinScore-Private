@@ -1,12 +1,4 @@
-import type { Metadata } from "next";
-
-import { GroupHealthMap } from "@/components/group-health-map";
-import { getGroupMapData } from "@/lib/data/group-service";
-
-export const metadata: Metadata = {
-  title: "Mapa de grupos · Centinela de salud",
-  description: "Puntuación de cada empresa del grupo, mes a mes, con sus razones y alertas.",
-};
+import { redirect } from "next/navigation";
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
@@ -14,11 +6,13 @@ function first(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
 }
 
-export const dynamic = "force-dynamic";
-
-export default async function GruposPage({ searchParams }: { searchParams: SearchParams }) {
+/** Groups live in the deep view now. Old links keep working. */
+export default async function GruposRedirect({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
-  const data = await getGroupMapData(first(params.group), first(params.company));
-
-  return <GroupHealthMap data={data} />;
+  const query = new URLSearchParams({ modo: "profundo" });
+  const group = first(params.group);
+  const company = first(params.company);
+  if (group) query.set("group", group);
+  else if (company) query.set("company", company);
+  redirect(`/?${query}`);
 }

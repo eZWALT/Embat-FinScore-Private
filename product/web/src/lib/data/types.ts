@@ -199,6 +199,8 @@ export interface DashboardCompany {
   confidence: Confidence;
   confidenceNote: string | null;
   coverage: number;
+  /** Safety guard active this month, if any. */
+  guard: Guard | null;
   topReason: string | null;
   scoreHistory: { month: string; score: number }[];
   categories: { id: CategoryId; label: string; score: number | null }[];

@@ -14,14 +14,16 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
   const data = await getDashboardData();
   const openChat = first(params.chat) === "1";
   const company = first(params.company);
-  // Quick is the landing view; a link that names a company, the chat or the deep mode opens deep.
-  const deep = first(params.modo) === "profundo" || Boolean(company) || openChat;
+  const group = first(params.group);
+  // Quick is the landing view; a link that names a company or a group, the chat or the deep mode opens deep.
+  const deep = first(params.modo) === "profundo" || Boolean(company) || Boolean(group) || openChat;
 
   return (
     <HealthDashboard
       data={data}
       openChat={openChat}
       initialCompanyId={company}
+      initialGroupId={group}
       initialMode={deep ? "deep" : "quick"}
     />
   );

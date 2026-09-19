@@ -1,47 +1,9 @@
-import { MONITORING_DISCLAIMER } from "./plain-language";
-import { createScoreRepository } from "./repository";
-import type {
-  Alert,
-  AlertSeverity,
-  Confidence,
-  Guard,
-  Reason,
-  ScoreRepository,
-  Trajectory,
-} from "./types";
+import { neonQuery } from "@/lib/agent/neon-sql";
+
+import { type ChartRow, type ControlSeries, toSeries } from "./monitor-service";
+import type { AlertSeverity, Confidence, Guard, Trajectory } from "./types";
 
 const GROUP_ID = /^GROUP_[0-9]{4}$/;
-const COMPANY_ID = /^COMP_[0-9]{4}$/;
-
-export interface GroupOption {
-  groupId: string;
-  nCompanies: number;
-  meanScore: number | null;
-}
-
-export interface GroupAlertView {
-  alertId: string;
-  entityId: string;
-  month: string;
-  kind: Alert["kind"];
-  direction: Alert["direction"];
-  severity: AlertSeverity;
-  title: string;
-  summary: string;
-  owner: Alert["owner"];
-  action: string;
-  reasons: GroupReasonView[];
-}
-
-export interface GroupReasonView {
-  item: string;
-  label: string;
-  points: number;
-  value: number | null;
-  unit: string | null;
-  eur: number | null;
-  sentence: string;
-}
 
 export interface GroupMemberRow {
   companyId: string;
@@ -53,201 +15,89 @@ export interface GroupMemberRow {
   guard: Guard | null;
   nAlerts: number;
   maxAlertSeverity: AlertSeverity | null;
-  /** Aligned with `GroupMapData.months`. */
+  /** Aligned with `GroupOverview.months`. */
   scores: (number | null)[];
 }
 
-export interface GroupCompanyPanel {
-  companyId: string;
-  currency: string | null;
-  latestMonth: string;
-  score: number;
-  scorePreCap: number;
-  guard: Guard | null;
-  trajectory: Trajectory;
-  confidence: Confidence;
-  confidenceNote: string | null;
-  coverage: number;
-  scoreHistory: { month: string; score: number }[];
-  alertMonths: { month: string; severity: AlertSeverity }[];
-  reasons: GroupReasonView[];
-  alerts: GroupAlertView[];
-}
-
-export interface GroupMapData {
+export interface GroupOverview {
+  groupId: string;
   asOfMonth: string;
-  isSample: boolean;
-  disclaimer: string;
   months: string[];
-  groupOptions: GroupOption[];
-  group: {
-    groupId: string;
-    nCompanies: number;
-    meanScore: number | null;
-    minScore: number | null;
-    minCompanyId: string | null;
-    meanScores: (number | null)[];
-    limitsAvailable: boolean;
-    alerts: GroupAlertView[];
-  };
+  nCompanies: number;
+  meanScore: number | null;
+  minScore: number | null;
+  minCompanyId: string | null;
+  /** Aligned with `months`. */
+  meanScores: (number | null)[];
+  /** True from 3 scored members. Below that only the mean is drawn: no limits, no alerts. */
+  limitsAvailable: boolean;
+  /** `own`: the mean against its own history. `vsGroups`: its 3-month change against funnel limits of similar-size groups. */
+  control: { own: ControlSeries | null; vsGroups: ControlSeries | null };
+  /** Weakest first. */
   members: GroupMemberRow[];
-  company: GroupCompanyPanel | null;
 }
 
-function toReasonView(reason: Reason): GroupReasonView {
-  return {
-    item: reason.item,
-    label: reason.label,
-    points: reason.points,
-    value: reason.value,
-    unit: reason.unit,
-    eur: reason.eur,
-    sentence: reason.sentence,
-  };
-}
+const num = (value: unknown) => (value === null || value === undefined ? null : Number(value));
+const numbers = (list: unknown) => ((list as unknown[] | null) ?? []).map(num);
 
-function toAlertView(alert: Alert): GroupAlertView {
-  return {
-    alertId: alert.alert_id,
-    entityId: alert.entity.id,
-    month: alert.month,
-    kind: alert.kind,
-    direction: alert.direction,
-    severity: alert.severity,
-    title: alert.title,
-    summary: alert.summary,
-    owner: alert.owner,
-    action: alert.action,
-    reasons: alert.reasons.map(toReasonView),
-  };
-}
+/** Everything the group screen draws except its alerts: the mean series, control charts and the members with their monthly scores. */
+export async function getGroupOverview(groupId: string): Promise<GroupOverview> {
+  if (!GROUP_ID.test(groupId)) throw new Error(`Invalid group id: ${groupId}`);
 
-function resolveAlerts(ids: string[], byId: Map<string, Alert>): GroupAlertView[] {
-  const found: Alert[] = [];
-  for (const id of ids) {
-    const alert = byId.get(id);
-    if (alert) found.push(alert);
-  }
-  // Newest first, then severity act > watch > info.
-  const rank: Record<AlertSeverity, number> = { act: 0, watch: 1, info: 2 };
-  found.sort(
-    (a, b) => b.month.localeCompare(a.month) || rank[a.severity] - rank[b.severity],
-  );
-  return found.map(toAlertView);
-}
-
-/**
- * View model for the Group Health Map. Reads the three indexes and only the selected company's detail file.
- * Unknown or missing ids fall back to the largest group and its weakest member.
- */
-export async function getGroupMapData(
-  groupId?: string,
-  companyId?: string,
-  repository: ScoreRepository = createScoreRepository(),
-): Promise<GroupMapData> {
-  const [manifest, companies, groups, feed] = await Promise.all([
-    repository.getManifest(),
-    repository.listCompanies(),
-    repository.listGroups(),
-    repository.getAlerts(),
+  const [manifest, groups, members, charts] = await Promise.all([
+    neonQuery<{ as_of_month: string; months: string[] | null }>("SELECT as_of_month, months FROM api.manifest"),
+    neonQuery<Record<string, unknown>>(
+      `SELECT g.n_companies, g.latest_mean_score, g.latest_min_score, g.latest_min_company_id, g.mean_scores, g.limits_available
+       FROM analytics.groups_index g
+       JOIN api.current_run r ON r.run_id = g.run_id
+       WHERE g.group_id = $1`,
+      [groupId],
+    ),
+    neonQuery<Record<string, unknown>>(
+      `SELECT company_id, score, trajectory, confidence, guard, delta_1m, delta_3m, n_alerts, max_alert_severity, sparkline
+       FROM api.current_index
+       WHERE group_id = $1
+       ORDER BY score, company_id`,
+      [groupId],
+    ),
+    neonQuery<ChartRow & Record<string, unknown>>(
+      `SELECT c.comparison, c.months, c.values, c.center, c.lower, c.upper, c.signal, c.persistent
+       FROM analytics.control_charts c
+       JOIN api.current_run r ON r.run_id = c.run_id
+       WHERE c.entity_type = 'group' AND c.entity_id = $1 AND c.metric = 'score'
+         AND c.comparison IN ('group_own_history', 'group_vs_groups')`,
+      [groupId],
+    ),
   ]);
 
-  if (groups.length === 0) {
-    throw new Error("The score bundle contains no groups");
-  }
-
-  const sortedGroups = [...groups].sort(
-    (a, b) => b.n_companies - a.n_companies || a.group_id.localeCompare(b.group_id),
-  );
-  const groupOptions: GroupOption[] = sortedGroups.map((group) => ({
-    groupId: group.group_id,
-    nCompanies: group.n_companies,
-    meanScore: group.latest_mean_score,
-  }));
-
-  // A company alone (from a link out of another screen) opens on its own group.
-  const companyGroupId =
-    !groupId && companyId && COMPANY_ID.test(companyId)
-      ? companies.find((row) => row.company_id === companyId)?.group_id
-      : undefined;
-  const wantedGroupId = groupId ?? companyGroupId ?? undefined;
-  const requestedGroup =
-    wantedGroupId && GROUP_ID.test(wantedGroupId)
-      ? sortedGroups.find((group) => group.group_id === wantedGroupId)
-      : undefined;
-  const group = requestedGroup ?? sortedGroups[0];
-
-  const companyById = new Map(companies.map((row) => [row.company_id, row]));
-  const members: GroupMemberRow[] = group.company_ids
-    .map((id) => companyById.get(id))
-    .filter((row) => row !== undefined)
-    .map((row) => ({
-      companyId: row.company_id,
-      score: row.score,
-      delta1m: row.delta_1m,
-      delta3m: row.delta_3m,
-      trajectory: row.trajectory,
-      confidence: row.confidence,
-      guard: row.guard,
-      nAlerts: row.n_alerts,
-      maxAlertSeverity: row.max_alert_severity,
-      scores: row.scores,
-    }))
-    .sort((a, b) => a.score - b.score || a.companyId.localeCompare(b.companyId));
-
-  const memberIds = new Set(members.map((member) => member.companyId));
-  const selectedCompanyId =
-    companyId && COMPANY_ID.test(companyId) && memberIds.has(companyId)
-      ? companyId
-      : group.latest_min_company_id && memberIds.has(group.latest_min_company_id)
-        ? group.latest_min_company_id
-        : members[0]?.companyId ?? null;
-
-  const alertById = new Map(feed.alerts.map((alert) => [alert.alert_id, alert]));
-
-  let company: GroupCompanyPanel | null = null;
-  if (selectedCompanyId) {
-    const detail = await repository.getCompany(selectedCompanyId);
-    const latest = detail.months.at(-1);
-    if (!latest) {
-      throw new Error(`Company ${selectedCompanyId} has no scored months`);
-    }
-    const alerts = resolveAlerts(detail.alert_ids, alertById);
-    company = {
-      companyId: detail.company_id,
-      currency: detail.currency,
-      latestMonth: detail.latest_month,
-      score: latest.score,
-      scorePreCap: latest.score_pre_cap,
-      guard: latest.guard,
-      trajectory: latest.trajectory,
-      confidence: latest.confidence,
-      confidenceNote: latest.confidence_note,
-      coverage: latest.coverage,
-      scoreHistory: detail.months.map(({ month, score }) => ({ month, score })),
-      alertMonths: alerts.map(({ month, severity }) => ({ month, severity })),
-      reasons: (latest.reasons ?? []).slice(0, 4).map(toReasonView),
-      alerts,
-    };
-  }
+  const group = groups[0];
+  if (!group) throw new Error(`Group not found: ${groupId}`);
 
   return {
-    asOfMonth: manifest.as_of_month,
-    isSample: manifest.is_sample,
-    disclaimer: MONITORING_DISCLAIMER,
-    months: manifest.months,
-    groupOptions,
-    group: {
-      groupId: group.group_id,
-      nCompanies: group.n_companies,
-      meanScore: group.latest_mean_score,
-      minScore: group.latest_min_score,
-      minCompanyId: group.latest_min_company_id,
-      meanScores: group.mean_scores,
-      limitsAvailable: group.limits_available,
-      alerts: resolveAlerts(group.alert_ids, alertById),
+    groupId,
+    asOfMonth: manifest[0]?.as_of_month ?? "",
+    months: manifest[0]?.months ?? [],
+    nCompanies: Number(group.n_companies),
+    meanScore: num(group.latest_mean_score),
+    minScore: num(group.latest_min_score),
+    minCompanyId: (group.latest_min_company_id as string | null) ?? null,
+    meanScores: numbers(group.mean_scores),
+    limitsAvailable: Boolean(group.limits_available),
+    control: {
+      own: toSeries(charts.find((row) => row.comparison === "group_own_history")),
+      vsGroups: toSeries(charts.find((row) => row.comparison === "group_vs_groups")),
     },
-    members,
-    company,
+    members: members.map((row) => ({
+      companyId: String(row.company_id),
+      score: Number(row.score),
+      delta1m: num(row.delta_1m),
+      delta3m: num(row.delta_3m),
+      trajectory: row.trajectory as Trajectory,
+      confidence: row.confidence as Confidence,
+      guard: (row.guard as Guard | null) ?? null,
+      nAlerts: Number(row.n_alerts ?? 0),
+      maxAlertSeverity: (row.max_alert_severity as AlertSeverity | null) ?? null,
+      scores: numbers(row.sparkline),
+    })),
   };
 }

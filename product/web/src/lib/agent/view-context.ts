@@ -5,7 +5,7 @@ const GROUP = /^GROUP_[0-9]{4}$/;
 const MONTH = /^\d{4}-\d{2}$/;
 const COLOR = /^(azul|verde|naranja|violeta|turquesa|rojo|oliva|rosa)$/;
 const MODE = /^(rapido|profundo)$/;
-const SCREEN = /^(inicio|rapido_chart|resumen|indice)$/;
+const SCREEN = /^(inicio|rapido_chart|resumen|grupo|indice)$/;
 
 export type ViewSeries = {
   companyId: string;
@@ -18,7 +18,7 @@ export type ViewSeries = {
 
 export type DashboardView = {
   mode: "rapido" | "profundo";
-  screen: "inicio" | "rapido_chart" | "resumen" | "indice";
+  screen: "inicio" | "rapido_chart" | "resumen" | "grupo" | "indice";
   asOf?: string;
   focusCompanyId?: string;
   focusGroupId?: string;
@@ -36,6 +36,7 @@ const SCREENS: Record<DashboardView["screen"], string> = {
   inicio: "Rápido, sin gráfico aún: tres opciones (mejores 5, peores 5, buscar).",
   rapido_chart: "Rápido: índice 0–100 por mes, una línea por empresa. El color es el de la leyenda.",
   resumen: "Resumen de una empresa: índice, cambio mensual, trayectoria, confianza, señal principal, gráfico de evolución con control y predicción, puntuación por categoría al pasar el cursor por el índice, Alerts (últimos 3 meses).",
+  grupo: "Resumen de un grupo: media del índice, cambio mensual, empresa más débil, gráfico de la media con control intra e inter-grupo, Alerts del grupo y de sus empresas, mapa de calor y tabla de empresas.",
   indice: "Índice de salud: varias empresas en el mismo gráfico, una línea por color.",
 };
 

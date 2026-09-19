@@ -1,18 +1,19 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
 import { ArrowDownRight, ArrowUpRight, Layers, Minus, TriangleAlert } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AppHeader } from "@/components/app-header";
-import { CompanyAlerts } from "@/components/company-alerts";
+import { AlertsTable } from "@/components/alerts-table";
 import { EntityCombobox } from "@/components/entity-combobox";
+import { GroupView } from "@/components/group-view";
 import { HealthIndexHelp } from "@/components/health-index-help";
 import { ModeToggle, type AnalysisMode } from "@/components/mode-toggle";
 import { MonitorPlot } from "@/components/monitor-plot";
+import { OfferGuidanceCard } from "@/components/offers/offer-guidance";
 import { QuickAnalysis } from "@/components/quick/quick-analysis";
 import { Segmented, type SegmentedOption } from "@/components/segmented";
 import { confidenceLabels, scoreColor, trajectoryLabels } from "@/components/group/labels";
@@ -26,6 +27,12 @@ import type { DashboardView } from "@/lib/agent/view-context";
 import type { DashboardCompany, DashboardData } from "@/lib/data/types";
 
 type DeepView = "overview" | "health-score";
+type Entity = "company" | "group";
+
+const ENTITIES: SegmentedOption<Entity>[] = [
+  { value: "company", label: "Empresa" },
+  { value: "group", label: "Grupo" },
+];
 
 const DEEP_VIEWS: SegmentedOption<DeepView>[] = [
   { value: "overview", label: "Resumen" },
@@ -64,18 +71,40 @@ export function HealthDashboard({
   data,
   openChat = false,
   initialCompanyId,
+  initialGroupId,
   initialMode = "quick",
 }: {
   data: DashboardData;
   openChat?: boolean;
   initialCompanyId?: string;
+  initialGroupId?: string;
   initialMode?: AnalysisMode;
 }) {
   const defaultCompany =
     data.companies.find((company) => company.companyId === initialCompanyId) ??
     data.companies.find((company) => company.trajectory === "improving") ??
     data.companies[0];
+  const groupOptions = useMemo(() => {
+    const groups = new Map<string, number[]>();
+    for (const candidate of data.companies) {
+      if (!candidate.groupId) continue;
+      const scores = groups.get(candidate.groupId);
+      if (scores) scores.push(candidate.score);
+      else groups.set(candidate.groupId, [candidate.score]);
+    }
+    return [...groups.entries()]
+      .map(([groupId, scores]) => ({ groupId, n: scores.length, mean: scores.reduce((sum, score) => sum + score, 0) / scores.length }))
+      .sort((a, b) => b.n - a.n || a.groupId.localeCompare(b.groupId));
+  }, [data.companies]);
   const [companyId, setCompanyId] = useState(defaultCompany.companyId);
+  const [entity, setEntity] = useState<Entity>(
+    initialGroupId && groupOptions.some((option) => option.groupId === initialGroupId) ? "group" : "company",
+  );
+  const [groupId, setGroupId] = useState(
+    (initialGroupId && groupOptions.some((option) => option.groupId === initialGroupId) ? initialGroupId : defaultCompany.groupId) ??
+      groupOptions[0]?.groupId ??
+      null,
+  );
   const [view, setView] = useState<DeepView>("overview");
   const [chatOpen, setChatOpen] = useState(openChat);
   const [mode, setMode] = useState<AnalysisMode>(initialMode);
@@ -98,16 +127,36 @@ export function HealthDashboard({
     }
   }, []);
 
-  // The company lives in the URL so a shared link or a link out of Grupos keeps it, without refetching.
+  // The entity lives in the URL so a shared link keeps it, without refetching.
   function selectCompany(next: string) {
     setCompanyId(next);
+    setEntity("company");
+    setView("overview");
     window.history.replaceState(null, "", `/${queryFor({ company: next })}`);
+  }
+
+  function selectGroup(next: string) {
+    setGroupId(next);
+    setEntity("group");
+    setView("overview");
+    window.history.replaceState(null, "", `/${queryFor({ group: next })}`);
+  }
+
+  function changeEntity(next: Entity) {
+    if (next === "company") selectCompany(companyId);
+    else if (groupId) selectGroup(groupId);
   }
 
   function changeMode(next: AnalysisMode) {
     setMode(next);
     setSeedPrompt(undefined);
-    window.history.replaceState(null, "", next === "quick" ? "/" : `/${queryFor({ modo: "profundo", company: companyId })}`);
+    window.history.replaceState(
+      null,
+      "",
+      next === "quick"
+        ? "/"
+        : `/${queryFor(entity === "group" ? { modo: "profundo", group: groupId } : { modo: "profundo", company: companyId })}`,
+    );
   }
 
   function explainRange(prompt: string) {
@@ -118,12 +167,14 @@ export function HealthDashboard({
 
   const chatCompany =
     mode === "deep"
-      ? view === "overview"
+      ? view === "overview" && entity === "company"
         ? company
         : undefined
       : quickCompanies.length === 1
         ? quickCompanies[0]
         : undefined;
+
+  const chatGroupId = mode === "deep" && view === "overview" && entity === "group" ? (groupId ?? undefined) : undefined;
 
   const dashboardView = useMemo((): DashboardView => {
     if (mode === "quick") {
@@ -147,6 +198,16 @@ export function HealthDashboard({
         series: legendSeries(indiceCompanies),
       };
     }
+    if (entity === "group" && groupId) {
+      const option = groupOptions.find((candidate) => candidate.groupId === groupId);
+      return {
+        mode: "profundo",
+        screen: "grupo",
+        asOf: data.asOfMonth,
+        focusGroupId: groupId,
+        score: option ? option.mean : undefined,
+      };
+    }
     return {
       mode: "profundo",
       screen: "resumen",
@@ -159,7 +220,7 @@ export function HealthDashboard({
       topReason: company.topReason,
       categories: company.categories.map((row) => ({ label: row.label, score: row.score })),
     };
-  }, [mode, view, data.asOfMonth, quickCompanies, quickRange, indiceCompanies, company]);
+  }, [mode, view, entity, groupId, groupOptions, data.asOfMonth, quickCompanies, quickRange, indiceCompanies, company]);
 
   return (
     <div className="flex min-h-svh flex-col">
@@ -183,20 +244,40 @@ export function HealthDashboard({
         >
           <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
             {view === "overview" ? (
-              <div className="w-full sm:w-72">
-                <p className="mb-1.5 text-xs font-medium text-muted-foreground">Empresa analizada</p>
-                <EntityCombobox
-                  ariaLabel="Empresa analizada"
-                  options={data.companies.map((candidate) => ({
-                    value: candidate.companyId,
-                    label: candidate.companyId,
-                    detail: `${candidate.score.toFixed(0)} pts`,
-                  }))}
-                  value={companyId}
-                  onChange={(value) => value && selectCompany(value)}
-                  placeholder="Elige una empresa"
-                  searchPlaceholder="Buscar empresa (p. ej. 0462)"
-                />
+              <div className="flex w-full flex-wrap items-end gap-3 sm:w-auto">
+                <Segmented options={ENTITIES} value={entity} onChange={changeEntity} ariaLabel="Qué analizar" />
+                <div className="w-full sm:w-72">
+                  <p className="mb-1.5 text-xs font-medium text-muted-foreground">
+                    {entity === "company" ? "Empresa analizada" : "Grupo analizado"}
+                  </p>
+                  {entity === "company" ? (
+                    <EntityCombobox
+                      ariaLabel="Empresa analizada"
+                      options={data.companies.map((candidate) => ({
+                        value: candidate.companyId,
+                        label: candidate.companyId,
+                        detail: `${candidate.score.toFixed(0)} pts`,
+                      }))}
+                      value={companyId}
+                      onChange={(value) => value && selectCompany(value)}
+                      placeholder="Elige una empresa"
+                      searchPlaceholder="Buscar empresa (p. ej. 0462)"
+                    />
+                  ) : (
+                    <EntityCombobox
+                      ariaLabel="Grupo analizado"
+                      options={groupOptions.map((option) => ({
+                        value: option.groupId,
+                        label: option.groupId,
+                        detail: `${option.n} emp. · media ${option.mean.toFixed(0)}`,
+                      }))}
+                      value={groupId}
+                      onChange={(value) => value && selectGroup(value)}
+                      placeholder="Elige un grupo"
+                      searchPlaceholder="Buscar grupo (p. ej. 0142)"
+                    />
+                  )}
+                </div>
               </div>
             ) : (
               <span />
@@ -211,6 +292,11 @@ export function HealthDashboard({
               onSelectionChange={setIndiceCompanies}
               onExplain={explainRange}
             />
+          ) : entity === "group" && groupId ? (
+            <>
+              <GroupView groupId={groupId} highlightCompanyId={companyId} onSelectCompany={selectCompany} />
+              <ProductCredit className="mt-8" />
+            </>
           ) : (
             <>
               <section id="resumen" className="flex scroll-mt-20 flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
@@ -222,11 +308,9 @@ export function HealthDashboard({
                 </div>
                 {company.groupId ? (
                   <nav aria-label="Ir a otras vistas de esta empresa" className="flex flex-wrap gap-2">
-                    <Button asChild variant="outline" size="sm">
-                      <Link href={`/grupos${queryFor({ group: company.groupId, company: company.companyId })}`}>
-                        <Layers data-icon="inline-start" />
-                        Ver grupo
-                      </Link>
+                    <Button variant="outline" size="sm" onClick={() => selectGroup(company.groupId!)}>
+                      <Layers data-icon="inline-start" />
+                      Ver grupo
                     </Button>
                   </nav>
                 ) : null}
@@ -323,10 +407,11 @@ export function HealthDashboard({
                 </div>
               </section>
 
-              <section className="mt-4 grid items-start gap-4 xl:grid-cols-[1.6fr_1fr]">
+              <div className="mt-4 space-y-4">
                 <MonitorPlot company={company} companies={data.companies} asOfMonth={data.asOfMonth} />
-                <CompanyAlerts companyId={company.companyId} />
-              </section>
+                <OfferGuidanceCard company={company} />
+                <AlertsTable scope={{ company: company.companyId }} />
+              </div>
 
               <ProductCredit className="mt-8" />
             </>
@@ -334,9 +419,9 @@ export function HealthDashboard({
         </main>
       )}
       <HealthScoreChat
-        key={`${mode}:${view}:${chatCompany?.companyId ?? "index"}`}
+        key={`${mode}:${view}:${chatCompany?.companyId ?? chatGroupId ?? "index"}`}
         companyId={chatCompany?.companyId}
-        groupId={chatCompany?.groupId ?? undefined}
+        groupId={chatCompany?.groupId ?? chatGroupId}
         asOf={data.asOfMonth}
         seedPrompt={seedPrompt}
         seedKey={seedKey}

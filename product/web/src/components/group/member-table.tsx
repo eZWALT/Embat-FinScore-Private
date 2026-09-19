@@ -4,7 +4,7 @@ import { cn } from "cn";
 import { ArrowDownRight, ArrowUpRight, Minus } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
-import { SeverityBadge } from "@/components/group/alert-list";
+import { SeverityBadge } from "@/components/alerts-table";
 import {
   confidenceLabels,
   formatPoints,

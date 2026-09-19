@@ -27,7 +27,7 @@ export interface CompanyMonitor {
   forecast: ForecastFan | null;
 }
 
-interface ChartRow {
+export interface ChartRow {
   comparison: string;
   months: string[];
   values: (number | null)[] | null;
@@ -40,7 +40,7 @@ interface ChartRow {
 
 const num = (value: number | null | undefined) => (value === null || value === undefined ? null : Number(value));
 
-function toSeries(row: ChartRow | undefined): ControlSeries | null {
+export function toSeries(row: ChartRow | undefined): ControlSeries | null {
   if (!row?.months?.length) return null;
   const pad = <T,>(list: T[] | null, fill: T) => row.months.map((_, i) => list?.[i] ?? fill);
   return {

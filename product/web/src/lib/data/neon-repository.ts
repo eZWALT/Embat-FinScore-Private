@@ -351,6 +351,7 @@ function mapDashboardRow(row: DashboardRow): DashboardCompany {
     confidence: row.confidence,
     confidenceNote: row.confidence_note,
     coverage: Number(row.coverage),
+    guard: row.guard ?? null,
     topReason: topReasonInSpanish(
       row.guard,
       row.reason_item

@@ -1,30 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { CalendarDays } from "lucide-react";
-import {
-  Area,
-  CartesianGrid,
-  ComposedChart,
-  Line,
-  ReferenceLine,
-  XAxis,
-  YAxis,
-} from "recharts";
 
 import { cn } from "cn";
 
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ClientOnly } from "@/components/client-only";
+import { PlotCard, PlotChart, SignalLegend, controlRows, type PlotRow } from "@/components/plot-parts";
 import { Segmented, type SegmentedOption } from "@/components/segmented";
-import {
-  type ChartConfig,
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
-import { formatMonth } from "@/lib/format-month";
 import type { DashboardCompany } from "@/lib/data/types";
 import type { CompanyMonitor, ControlSeries } from "@/lib/data/monitor-service";
 
@@ -98,25 +79,8 @@ function peerSeries(company: DashboardCompany, everyone: DashboardCompany[]): Co
   };
 }
 
-type Row = Record<string, string | number | boolean | [number, number] | null>;
-
-function controlRows(series: ControlSeries): Row[] {
-  return series.months.map((month, i) => {
-    const lower = series.lower[i];
-    const upper = series.upper[i];
-    return {
-      month,
-      value: series.values[i],
-      center: series.center[i],
-      band: lower !== null && upper !== null ? [lower, upper] : null,
-      signal: series.signal[i],
-      persistent: series.persistent[i],
-    };
-  });
-}
-
-function scoreRows(company: DashboardCompany, monitor: CompanyMonitor | null, showForecast: boolean): Row[] {
-  const rows: Row[] = company.scoreHistory.map((point) => ({ month: point.month, value: point.score }));
+function scoreRows(company: DashboardCompany, monitor: CompanyMonitor | null, showForecast: boolean): PlotRow[] {
+  const rows: PlotRow[] = company.scoreHistory.map((point) => ({ month: point.month, value: point.score }));
   const fan = showForecast ? monitor?.forecast : null;
   if (!fan) return rows;
   const origin = rows.find((row) => row.month === fan.originMonth);
@@ -132,29 +96,8 @@ function scoreRows(company: DashboardCompany, monitor: CompanyMonitor | null, sh
   return rows;
 }
 
-type DotProps = { cx?: number; cy?: number; index?: number; payload?: Row };
-
-function signalDot({ cx, cy, index, payload }: DotProps) {
-  const key = `dot-${index}`;
-  if (cx === undefined || cy === undefined || !payload || payload.signal === "none" || payload.signal === undefined) {
-    return <g key={key} />;
-  }
-  const persistent = payload.persistent === true;
-  return (
-    <circle
-      key={key}
-      cx={cx}
-      cy={cy}
-      r={persistent ? 5 : 4}
-      fill={persistent ? "var(--destructive)" : "var(--background)"}
-      stroke="var(--destructive)"
-      strokeWidth={2}
-    />
-  );
-}
-
 /**
- * The main plot of the deep view. Score history, or a control chart of the score against the company's own history,
+ * The main plot of the company view. Score history, or a control chart of the score against the company's own history,
  * against every other company, or against its cluster. The forecast fan can be laid over the score.
  */
 export function MonitorPlot({
@@ -206,152 +149,67 @@ export function MonitorPlot({
     [isControl, series, company, monitor, showForecast],
   );
 
-  const config = useMemo(
-    () =>
-      ({
-        value: { label: COPY[view].unit, color: "var(--chart-1)" },
-        center: { label: view === "peers" ? "Mediana" : "Normalidad", color: "var(--muted-foreground)" },
-        median: { label: "Predicción (mediana)", color: "var(--chart-2)" },
-      }) satisfies ChartConfig,
-    [view],
-  );
-
   const copy = COPY[view];
+  const notice = failed
+    ? failed
+    : noFan
+      ? "Esta empresa aún no tiene predicción: hacen falta al menos 4 meses puntuados."
+      : empty
+        ? view === "peers"
+          ? "No hay suficientes empresas puntuadas en estos meses para comparar."
+          : "Este gráfico necesita más historial (al menos 7 meses puntuados) o no está disponible para esta empresa."
+        : null;
 
   return (
-    <Card id="evolucion" className="scroll-mt-20">
-      <CardHeader className="gap-3">
-        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-          <CardTitle className="text-base">{copy.title}</CardTitle>
-          <Badge variant="outline" className="gap-1.5 font-normal text-muted-foreground">
-            <CalendarDays className="size-3" />
-            hasta {formatMonth(asOfMonth)}
-          </Badge>
-        </div>
-        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-          <div className="max-w-full overflow-x-auto">
-            <Segmented options={VIEWS} value={view} onChange={setView} ariaLabel="Vista del gráfico" className="min-w-max" />
-          </div>
-          {view === "score" ? (
-            <button
-              type="button"
-              role="switch"
-              aria-checked={showForecast}
-              onClick={() => setShowForecast((on) => !on)}
-              className="group inline-flex items-center gap-2 rounded-md text-xs text-muted-foreground outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+    <PlotCard
+      title={copy.title}
+      asOfMonth={asOfMonth}
+      views={<Segmented options={VIEWS} value={view} onChange={setView} ariaLabel="Vista del gráfico" className="min-w-max" />}
+      aside={
+        view === "score" ? (
+          <button
+            type="button"
+            role="switch"
+            aria-checked={showForecast}
+            onClick={() => setShowForecast((on) => !on)}
+            className="group inline-flex items-center gap-2 rounded-md text-xs text-muted-foreground outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+          >
+            <span
+              aria-hidden="true"
+              className={cn("relative h-4 w-7 rounded-full border transition-colors", showForecast ? "border-foreground bg-foreground" : "bg-muted")}
             >
               <span
-                aria-hidden="true"
                 className={cn(
-                  "relative h-4 w-7 rounded-full border transition-colors",
-                  showForecast ? "border-foreground bg-foreground" : "bg-muted",
+                  "absolute top-0.5 size-2.5 rounded-full transition-all",
+                  showForecast ? "left-[calc(100%-0.75rem)] bg-background" : "left-0.5 bg-muted-foreground",
                 )}
-              >
-                <span
-                  className={cn(
-                    "absolute top-0.5 size-2.5 rounded-full transition-all",
-                    showForecast ? "left-[calc(100%-0.75rem)] bg-background" : "left-0.5 bg-muted-foreground",
-                  )}
-                />
-              </span>
-              <span className={cn("font-medium", showForecast && "text-foreground")}>Predicción</span>
-            </button>
-          ) : null}
-        </div>
-        <p className="text-sm text-muted-foreground">
+              />
+            </span>
+            <span className={cn("font-medium", showForecast && "text-foreground")}>Predicción</span>
+          </button>
+        ) : null
+      }
+      hint={
+        <>
           {copy.hint}
           {view === "score" && showForecast && monitor?.forecast
             ? " Línea discontinua: mediana prevista; banda: intervalo del 80 %. Es una referencia, no una garantía."
             : ""}
-        </p>
-      </CardHeader>
-      <CardContent>
-        {failed || empty || noFan ? (
-          <p className="mb-3 rounded-lg border border-dashed px-3 py-2 text-sm text-muted-foreground">
-            {failed
-              ? failed
-              : noFan
-                ? "Esta empresa aún no tiene predicción: hacen falta al menos 4 meses puntuados."
-                : view === "peers"
-                  ? "No hay suficientes empresas puntuadas en estos meses para comparar."
-                  : "Este gráfico necesita más historial (al menos 7 meses puntuados) o no está disponible para esta empresa."}
-          </p>
-        ) : null}
-        <div className={cn("h-[300px] w-full transition-opacity", loading && "opacity-50")} aria-busy={loading}>
-          <ClientOnly fallback={<div className="h-full w-full" />}>
-            {empty ? null : (
-              <ChartContainer config={config} className="h-full w-full aspect-auto">
-                <ComposedChart data={rows} margin={{ top: 12, right: 8, left: -12, bottom: 0 }}>
-                  <CartesianGrid vertical={false} strokeDasharray="3 3" />
-                  <XAxis dataKey="month" tickFormatter={(month: string) => formatMonth(month)} tickLine={false} axisLine={false} minTickGap={28} />
-                  <YAxis
-                    domain={isControl ? ["auto", "auto"] : [0, 100]}
-                    ticks={isControl ? undefined : [0, 25, 50, 75, 100]}
-                    tickFormatter={isControl ? (value: number) => String(Math.round(value)) : undefined}
-                    tickLine={false}
-                    axisLine={false}
-                    width={40}
-                  />
-                  {!isControl ? <ReferenceLine y={50} stroke="var(--border)" strokeDasharray="4 4" /> : null}
-                  {view === "cluster" ? <ReferenceLine y={0} stroke="var(--border)" strokeDasharray="4 4" /> : null}
-                  <ChartTooltip
-                    cursor={{ stroke: "var(--foreground)", strokeOpacity: 0.4, strokeWidth: 1.5 }}
-                    content={
-                      <ChartTooltipContent
-                        indicator="line"
-                        labelFormatter={(_, payload) => {
-                          const month = payload?.[0]?.payload?.month;
-                          return month ? formatMonth(String(month)) : "";
-                        }}
-                      />
-                    }
-                  />
-                  <Area
-                    dataKey="band"
-                    type="monotone"
-                    stroke="none"
-                    fill={isControl ? "var(--chart-1)" : "var(--chart-2)"}
-                    fillOpacity={0.14}
-                    tooltipType="none"
-                    isAnimationActive={false}
-                    connectNulls={false}
-                  />
-                  {isControl ? (
-                    <Line dataKey="center" type="monotone" stroke="var(--color-center)" strokeWidth={1.5} strokeDasharray="5 4" dot={false} activeDot={false} isAnimationActive={false} />
-                  ) : null}
-                  {view === "score" && showForecast && monitor?.forecast ? (
-                    <Line dataKey="median" type="monotone" stroke="var(--color-median)" strokeWidth={2.5} strokeDasharray="6 4" dot={false} activeDot={{ r: 4 }} isAnimationActive={false} />
-                  ) : null}
-                  <Line
-                    dataKey="value"
-                    type="monotone"
-                    stroke="var(--color-value)"
-                    strokeWidth={2.5}
-                    dot={isControl ? signalDot : false}
-                    activeDot={{ r: 5 }}
-                    isAnimationActive={false}
-                    connectNulls={false}
-                  />
-                </ComposedChart>
-              </ChartContainer>
-            )}
-          </ClientOnly>
-        </div>
-        {isControl && series ? (
-          <p className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-muted-foreground">
-            <span className="inline-flex items-center gap-1.5">
-              <span className="size-2.5 rounded-full border-2 border-destructive bg-background" aria-hidden="true" />
-              Fuera de la banda
-            </span>
-            {view !== "peers" ? (
-              <span className="inline-flex items-center gap-1.5">
-                <span className="size-2.5 rounded-full border-2 border-destructive bg-destructive" aria-hidden="true" />
-                Persistente (3 de los últimos 4 meses)
-              </span>
-            ) : null}
-          </p>
-        ) : null}
-      </CardContent>
-    </Card>
+        </>
+      }
+      notice={notice}
+    >
+      <PlotChart
+        rows={rows}
+        control={isControl}
+        valueLabel={copy.unit}
+        centerLabel={view === "peers" ? "Mediana" : "Normalidad"}
+        zeroLine={view === "cluster"}
+        forecast={view === "score" && showForecast && !!monitor?.forecast}
+        loading={loading}
+        hidden={empty}
+      />
+      {isControl && series ? <SignalLegend persistent={view !== "peers"} /> : null}
+    </PlotCard>
   );
 }
