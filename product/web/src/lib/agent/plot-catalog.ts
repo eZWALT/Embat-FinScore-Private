@@ -143,7 +143,7 @@ async function controlChart(
       ? `${entityId} frente a su grupo de pares`
       : comparison.startsWith("group")
         ? `Media del grupo ${entityId}`
-        : `${entityId} frente a su normalidad`;
+        : `${entityId} frente a su histórico`;
   return asPlot({
     title,
     x: chart.months,

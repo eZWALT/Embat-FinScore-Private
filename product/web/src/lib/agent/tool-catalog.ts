@@ -21,7 +21,7 @@ export const TOOL_LABELS = {
   explain_change: "Explicar el cambio",
   get_group: "Leer grupo",
   get_alerts: "Leer alertas",
-  get_control_chart: "Su normalidad",
+  get_control_chart: "Vs su histórico",
   compare_with_cluster: "Comparar con pares",
   get_forecast: "Abanico",
   query_clean_db: "Leer registros",
