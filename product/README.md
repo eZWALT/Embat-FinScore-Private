@@ -1,6 +1,6 @@
 # product/
 
-Goals 2–4. Nothing is implemented. No image, CLI, model, or page.
+Goals 2–4. `score/` is implemented (score, trajectory, explanations; see its README). `web/` is still a static mockup: no image, runtime or hosted page.
 
 | Path | Goal |
 |------|------|

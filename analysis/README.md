@@ -22,11 +22,17 @@ pip install -r analysis/requirements.txt
 python analysis/build_db.py        # ~10 s: loads the CSVs and builds the `clean` schema; --force to rebuild
 ```
 
+One command for a new CSV drop (also the hidden companies): CSV folder -> `clean` schema + `dq_log` -> feature store. Same rules, nothing fitted. Use `--work-dir` so it does not overwrite `data/embat.duckdb`; `python -m analysis.pipeline_check` runs the acceptance checks (determinism, subset of companies, injected dirt).
+
+```bash
+PYTHONUTF8=1 python -m analysis.pipeline --input <csv_folder> --work-dir <out_folder>   # ~20 s on the full data
+```
+
 Then open the `.Rmd` files in RStudio and Knit (R packages install on the first chunk). Nobody else may hold the database open for writing.
 
 ### Raw vs clean
 
-The database has two schemas. `main` holds the CSVs untouched; `clean` holds the cleaned tables (same names) plus `clean.dq_log`, one row per cleaning rule with the rows affected. Rules live in `analysis/clean_db.py`.
+The database has two schemas. `main` holds the CSVs untouched; `clean` holds the cleaned tables (same names) plus `clean.dq_log`, one row per cleaning rule with the rows affected. Rules live in `analysis/clean_db.py`; `dq_log.source` is `clean` (rules seen on train), `guard` (detectors for dirt not seen yet: NaN amounts, orphan rows, repeated ids, unknown categories/statuses...; a detector with 0 rows is still logged) or `load` (columns/files/rows `build_db.py` could not load as typed).
 
 - Rows are only dropped when they carry no information (amount = 0: 369 transactions, 1,183 invoices).
 - Impossible values become `NULL` (transaction `value_date` far from the booking date, invoice `payment_date` before issue / in the future / year 2000-6913 / on unpaid invoices, `due_date` year 7025, sentinel balances, `exchange_rate <= 0`).
