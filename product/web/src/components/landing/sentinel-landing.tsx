@@ -96,7 +96,7 @@ export function SentinelLanding({
       <div id="hero" className="landing-hero absolute inset-0 flex flex-col pt-16">
         <main className="grid min-h-0 flex-1 grid-cols-1 grid-rows-[auto_minmax(0,1fr)] lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:grid-rows-1">
           <section className="flex min-h-0 min-w-0 flex-col justify-center px-8 py-10 sm:px-12 lg:px-16 xl:px-20 lg:py-0">
-            <div>
+            <div className="pl-6 sm:pl-8 lg:pl-10">
               <h1 className="font-heading text-[clamp(2.75rem,6.2vw,5.25rem)] font-semibold leading-[0.95] tracking-tight text-black">
                 Sentinel
               </h1>
