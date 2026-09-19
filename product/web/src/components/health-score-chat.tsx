@@ -53,7 +53,7 @@ export function HealthScoreChat({
   const when = asOf ? formatMonth(asOf) : null;
   const description = companyId
     ? `Por qué este índice${when ? ` en ${when}` : ""}, qué ha cambiado y qué hay que revisar.`
-    : "Qué empresas se han alejado de su normalidad y a quién le toca actuar.";
+    : "Qué empresas se han alejado de su normalidad.";
 
   return (
     <div className="pointer-events-none fixed right-4 bottom-4 z-50 flex flex-col items-end gap-3 sm:right-6 sm:bottom-6">

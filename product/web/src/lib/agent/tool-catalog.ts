@@ -4,11 +4,11 @@ export const TOOL_LABELS = {
   explain_change: "Explicar el cambio",
   get_group: "Leer grupo",
   get_alerts: "Leer alertas",
-  get_control_chart: "Control chart",
+  get_control_chart: "Su normalidad",
   compare_with_cluster: "Comparar con pares",
   get_forecast: "Abanico",
   query_clean_db: "Leer registros",
-  plot_series: "Dibujar gráfico",
+  plot_series: "Gráfico",
 } as const;
 
 export type ToolName = keyof typeof TOOL_LABELS;
@@ -66,7 +66,7 @@ export function toolOutputSummary(name: string, output: unknown): string {
     case "query_clean_db":
       return `${row.rows ?? 0} filas`;
     case "plot_series":
-      return typeof row.title === "string" ? row.title : `${row.points ?? 0} puntos`;
+      return typeof row.title === "string" ? row.title : typeof row.kind === "string" ? row.kind : `${row.points ?? 0} puntos`;
     default:
       return "";
   }

@@ -14,6 +14,7 @@ const FILES = {
   wording: "wording_rules.md",
   format: "watcher_format.md",
   tools: "tools_catalog.md",
+  plots: "plots_catalog.md",
   schema: "clean_schema.md",
 } as const;
 
@@ -35,6 +36,7 @@ export async function loadSystemPrompt(role: AgentRole, extra?: string) {
     await readPrompt(FILES.format),
     await readPrompt(FILES.tools),
   ];
+  if (role === "chat" || role === "sentinel") parts.push(await readPrompt(FILES.plots));
   if (role === "chat") parts.push(await readPrompt(FILES.schema));
   if (extra) parts.push(extra);
   return parts.join("\n\n---\n\n");
