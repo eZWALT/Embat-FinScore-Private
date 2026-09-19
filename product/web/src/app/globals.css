@@ -338,3 +338,34 @@ html[data-landing="team"] .landing-team-screen li:nth-child(3),
     transform: none;
   }
 }
+
+/* Route transitions (React <ViewTransition>): the landing fades out, the app fades in, the Sentinel logo glides to the header. */
+@keyframes route-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+::view-transition-old(.route-out) {
+  animation: 240ms ease-in both route-fade reverse;
+}
+
+::view-transition-new(.route-in) {
+  animation: 420ms ease-out 140ms both route-fade;
+}
+
+::view-transition-group(.logo-morph) {
+  animation-duration: 560ms;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ViewTransition } from "react";
 
 import { VideoLandingHero } from "@/components/landing/video-hero";
 
@@ -8,5 +9,9 @@ export const metadata: Metadata = {
 };
 
 export default function Home() {
-  return <VideoLandingHero />;
+  return (
+    <ViewTransition exit="route-out" default="none">
+      <VideoLandingHero />
+    </ViewTransition>
+  );
 }

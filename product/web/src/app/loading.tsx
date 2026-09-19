@@ -1,30 +1,35 @@
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { ViewTransition } from "react";
+
+import { AppHeader } from "@/components/app-header";
 import { Skeleton } from "@/components/ui/skeleton";
 
+/**
+ * What shows while the dashboard loads: the app's own header (so the frame does not change when the data arrives) and a
+ * skeleton with the shape of Rápido. It fades out when the page is ready.
+ */
 export default function Loading() {
   return (
-    <main className="mx-auto max-w-7xl space-y-8 px-4 py-10 sm:px-6 lg:px-8">
-      <div className="space-y-3">
-        <Skeleton className="h-4 w-40" />
-        <Skeleton className="h-10 max-w-2xl" />
-        <Skeleton className="h-5 max-w-xl" />
+    <ViewTransition exit="route-out" default="none">
+      <div className="flex min-h-svh flex-col" aria-busy="true">
+        <AppHeader />
+        <div className="mx-auto flex w-full max-w-[96rem] flex-1 flex-col px-4 pt-5 sm:px-6 lg:px-10">
+          <div className="grid gap-3 sm:grid-cols-[minmax(0,2.4fr)_minmax(0,1fr)_minmax(0,1fr)]">
+            <Skeleton className="h-[7.5rem] rounded-xl" />
+            <Skeleton className="hidden h-[7.5rem] rounded-xl sm:block" />
+            <Skeleton className="hidden h-[7.5rem] rounded-xl sm:block" />
+          </div>
+          <div className="mt-5 grid gap-4 lg:grid-cols-[19rem_minmax(0,1fr)]">
+            <div className="hidden space-y-3 lg:block">
+              <Skeleton className="h-7 w-2/3" />
+              <Skeleton className="h-[min(46vh,420px)] rounded-lg" />
+            </div>
+            <div className="space-y-2">
+              <Skeleton className="ml-auto h-8 w-64" />
+              <Skeleton className="h-[min(52vh,440px)] rounded-xl" />
+            </div>
+          </div>
+        </div>
       </div>
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {Array.from({ length: 4 }).map((_, index) => (
-          <Card key={index}>
-            <CardHeader><Skeleton className="h-4 w-24" /></CardHeader>
-            <CardContent><Skeleton className="h-10 w-28" /></CardContent>
-          </Card>
-        ))}
-      </div>
-      <div className="grid gap-4 xl:grid-cols-[1.6fr_1fr]">
-        {[0, 1].map((index) => (
-          <Card key={index}>
-            <CardHeader><Skeleton className="h-5 w-40" /></CardHeader>
-            <CardContent><Skeleton className="h-[300px] w-full" /></CardContent>
-          </Card>
-        ))}
-      </div>
-    </main>
+    </ViewTransition>
   );
 }

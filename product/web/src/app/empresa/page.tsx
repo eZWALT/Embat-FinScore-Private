@@ -1,3 +1,5 @@
+import { ViewTransition } from "react";
+
 import { HealthDashboard } from "@/components/health-dashboard";
 import { getDashboardData } from "@/lib/data/dashboard-service";
 
@@ -18,12 +20,14 @@ export default async function EmpresaPage({ searchParams }: { searchParams: Sear
   const deep = first(params.modo) === "profundo" || Boolean(company) || Boolean(group) || openChat;
 
   return (
-    <HealthDashboard
-      data={data}
-      openChat={openChat}
-      initialCompanyId={company}
-      initialGroupId={group}
-      initialMode={deep ? "deep" : "quick"}
-    />
+    <ViewTransition enter="route-in" default="none">
+      <HealthDashboard
+        data={data}
+        openChat={openChat}
+        initialCompanyId={company}
+        initialGroupId={group}
+        initialMode={deep ? "deep" : "quick"}
+      />
+    </ViewTransition>
   );
 }

@@ -3,7 +3,7 @@
 import { Bell, CircleDollarSign, Gauge } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, type MouseEvent, type ReactNode } from "react";
+import { useEffect, ViewTransition, type MouseEvent, type ReactNode } from "react";
 
 import { LandingTeam } from "@/components/landing/landing-team";
 
@@ -65,14 +65,16 @@ export function SentinelLanding({
       <header className="absolute inset-x-0 top-0 z-30">
         <nav className="flex h-16 items-center justify-between px-8 sm:px-12 lg:px-16 xl:px-20">
           <a href="#hero" className="flex items-center" aria-label="Sentinel" onClick={(event) => goToScreen("hero", event)}>
-            <Image
-              src="/landing/sentinel-logo.jpg"
-              alt="Sentinel"
-              width={1024}
-              height={341}
-              className="h-10 w-auto sm:h-11"
-              priority
-            />
+            <ViewTransition name="sentinel-logo" share="logo-morph" default="none">
+              <Image
+                src="/landing/sentinel-logo.jpg"
+                alt="Sentinel"
+                width={1024}
+                height={341}
+                className="h-10 w-auto sm:h-11"
+                priority
+              />
+            </ViewTransition>
           </a>
           <ul className="flex items-center gap-6">
             <li>
