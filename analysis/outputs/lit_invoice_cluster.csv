@@ -1,0 +1,17 @@
+title,year,venue,url,verified,maps_to,same_or_contradict
+"Do late customer payments impact companies’ probability of default? (BdF Bulletin 227/8)",2019,Banque de France Bulletin,https://publications.banque-france.fr/sites/default/files/medias/documents/819416_bdf227-8_late_customer_payment_vfinale.pdf,yes,DSO_drop;delay_footnote;Y5_leftover,SAME
+"Do Trade Creditors Possess Private Information? Stock Returns Evidence (Hirshleifer Li Lourie Ruchti NBER w25553)",2019,NBER,https://www.nber.org/papers/w25553,yes,delay_footnote;Y5;Q6,SAME
+"Algorithmic Profiling of Operational Risk (Pérez-Salazar Márquez Vidal-Silva Computers 15:135)",2026,Computers,https://www.mdpi.com/2073-431X/15/2/135,yes,Y5_supp_HHI,CONTRADICT_or_different_object
+"Sharpening the Focus (FinRegLab / Howell Matsumoto Cochran) — invoice/fee slice only",2025,FinRegLab,https://finreglab.org/wp-content/uploads/2025/06/FinRegLab_06-03-2025_Sharpening-the-Focus.pdf,yes,Y9_is_the_label,SAME
+"Trade Credit and the Propagation of Corporate Failure (Jacobson von Schedvin)",2015,Econometrica,https://doi.org/10.3982/ecta12148,yes,Y7_issued;Y8_PARK,SAME
+"Payment Defaults and Interfirm Liquidity Provision (Boissay Gropp)",2013,Review of Finance,https://doi.org/10.1093/rof/rfs045,yes,J_KEEP_Q5;Y5_leftover;supp_protective,SAME
+"Customer-Base Concentration Profitability and the Relationship Life Cycle (Irvine Park Yildizhan)",2016,The Accounting Review,https://doi.org/10.2308/accr-51246,yes,Y4_monopoly_tail,SAME
+"Customer concentration and loan contract terms (Campello Gao)",2017,Journal of Financial Economics,https://doi.org/10.1016/j.jfineco.2016.03.010,yes,Y4_tail_not_engine_X,SAME
+"Trade Credit: Contract-Level Evidence Contradicts Current Theories (Ellingsen Jacobson von Schedvin)",2016,Riksbank WP 315,https://www.riksbank.se/Documents/Rapporter/Working_papers/2016/rap_wp315_160126.pdf,yes,Y7_issued_not_DSO,SAME
+"Firms as liquidity providers (Garcia-Appendini Montoriol-Garriga)",2013,Journal of Financial Economics,https://doi.org/10.1016/j.jfineco.2013.02.010,yes,Y5_supp_HHI_protective,SAME
+"Can we trust machine learning to predict the credit risk of small businesses? (Bitetto Cerchiello Filomeni Tanda Tarantino)",2024,Review of Quantitative Finance and Accounting,https://doi.org/10.1007/s11156-024-01278-0,yes,Y7_issued_vs_DSO;Q6,SAME
+"Activity shocks and corporate liquidity: the role of trade credit (Bureau Duquerroy Vinas)",2023,Banque de France WP 851 / RCFS 2024,https://publications.banque-france.fr/sites/default/files/medias/documents/wp851_0.pdf,yes,Y5_leftover_net_TC;Q6,SAME
+"Curbing Shocks to Corporate Liquidity (Amberg Jacobson von Schedvin Townsend) — companion not cluster",2021,Journal of Political Economy,https://doi.org/10.1086/711403,yes,wave_A_B_issued_and_overdue,SAME
+"Credit Market Disruptions and Liquidity Spillover Effects (Costello) — companion not cluster",2020,Journal of Political Economy,https://doi.org/10.1086/708736,abstract_only,wave_B_who_thins,SAME
+"Financial distress and customer-supplier relationships (Lian) — companion not cluster",2017,Journal of Corporate Finance,https://doi.org/10.1016/j.jcorpfin.2017.02.006,abstract_only,Q6_CLOSE_two_year,SAME
+"Trade Credit and Industry Dynamics (Barrot) — companion not cluster",2016,Journal of Finance,https://doi.org/10.1111/jofi.12371,abstract_only,BdF_late_pay_companion,SAME

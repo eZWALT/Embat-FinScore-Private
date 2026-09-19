@@ -1,0 +1,28 @@
+column,kind,n_train,n_labeled,n_pos,base_rate,accepted,accepted_source,forbidden_x,horizon,notes
+y1_net_h1,continuous,21157,19943,,,1,y1_continuous,,,
+y1_net_h3,continuous,21157,17515,,,1,y1_continuous,,,
+y1_in_h1,continuous,21157,19943,,,1,y1_continuous,,,
+y1_in_h3,continuous,21157,17515,,,1,y1_continuous,,,
+y1_liq_h1,continuous,21157,19746,,,1,y1_continuous,,,
+y1_liq_h3,continuous,21157,17356,,,1,y1_continuous,,,
+y2_neg_2of3,binary,21157,17356,1271,0.073231,1,frozen_wave,,,LOW_POWER holdout; GBM failed
+y2_runway_lt1_sust,binary,21157,16161,6161,0.381226,0,frozen_reject,,,SIZE_PROXY
+y2_onset_neg,binary,21157,17515,191,0.010905,0,frozen_reject,,,
+y3_recover_6m,binary,21157,5648,241,0.04267,0,frozen_reject,,,
+y3_recover_cash_6m,binary,21157,5648,402,0.071176,1,frozen_wave,,,GBM CV 0.71 / shallow 0.762; SHAP quiet-stressed
+y4_ds_r_gt05_sust,binary,21157,16301,421,0.025827,0,frozen_reject,,,
+y4_ds_r_double,binary,21157,2370,329,0.138819,1,frozen_wave,,,
+y4_new_facility_after_dip,binary,21157,12674,578,0.045605,0,frozen_reject,,,
+y4_ogtg_appear,binary,21157,1214,32,0.026359,0,frozen_reject,,,
+y5_ap_od30_ownp80,binary,21157,4905,418,0.085219,1,frozen_wave,,,
+y5_ar_od30_sust,binary,21157,3315,237,0.071493,1,frozen_wave,,,
+y5_ap_delay_up15,binary,21157,3408,153,0.044894,0,frozen_reject,,,
+y6_zero_in_3,binary,21157,17083,1490,0.087221,0,frozen_reject,,,inverse size proxy
+y6_missed_payroll,binary,21157,6004,367,0.061126,0,frozen_reject,,,GBM loses to e_dpo_proxy
+y6_silent_60,binary,21157,17515,525,0.029974,0,frozen_reject,,,
+y7_top1_lost,binary,21157,7464,2149,0.287915,1,frozen_wave,,,
+y7_top1_lost_inflow,binary,21157,6739,420,0.062324,1,frozen_wave,,,
+y8_inv_worse_6,binary,21157,3883,761,0.195982,1,frozen_wave,,,label accepted; model PARK
+y8_cash_worse_6,binary,21157,6986,1615,0.231177,1,frozen_wave,,,label accepted; model PARK
+y9_fee_r_ownp80,binary,21157,9591,1350,0.140757,1,frozen_wave,,,"FinRegLab NSF/fee; also forbid a_fin_cost,a_fc"
+y9_fee_spike,binary,21157,7879,1502,0.190633,1,frozen_wave,,,"FinRegLab NSF/fee; also forbid a_fin_cost,a_fc"

@@ -1,6 +1,10 @@
-# analysis/ — goal 1: signals
+# analysis/ — signals, features, explainability
 
-Find signals in the X Ray treasury trail. Do not put a 0–100 formula here; that is `product/score/`.
+Find signals in the X Ray treasury trail. Brief working copy: `overnight/NORTH_STAR.md`
+(six questions, trajectory not last-month, hidden 72). Re-read it before new work.
+
+Tonight: **analysis + features + SHAP/explainability only.** Do not put a 0–100
+formula here. `product/` is frozen until the team opens goals 2 and 4 again.
 
 The brief still applies, per company, per month: who is healthy / improving / turning; dip vs fall; what moved; how many months earlier it showed.
 
@@ -56,6 +60,11 @@ analysis/
 ├── eda.Rmd                        # EDA of the 8 tables
 └── 02_score_salud_financiera.Rmd  # signals, score, trajectory, explanation, monitor, product; writes analysis/outputs/*.csv
 ```
+
+## Next: feature store + Y catalogue
+
+Plan: `.agents/persistent-memory/2026-09-18-2350-feature-store-and-y-plan.md`.
+Night contract and waves: `overnight/CONTRACT.md`. Holdout: `analysis/splits/holdout_companies.csv`.
 
 ## Status
 

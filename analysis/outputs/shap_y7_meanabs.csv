@@ -1,0 +1,279 @@
+feature,mean_abs_shap,mean_shap,family,brief_bucket,rank
+e_dso_proxy,0.21584690380873459,-0.022697309584089432,e,why (counterparties / invoices),1
+e_ar_issued,0.21584269408785872,-0.023588323778772288,e,why (counterparties / invoices),2
+e_ar_issued_lag1,0.13793583426836287,0.013998578155688992,e,lead_time / turning,3
+f_fc_r_lag3,0.1129271166612706,-0.008984107418890008,f,lead_time / turning,4
+e_credit_note_ratio_lag1,0.11052937582458704,-0.008973450735376351,e,lead_time / turning,5
+e_delay_coll,0.08190184422701031,0.004794639615574954,e,why (counterparties / invoices),6
+n_banking,0.0771504277525997,-0.005967856550219418,meta,other,7
+e_credit_note_ratio,0.07603025657859759,0.0008079854368925943,e,why (counterparties / invoices),8
+e_dso_proxy_lag1,0.05876111936469764,0.008528056863987247,e,lead_time / turning,9
+group_size,0.05527570763516515,0.0023374549329975795,meta,other,10
+e_ar_overdue,0.04544942282169216,0.0028119793829266353,e,why (counterparties / invoices),11
+e_ar_overdue_lag1,0.04427446516660598,0.002141491391520697,e,lead_time / turning,12
+e_delay_coll_lag1,0.036650729585703444,0.002251527852489002,e,lead_time / turning,13
+h_n_siblings_active,0.03537624733727731,0.005236657036339045,h,other,14
+e_delay_paid,0.032925417602446515,0.002342052912396485,e,why (counterparties / invoices),15
+e_ar_issued_lag3,0.03280137770084487,0.0055453356462630875,e,lead_time / turning,16
+b_bal_vol,0.029097271232929052,0.0017838614300038325,b,healthy vs stressed cash shape,17
+e_delay_paid_lag1,0.029086525355103133,0.0024547189720339367,e,lead_time / turning,18
+h_group_size_lag1,0.028791933958650644,-0.001963233102817572,h,lead_time / turning,19
+h_n_siblings_active_lag3,0.02776365850735656,-0.0025330989861422825,h,lead_time / turning,20
+e_dso_proxy_lag3,0.02536373034271137,-0.0002739874845927449,e,lead_time / turning,21
+c_gap_sd,0.02252955754758319,0.00018627528848549094,c,why (ops regularity),22
+e_dpo_proxy_lag3,0.02133467199497278,0.0003698718884206324,e,lead_time / turning,23
+h_group_size,0.021179280440127,0.002376491280095972,h,other,24
+h_sib_in,0.02019679250510464,-0.004164265528735468,h,other,25
+a_uncat_share,0.019946508669677177,0.0006742777160887548,a,why (ops regularity),26
+c_ss_month,0.01815007387828504,-0.0025382309123294358,c,why (ops regularity),27
+h_group_size_lag3,0.018053408316913364,0.002652646368573842,h,lead_time / turning,28
+h_sib_out_lag3,0.017826514381185408,-0.0026495860263888757,h,lead_time / turning,29
+c_gap_sd_lag1,0.017235225325661983,-0.001211776290927563,c,lead_time / turning,30
+c_salary_month_lag1,0.017179869668701137,-0.00015327349632581342,c,lead_time / turning,31
+a_growth_3,0.017091022377917407,0.0008095511192089566,a,lead_time / turning,32
+e_ap_overdue_lag1,0.01553913016787676,0.00041883033686860525,e,lead_time / turning,33
+a_growth_3_lag1,0.015221318764416876,-0.0002702079418385591,a,lead_time / turning,34
+h_sib_net_lag1,0.015201133481953902,-0.00027454938773348596,h,lead_time / turning,35
+e_ar_overdue_lag3,0.014363474840927497,0.001048309943966293,e,lead_time / turning,36
+e_ap_overdue,0.014072676217434401,-0.0005159940856468984,e,why (counterparties / invoices),37
+f_has_loc_lag1,0.013718409960579575,-0.0018204499136206791,f,lead_time / turning,38
+e_ap_open,0.013183024155689187,-0.001704195318373892,e,why (counterparties / invoices),39
+a_out12_lag1,0.012784823833697655,0.0020210187003537735,a,lead_time / turning,40
+e_ar_overdue_30_lag1,0.012658165783935995,0.0005095559574425375,e,lead_time / turning,41
+a_op_in,0.012568722636390183,0.001597536894116524,a,other,42
+e_dpo_proxy_lag1,0.012404261693182143,-0.0005624417055443864,e,lead_time / turning,43
+e_dpo_proxy,0.012328506614160307,-0.0002767758921010026,e,why (counterparties / invoices),44
+b_mean_liq_3_lag3,0.012090114356248363,-0.0005835855156039894,b,lead_time / turning,45
+e_ar_open,0.012033426777497943,-0.001808202201623385,e,why (counterparties / invoices),46
+f_fc_r,0.011877958160817428,-0.0008875758128858709,f,why (financing),47
+b_min_liq_3_lag1,0.0117148208557005,0.0002953177370286837,b,lead_time / turning,48
+b_liq,0.011709257380267544,0.000475314451087284,b,healthy vs stressed cash shape,49
+e_ar_overdue_30_lag3,0.011567035208372897,-0.0009548021230114936,e,lead_time / turning,50
+h_sib_neg_share_lag3,0.011356984742585773,-0.0006475925256803129,h,lead_time / turning,51
+e_ap_overdue_30_lag1,0.010792120582271435,-0.00041675247535438703,e,lead_time / turning,52
+h_sib_out,0.010637559266657421,-0.0010939559032802858,h,other,53
+e_ap_overdue_30,0.010444674866485943,-0.0007944904546267367,e,why (counterparties / invoices),54
+c_gap_sd_lag3,0.01035637527780365,0.002715782898264518,c,lead_time / turning,55
+e_ap_overdue_lag3,0.010137920397774489,0.0008583007597660017,e,lead_time / turning,56
+h_n_siblings_active_lag1,0.01002258907489082,0.0007953568030884122,h,lead_time / turning,57
+b_bal_vol_lag1,0.009987927344099083,-0.0015324087664761155,b,lead_time / turning,58
+f_fc_r_lag1,0.009765923891692422,0.0018382352489462025,f,lead_time / turning,59
+e_ar_open_lag3,0.009687284989441842,0.0005663958642526412,e,lead_time / turning,60
+a_n_tx_lag1,0.00963107546467046,0.0003909940599696611,a,lead_time / turning,61
+e_pending_amt_share_lag3,0.00948844040811874,0.0009423180184338648,e,lead_time / turning,62
+e_pending_amt_share_lag1,0.009227118450576326,0.002040093786180284,e,lead_time / turning,63
+e_ap_open_lag1,0.009054761534885446,0.0010326784093440955,e,lead_time / turning,64
+h_sib_out_lag1,0.009041123091035637,-0.0006037866678999604,h,lead_time / turning,65
+h_share_group_in,0.008995086868666624,0.00038931656609854994,h,other,66
+h_sib_neg_share,0.008929054032331601,-0.00010995661844725054,h,other,67
+e_delay_paid_lag3,0.008907623892659379,0.0009249915516213309,e,lead_time / turning,68
+e_fx_share,0.008863297580033045,-0.0009043152286149661,e,why (counterparties / invoices),69
+e_pending_amt_share,0.008818577511783507,0.000623304519331269,e,why (counterparties / invoices),70
+b_runway,0.008646527107740982,0.0007551583513246442,b,healthy vs stressed cash shape,71
+a_io_ratio,0.00862126542137452,0.000444200255557737,a,healthy vs stressed cash shape,72
+b_mean_liq_3,0.0085238332652635,-0.00029618011148996315,b,healthy vs stressed cash shape,73
+e_ap_overdue_30_lag3,0.008246518492365441,-0.0022791782648996124,e,lead_time / turning,74
+a_uncat_share_lag1,0.008172283470616081,0.0008993672747221054,a,lead_time / turning,75
+a_uncat_share_lag3,0.007724537103973856,-0.0006702140099784597,a,lead_time / turning,76
+b_runway_lag3,0.00764958916267537,0.0035661330841380147,b,lead_time / turning,77
+h_sib_in_lag1,0.007473952368694322,-0.00010664152527246089,h,lead_time / turning,78
+a_out6,0.007386471842577934,-0.0009199615849668905,a,other,79
+e_ap_open_lag3,0.007380092589340697,0.0020498937066848505,e,lead_time / turning,80
+h_sib_neg_share_lag1,0.00721525988701413,0.0006167591758931623,h,lead_time / turning,81
+b_d_runway,0.007128077373868205,0.0006595095589006023,b,lead_time / turning,82
+a_out12_lag3,0.007000922308782316,0.0001598363528265417,a,lead_time / turning,83
+b_mean_liq_3_lag1,0.006947976763355252,-0.00022995357900067724,b,lead_time / turning,84
+b_min_liq_3_lag3,0.00678285711524327,0.0006407701390552261,b,lead_time / turning,85
+h_sib_in_lag3,0.006555378898875092,0.0008505119359051585,h,lead_time / turning,86
+c_salary_month,0.0064438329738239,0.00041707156241621286,c,why (ops regularity),87
+e_ap_issued_lag3,0.006306780463619689,-0.000442462036995852,e,lead_time / turning,88
+h_sib_net,0.006124382704478432,-4.3256592093021456e-05,h,other,89
+a_in6_lag1,0.005981851600510415,0.000585600960736234,a,lead_time / turning,90
+b_bal_vol_lag3,0.005882514269134353,-0.00018903518596564053,b,lead_time / turning,91
+a_in12_lag3,0.005858557681495843,0.0010837435194523304,a,lead_time / turning,92
+f_ds_r,0.00582197691135728,0.0004131391792675363,f,why (financing),93
+g_custom_share_lag1,0.005746833900022613,0.0010510061818752667,g,lead_time / turning,94
+e_fx_share_lag1,0.005414941933640296,-0.0012920199475933538,e,lead_time / turning,95
+a_out3,0.00528195061275746,2.325902388461087e-05,a,other,96
+a_out6_lag1,0.005258091004953451,0.001363333298617772,a,lead_time / turning,97
+a_fin_cost,0.005185162506806105,-9.520805988022987e-05,a,other,98
+g_n_accounts_lag3,0.005105221014153755,0.0012818529665851973,g,lead_time / turning,99
+a_net_margin_lag1,0.005103327612645225,0.0006835702018480956,a,lead_time / turning,100
+a_in6_lag3,0.00477632738848321,0.0005647013030014665,a,lead_time / turning,101
+a_growth_3_lag3,0.0047190931362242035,-0.000370622856733376,a,lead_time / turning,102
+a_in3_lag3,0.00469164278585043,-0.0002012605898358456,a,lead_time / turning,103
+a_pending_share_lag3,0.004577281568851933,0.0018087720877368394,a,lead_time / turning,104
+g_n_banks_lag3,0.004576384265816785,0.0003612695653496897,g,lead_time / turning,105
+a_net_margin_lag3,0.004546166777420362,-0.00029714811944496125,a,lead_time / turning,106
+e_ar_overdue_30,0.00449531198938198,-4.7396474059354175e-05,e,why (counterparties / invoices),107
+e_ar_open_lag1,0.004335131801972795,-1.6032849335256126e-05,e,lead_time / turning,108
+b_runway_lag1,0.004331168634533277,0.0011589698456480738,b,lead_time / turning,109
+a_n_tx_lag3,0.004324000778378432,0.0016684543591876967,a,lead_time / turning,110
+c_salary_month_lag3,0.004294950497415963,0.0011283226454948093,c,lead_time / turning,111
+a_transfer_lag1,0.004217371187177045,0.00013437263787443652,a,lead_time / turning,112
+e_ap_issued_lag1,0.004162651781730591,0.000738905864918091,e,lead_time / turning,113
+a_growth_12_lag3,0.004145458227986527,-4.446350795180858e-05,a,lead_time / turning,114
+h_share_group_in_lag1,0.003873222145348725,0.000526451599616498,h,lead_time / turning,115
+c_n_days_with_tx_lag1,0.003841487102701355,-0.0006215066462462457,c,lead_time / turning,116
+e_ap_issued,0.0036916780510504957,-0.0003507552067581864,e,why (counterparties / invoices),117
+e_delay_coll_lag3,0.003668838043733842,7.74880657051201e-05,e,lead_time / turning,118
+b_d_runway_lag1,0.00363496019875612,-0.00029905856099218196,b,lead_time / turning,119
+b_min_liq_3,0.003615395394587697,-0.000316747091943261,b,healthy vs stressed cash shape,120
+a_n_tx,0.0035072466546314193,0.0008640275969862281,a,why (ops regularity),121
+a_out12,0.003399781724073369,-0.0006541703006518116,a,other,122
+a_io_ratio_lag3,0.003334442539649307,0.0003214063270015404,a,lead_time / turning,123
+a_in3,0.0032438269752484146,0.0015011904982970587,a,other,124
+a_out6_lag3,0.0032286431105917985,0.0011735652344830225,a,lead_time / turning,125
+f_has_loc,0.00322026864654177,-0.00016675047814074823,f,why (financing),126
+a_in12,0.0030838000372182843,-0.00017555867029721048,a,other,127
+a_out3_lag3,0.0030109001859125856,-0.00017721754393221383,a,lead_time / turning,128
+a_in12_lag1,0.002925352973357198,-0.0013097843051998737,a,lead_time / turning,129
+b_liq_lag3,0.002876906545582905,0.0001709329919226032,b,lead_time / turning,130
+a_fin_cost_lag1,0.0026983074901058635,-0.00038472548968388544,a,lead_time / turning,131
+g_custom_share,0.0026553087441098127,5.397832496878506e-05,g,other,132
+c_zero_in_share_6,0.0025269515136582825,-0.00012619573399649513,c,why (ops regularity),133
+g_n_banks,0.0025164906063926996,-3.374917934371056e-05,g,other,134
+c_ss_month_lag1,0.0025004249947633813,-0.0005875588040666927,c,lead_time / turning,135
+h_share_group_in_lag3,0.002444681733166529,0.0005402555084748085,h,lead_time / turning,136
+a_net_margin,0.002405916428431073,-5.882353124841283e-05,a,healthy vs stressed cash shape,137
+a_out3_lag1,0.0022340154231823874,0.00020442733019356953,a,lead_time / turning,138
+a_op_out,0.0022232968882088086,0.00037614392255995986,a,other,139
+g_n_banks_lag1,0.002222339058780533,0.0002020380772723284,g,lead_time / turning,140
+a_net_lag3,0.0022204637723682408,0.00034818952347643375,a,lead_time / turning,141
+b_liq_lag1,0.002218200858742009,0.0002719208261409795,b,lead_time / turning,142
+c_n_tx_lag1,0.0021954323960405426,0.0005496012069527404,c,lead_time / turning,143
+a_op_in_lag3,0.0021056944012936697,0.00013040354587996327,a,lead_time / turning,144
+f_fin_cost_lag3,0.0020723854446266566,-0.0001726132379969769,f,lead_time / turning,145
+c_n_days_with_tx,0.0019380281044250722,0.0004563777813579246,c,why (ops regularity),146
+a_in6,0.0018277057370693498,-0.00022191267497123233,a,other,147
+f_n_facilities_lag1,0.0017956290591871515,0.00015165309847118736,f,lead_time / turning,148
+a_io_ratio_lag1,0.0015869761316162337,0.0003373583326530006,a,lead_time / turning,149
+f_ds_r_lag3,0.0015472299892830698,0.0001758599644858273,f,lead_time / turning,150
+e_credit_note_ratio_lag3,0.0015198640239793002,-2.816635434788857e-05,e,lead_time / turning,151
+f_ds_r_lag1,0.001476834977975915,-9.920836792454973e-05,f,lead_time / turning,152
+b_d_runway_lag3,0.0014711252898083884,-2.964559949955596e-05,b,lead_time / turning,153
+a_in3_lag1,0.001441302717618036,0.0002503912622372274,a,lead_time / turning,154
+a_growth_12,0.0014180575650441522,-9.49304537919925e-05,a,lead_time / turning,155
+a_op_out_lag1,0.001411153062960417,0.0001276630477651464,a,lead_time / turning,156
+g_has_investment,0.001376866379127761,0.0005790874393915862,g,other,157
+a_op_out_lag3,0.0013615791074529256,0.00022477149609755517,a,lead_time / turning,158
+e_fx_share_lag3,0.0013368432512922417,0.0003490937584485424,e,lead_time / turning,159
+c_n_tx_lag3,0.001301822707605029,0.0007093089442556941,c,lead_time / turning,160
+a_fin_cost_lag3,0.0012630832662766122,-1.940014379619755e-05,a,lead_time / turning,161
+c_n_tx,0.0012560199984105068,0.00017156773543895883,c,why (ops regularity),162
+b_below_0_lag1,0.0011169650143168803,-5.157957855192505e-05,b,lead_time / turning,163
+a_growth_12_lag1,0.0011077443488342461,6.281618529226252e-06,a,lead_time / turning,164
+h_sib_net_lag3,0.0010823886817933374,0.0001134416799484884,h,lead_time / turning,165
+a_invest,0.0010765873526412584,8.956580315204993e-05,a,other,166
+f_months_to_next_pay,0.0010070032020791674,9.182622479084875e-05,f,why (financing),167
+c_recency_days_lag3,0.001001183072769289,0.00018693090183380016,c,lead_time / turning,168
+c_n_days_with_tx_lag3,0.0009396974554385629,2.9887028697543257e-05,c,lead_time / turning,169
+a_op_in_lag1,0.0009175178353861076,-7.415769933309081e-05,a,lead_time / turning,170
+f_n_facilities_lag3,0.0009086477194910796,-2.399414361723891e-05,f,lead_time / turning,171
+f_n_facilities,0.0008637031052168199,0.00034299211652986803,f,why (financing),172
+g_n_accounts,0.0008466830389538709,0.00011680952809003532,g,other,173
+c_tax_month_lag1,0.0007717852553155064,0.00010533841454025997,c,lead_time / turning,174
+f_debt_service_lag1,0.0007456238001575614,0.00016370903639413006,f,lead_time / turning,175
+a_net,0.0006870833111968078,-3.8005812048842326e-05,a,healthy vs stressed cash shape,176
+a_debt_service,0.0005527085728372255,-0.00021286312124942943,a,other,177
+f_has_confirming,0.0004845316807371475,-0.00011908579586072039,f,why (financing),178
+b_below_0_lag3,0.0,0.0,b,lead_time / turning,179
+b_neg_liq_3_lag3,0.0,0.0,b,lead_time / turning,180
+b_neg_episodes_lag1,0.0,0.0,b,lead_time / turning,181
+b_below_half_runway_lag3,0.0,0.0,b,lead_time / turning,182
+a_pending_share_lag1,0.0,0.0,a,lead_time / turning,183
+a_net_lag1,0.0,0.0,a,lead_time / turning,184
+a_invest_lag3,0.0,0.0,a,lead_time / turning,185
+a_invest_lag1,0.0,0.0,a,lead_time / turning,186
+a_transfer_lag3,0.0,0.0,a,lead_time / turning,187
+c_zero_in_share_6_lag3,0.0,0.0,c,lead_time / turning,188
+c_zero_in_share_6_lag1,0.0,0.0,c,lead_time / turning,189
+c_zero_in_month_lag3,0.0,0.0,c,lead_time / turning,190
+c_zero_in_month_lag1,0.0,0.0,c,lead_time / turning,191
+b_neg_episodes_lag3,0.0,0.0,b,lead_time / turning,192
+c_missed_salary_lag3,0.0,0.0,c,lead_time / turning,193
+c_missed_salary_lag1,0.0,0.0,c,lead_time / turning,194
+c_missed_tax_lag3,0.0,0.0,c,lead_time / turning,195
+c_missed_tax_lag1,0.0,0.0,c,lead_time / turning,196
+c_tax_month_lag3,0.0,0.0,c,lead_time / turning,197
+c_ss_month_lag3,0.0,0.0,c,lead_time / turning,198
+g_new_this_month,0.0,0.0,g,other,199
+c_recency_days_lag1,0.0,0.0,c,lead_time / turning,200
+c_last_tx_before_2026_06_lag1,0.0,0.0,c,lead_time / turning,201
+c_last_tx_before_2026_06_lag3,0.0,0.0,c,lead_time / turning,202
+a_debt_service_lag3,0.0,0.0,a,lead_time / turning,203
+f_sched_vs_obs,0.0,0.0,f,why (financing),204
+f_outstanding_gt_granted,0.0,0.0,f,why (financing),205
+a_debt_service_lag1,0.0,0.0,a,lead_time / turning,206
+f_new_facility,0.0,0.0,f,why (financing),207
+g_n_types,0.0,0.0,g,other,208
+b_neg_liq_3_lag1,0.0,0.0,b,lead_time / turning,209
+b_below_half_runway_lag1,0.0,0.0,b,lead_time / turning,210
+g_new_this_month_lag1,0.0,0.0,g,lead_time / turning,211
+a_transfer,0.0,0.0,a,other,212
+a_pending_share,0.0,0.0,a,other,213
+g_new_this_month_lag3,0.0,0.0,g,lead_time / turning,214
+g_created_after_snapshot,0.0,0.0,g,other,215
+g_created_unknown_share,0.0,0.0,g,other,216
+g_has_saving,0.0,0.0,g,other,217
+g_has_checking,0.0,0.0,g,other,218
+g_has_card,0.0,0.0,g,other,219
+g_has_tpv,0.0,0.0,g,other,220
+f_debt_service,0.0,0.0,f,why (financing),221
+f_fin_cost,0.0,0.0,f,why (financing),222
+f_has_factoring,0.0,0.0,f,why (financing),223
+f_util_snapshot,0.0,0.0,f,why (financing),224
+f_w_rate,0.0,0.0,f,why (financing),225
+f_debt_service_lag3,0.0,0.0,f,lead_time / turning,226
+f_fin_cost_lag1,0.0,0.0,f,lead_time / turning,227
+c_tax_month,0.0,0.0,c,why (ops regularity),228
+c_missed_salary,0.0,0.0,c,why (ops regularity),229
+f_n_types,0.0,0.0,f,why (financing),230
+c_missed_tax,0.0,0.0,c,why (ops regularity),231
+c_recency_days,0.0,0.0,c,lead_time / turning,232
+c_last_tx_before_2026_06,0.0,0.0,c,lead_time / turning,233
+f_n_types_lag1,0.0,0.0,f,lead_time / turning,234
+f_n_types_lag3,0.0,0.0,f,lead_time / turning,235
+f_util_snapshot_lag1,0.0,0.0,f,lead_time / turning,236
+f_util_snapshot_lag3,0.0,0.0,f,lead_time / turning,237
+f_has_loc_lag3,0.0,0.0,f,lead_time / turning,238
+f_has_factoring_lag1,0.0,0.0,f,lead_time / turning,239
+f_has_factoring_lag3,0.0,0.0,f,lead_time / turning,240
+f_has_confirming_lag1,0.0,0.0,f,lead_time / turning,241
+f_has_confirming_lag3,0.0,0.0,f,lead_time / turning,242
+f_w_rate_lag1,0.0,0.0,f,lead_time / turning,243
+f_w_rate_lag3,0.0,0.0,f,lead_time / turning,244
+f_months_to_next_pay_lag1,0.0,0.0,f,lead_time / turning,245
+g_created_after_snapshot_share,0.0,0.0,g,other,246
+f_months_to_next_pay_lag3,0.0,0.0,f,lead_time / turning,247
+f_sched_vs_obs_lag1,0.0,0.0,f,lead_time / turning,248
+f_outstanding_gt_granted_lag1,0.0,0.0,f,lead_time / turning,249
+f_sched_vs_obs_lag3,0.0,0.0,f,lead_time / turning,250
+f_new_facility_lag1,0.0,0.0,f,lead_time / turning,251
+f_new_facility_lag3,0.0,0.0,f,lead_time / turning,252
+g_n_accounts_lag1,0.0,0.0,g,lead_time / turning,253
+f_outstanding_gt_granted_lag3,0.0,0.0,f,lead_time / turning,254
+g_n_types_lag1,0.0,0.0,g,lead_time / turning,255
+g_n_types_lag3,0.0,0.0,g,lead_time / turning,256
+g_has_card_lag3,0.0,0.0,g,lead_time / turning,257
+g_has_card_lag1,0.0,0.0,g,lead_time / turning,258
+b_neg_liq_3,0.0,0.0,b,healthy vs stressed cash shape,259
+b_below_0,0.0,0.0,b,healthy vs stressed cash shape,260
+b_below_half_runway,0.0,0.0,b,healthy vs stressed cash shape,261
+b_neg_episodes,0.0,0.0,b,healthy vs stressed cash shape,262
+c_zero_in_month,0.0,0.0,c,why (ops regularity),263
+g_has_tpv_lag1,0.0,0.0,g,lead_time / turning,264
+g_has_tpv_lag3,0.0,0.0,g,lead_time / turning,265
+g_has_checking_lag1,0.0,0.0,g,lead_time / turning,266
+g_has_checking_lag3,0.0,0.0,g,lead_time / turning,267
+g_has_saving_lag1,0.0,0.0,g,lead_time / turning,268
+g_has_saving_lag3,0.0,0.0,g,lead_time / turning,269
+g_has_investment_lag1,0.0,0.0,g,lead_time / turning,270
+g_has_investment_lag3,0.0,0.0,g,lead_time / turning,271
+g_custom_share_lag3,0.0,0.0,g,lead_time / turning,272
+g_created_unknown_share_lag1,0.0,0.0,g,lead_time / turning,273
+g_created_unknown_share_lag3,0.0,0.0,g,lead_time / turning,274
+g_created_after_snapshot_lag1,0.0,0.0,g,lead_time / turning,275
+g_created_after_snapshot_lag3,0.0,0.0,g,lead_time / turning,276
+g_created_after_snapshot_share_lag1,0.0,0.0,g,lead_time / turning,277
+g_created_after_snapshot_share_lag3,0.0,0.0,g,lead_time / turning,278

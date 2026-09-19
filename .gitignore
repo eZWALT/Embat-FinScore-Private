@@ -242,10 +242,17 @@ data/raw/output/
 # Artefactos locales del pipeline
 *.pkl
 
-# Overnight run artifacts (keep the split)
-overnight/runs/*
-!overnight/runs/.gitkeep
-overnight/candidates/*
-!overnight/candidates/.gitkeep
-overnight/cache/*
-!overnight/cache/.gitkeep
+# Feature-store outputs (keep the dictionary and acceptance table)
+data/feature_store/*.parquet
+data/feature_store/coverage.csv
+data/feature_store/build.json
+data/feature_store/*.pkl
+!data/feature_store/feature_dictionary.md
+!data/feature_store/y_acceptance.csv
+
+# Night logs
+overnight/logs/*
+!overnight/logs/.gitkeep
+
+# Local interpreter pointer
+overnight/PYTHON
