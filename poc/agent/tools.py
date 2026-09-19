@@ -40,6 +40,27 @@ def current_registry() -> PlotRegistry:
     return reg
 
 
+_as_of: ContextVar[str | None] = ContextVar("as_of", default=None)
+
+
+def set_as_of(month: str | None):
+    """Clamp bundle tools to months <= month (replay). None = no clamp. Returns a token for reset."""
+    return _as_of.set(month)
+
+
+def reset_as_of(token) -> None:
+    _as_of.reset(token)
+
+
+def _cut() -> str | None:
+    return _as_of.get()
+
+
+def _months_upto(months: list[dict]) -> list[dict]:
+    c = _cut()
+    return [m for m in months if c is None or m["month"] <= c]
+
+
 def _bundle() -> Bundle:
     return load()
 
@@ -87,7 +108,9 @@ def get_company(company_id: str, month: str | None = None) -> str:
     company for one month (default: latest). Also returns the 24-month score history and cluster membership."""
     b = _bundle()
     d = b.company(company_id)
-    months = d["months"]
+    months = _months_upto(d["months"])
+    if not months:
+        return _j({"error": f"{company_id} has no scored month up to {_cut()}"})
     rec = next((m for m in months if m["month"] == month), None) if month else months[-1]
     if rec is None:
         return _j({"error": f"{company_id} has no scored month {month}", "scored_months": [m["month"] for m in months]})
@@ -105,7 +128,8 @@ def get_company(company_id: str, month: str | None = None) -> str:
             "reasons": rec.get("reasons"), "change_reasons": rec.get("change_reasons"),
             "score_history": [{"month": m["month"], "score": m["score"], "trajectory": m["trajectory"], "guard": m["guard"]} for m in months],
             "cluster": d.get("cluster"),
-            "alert_ids": d.get("alert_ids", []),
+            "alert_ids": [a for a in d.get("alert_ids", []) if _cut() is None or a.rsplit(":", 1)[-1] <= _cut()],
+            "as_of_clamp": _cut(),
         }
     )
 
@@ -116,7 +140,9 @@ def explain_change(company_id: str, month: str | None = None) -> str:
     Default month: latest."""
     b = _bundle()
     d = b.company(company_id)
-    months = d["months"]
+    months = _months_upto(d["months"])
+    if not months:
+        return _j({"error": f"no scored month up to {_cut()}"})
     idx = len(months) - 1
     if month:
         idx = next((i for i, m in enumerate(months) if m["month"] == month), -1)
@@ -157,7 +183,8 @@ def get_group(group_id: str) -> str:
     ]
     members.sort(key=lambda m: m["score"])
     months = b.months
-    hist = [{"month": m, "mean_score": s} for m, s in zip(months, g["mean_scores"]) if s is not None]
+    hist = [{"month": m, "mean_score": s} for m, s in zip(months, g["mean_scores"])
+            if s is not None and (_cut() is None or m <= _cut())]
     return _j(
         {
             "group_id": group_id, "n_companies": g["n_companies"], "latest_mean_score": g["latest_mean_score"],
@@ -185,6 +212,8 @@ def get_alerts(entity_id: str | None = None, kinds: list[str] | None = None, sev
         al = [a for a in al if a["severity"] in severities]
     if since_month:
         al = [a for a in al if a["month"] >= since_month]
+    if _cut():
+        al = [a for a in al if a["month"] <= _cut()]
     out = []
     for a in al[:limit]:
         a = dict(a)
@@ -209,7 +238,15 @@ def get_control_chart(entity_id: str, comparison: str = "own_history", metric: s
     if not ch:
         return _j({"error": "no such chart (needs 7 scored months; groups need 3 members)",
                    "available": [(c["comparison"], c["metric"]) for c in charts]})
-    return _j({k: v for k, v in ch.items() if k != "method"} | {"method": ch["method"]["name"]})
+    out = {k: v for k, v in ch.items() if k != "method"} | {"method": ch["method"]["name"]}
+    c = _cut()
+    if c:
+        keep = [i for i, m in enumerate(ch["months"]) if m <= c]
+        for k in ("months", "values", "center", "lower", "upper", "ewma", "cusum_low", "cusum_high", "signal", "persistent"):
+            if isinstance(out.get(k), list):
+                out[k] = [out[k][i] for i in keep]
+        out["as_of_clamp"] = c
+    return _j(out)
 
 
 @tool

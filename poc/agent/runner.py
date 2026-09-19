@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage, ToolMessage
 
-from poc.agent.tools import PlotRegistry, use_registry
+from poc.agent.tools import PlotRegistry, reset_as_of, set_as_of, use_registry
 from poc.llm import get_llm
 
 
@@ -18,12 +18,15 @@ class TurnResult:
     tool_calls: list[dict] = field(default_factory=list)  # [{name, args, result_preview}]
 
 
-def run_turn(system: str, history: list[BaseMessage], user_text: str, tools, max_steps: int = 8) -> TurnResult:
-    """history: prior Human/AI messages (no system). Returns the assistant answer and the new messages to append."""
+def run_turn(system: str, history: list[BaseMessage], user_text: str, tools, max_steps: int = 8,
+             as_of: str | None = None) -> TurnResult:
+    """history: prior Human/AI messages (no system). Returns the assistant answer and the new messages to append.
+    as_of: clamp bundle tools to months <= as_of (replay); None = latest."""
     llm = get_llm().bind_tools(tools)
     by_name = {t.name: t for t in tools}
     reg = PlotRegistry()
     token = use_registry(reg)
+    as_of_token = set_as_of(as_of)
     new: list[BaseMessage] = [HumanMessage(content=user_text)]
     calls: list[dict] = []
     try:
@@ -47,6 +50,7 @@ def run_turn(system: str, history: list[BaseMessage], user_text: str, tools, max
         try:
             from poc.agent.tools import _registry
             _registry.reset(token)
+            reset_as_of(as_of_token)
         except Exception:
             pass
     answer = next((m.content for m in reversed(new) if isinstance(m, AIMessage) and m.content), "")

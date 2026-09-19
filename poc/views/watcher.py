@@ -49,7 +49,7 @@ def run_check(b, cids: list[str], gids: list[str], as_of: str) -> dict:
     if ws.has_news(nov):
         try:
             with st.spinner("Escribiendo el aviso..."):
-                r = run_turn(system_prompt("sentinel", b), [], _user_text(nov), SENTINEL_TOOLS)
+                r = run_turn(system_prompt("sentinel", b), [], _user_text(nov), SENTINEL_TOOLS, as_of=as_of)
             if not r.answer.strip():
                 raise RuntimeError("el modelo devolvió una respuesta vacía")
             res["answer"], res["plots"] = r.answer, r.plots
