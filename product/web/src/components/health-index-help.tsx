@@ -149,17 +149,12 @@ export function HealthIndexHelp({ className }: { className?: string }) {
       </Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/40 data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 flex max-h-[min(88vh,52rem)] w-[calc(100vw-2rem)] max-w-4xl -translate-x-1/2 -translate-y-1/2 flex-col rounded-xl border bg-popover text-popover-foreground shadow-lg outline-none data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95">
+        <Dialog.Content aria-describedby={undefined} className="fixed left-1/2 top-1/2 z-50 flex max-h-[min(88vh,52rem)] w-[calc(100vw-2rem)] max-w-4xl -translate-x-1/2 -translate-y-1/2 flex-col rounded-xl border bg-popover text-popover-foreground shadow-lg outline-none data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95">
           <div className="flex items-start justify-between gap-4 border-b p-5">
             <div className="min-w-0">
               <Dialog.Title className="text-base font-semibold tracking-tight">
                 Cómo se calcula el Índice de salud
               </Dialog.Title>
-              <Dialog.Description className="mt-1 text-sm leading-6 text-muted-foreground">
-                Un marco inspirado en FICO. Los valores de cada indicador se calculan mirando hacia atrás desde cada mes
-                («3 meses» es la media de los tres últimos valores mensuales). Las definiciones y los pesos de las
-                categorías están fijados en <code className="font-mono text-xs">spec.py</code>; nada se ajusta con datos.
-              </Dialog.Description>
             </div>
             <Dialog.Close asChild>
               <Button type="button" variant="ghost" size="icon-sm" aria-label="Cerrar">
@@ -198,11 +193,6 @@ export function HealthIndexHelp({ className }: { className?: string }) {
                 ))}
               </table>
             </div>
-            <p className="mt-3 text-xs leading-5 text-muted-foreground">
-              Crédito nuevo aporta poca información (el rastro bancario apenas lo observa), así que su peso se reduce a
-              la mitad y esos 5 puntos se reparten entre el resto de categorías. El índice es una ayuda de seguimiento,
-              no un predictor de insolvencia.
-            </p>
           </div>
         </Dialog.Content>
       </Dialog.Portal>
