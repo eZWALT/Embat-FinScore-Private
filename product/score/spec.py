@@ -54,6 +54,12 @@ DARK_NO_TX_DAYS = 60        # no booking of any kind in the 60 days before month
 FADING_INFLOW_RATIO = 0.25  # last-3-month inflow below this share of the company's own earlier 6-month mean
 CAP_DARK = 30.0
 CAP_FADING = 50.0
+# The caps are targets, not cliffs: while a guard is on, the ceiling starts from the company's previous score and comes down at most
+# GUARD_STEP points a month toward the cap (it lifts at once when the guard ends). 10 is the size of the largest ordinary one-month
+# fall of the score (guard-free months: 5th percentile -7, 1st percentile -14), so the guard never moves a score more than normal
+# movement does. Switching the guard on cannot then turn a gap in the data into a 20-40 point step, and a one-month gap costs at
+# most GUARD_STEP points. The going_dark alert (analysis/monitor) still fires in the first month.
+GUARD_STEP = 10.0
 
 
 @dataclass(frozen=True)

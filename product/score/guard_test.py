@@ -6,7 +6,8 @@ Takes 60 train companies that score in the top 40% and are active at the cutoff 
 where activity stops after the cutoff and runs the whole path (analysis.pipeline -> score):
   A  bank dark    no transactions after the cutoff; the balance snapshot is moved back so the earlier cash path is unchanged
   B  all dark     as A, and no invoices issued after the cutoff; invoices paid after the cutoff stay open
-Checks: every row the guard calls dark is capped (score <= 30); how many post-cutoff scores exceed the pre-cutoff score;
+Checks: a row the guard calls dark is under its ceiling, which comes down at most GUARD_STEP points a month from the previous score toward the
+cap (30), so the median company is at the cap after 6 silent months; how many post-cutoff scores exceed the pre-cutoff score;
 and the same rows with the guard switched off, to show what it prevents. Also looks at the real silent companies.
 """
 from __future__ import annotations
@@ -112,7 +113,8 @@ def main() -> int:
             with_g = score_frame(items, ref)["res"]
             no_g = score_frame(items, ref, guard=False)["res"]
             x = pd.concat([items[["company_id", "period", "trail_months", "dark_level", "recency_days"]],
-                           with_g[["score", "guard", "confidence"]], no_g["score"].rename("score_no_guard")], axis=1)
+                           with_g[["score", "guard", "guard_ceiling", "confidence"]], no_g["score"].rename("score_no_guard")], axis=1)
+            x["prev"] = x.groupby("company_id")["score"].shift(1)
             # no look-ahead: months before the cutoff must score as they did with the full data
             early = pd.concat([items[["company_id", "period"]], with_g["score"]], axis=1)
             early = early[early["period"] < CUTOFF].merge(pre[["company_id", "period", "score"]], on=["company_id", "period"], suffixes=("", "_full"))
@@ -124,7 +126,12 @@ def main() -> int:
             x["k"] = ((x["period"].dt.year - CUTOFF.year) * 12 + x["period"].dt.month - CUTOFF.month + 1)  # months of silence
             dark = x[x["guard"] == "dark"]
             print(f"\n{name}: {x['company_id'].nunique()} companies, months after the cutoff 1..{int(x['k'].max())}")
-            ok &= _check("every row flagged dark has score <= cap", bool((dark["score"] <= spec.CAP_DARK + 1e-9).all()), f"{len(dark)} rows")
+            ok &= _check("every dark row is under its ceiling, and the ceiling falls at most GUARD_STEP a month toward the cap",
+                         bool(((dark["score"] <= dark["guard_ceiling"] + 1e-9) & (dark["guard_ceiling"] >= spec.CAP_DARK - 1e-9)
+                               & (dark["guard_ceiling"] <= np.maximum(spec.CAP_DARK, dark["prev"].fillna(np.inf) - spec.GUARD_STEP) + 1e-9)).all()), f"{len(dark)} rows")
+            long = dark[dark["k"] >= 6]
+            ok &= _check("after 6 months of silence the median dark score is at the cap (a score of 85 needs 6 steps of 10)", bool(long["score"].median() <= spec.CAP_DARK + 1e-9) if len(long) else True,
+                         f"{len(long)} rows, median {long['score'].median():.1f}, max {long['score'].max():.1f}" if len(long) else "no rows")
             ok &= _check("dark rows never above the pre-cutoff score", bool((dark["score"] <= dark["pre"]).all()))
             ok &= _check("dark rows have low confidence", bool((dark["confidence"] == "low").all()))
             late = x[x["k"] >= 3]

@@ -28,6 +28,26 @@ def pct_points(values: np.ndarray, q: np.ndarray, higher_better: bool) -> np.nda
     return out
 
 
+def apply_guard(raw: np.ndarray, cap: np.ndarray, company: np.ndarray, valid: np.ndarray, step: float = spec.GUARD_STEP) -> tuple[np.ndarray, np.ndarray]:
+    """Going-dark / fading ceiling, coming down at most `step` points a month toward `cap` and lifted at once when the guard ends.
+
+    Rows must be ordered by company and month. While `cap` is finite the ceiling is max(cap, previous score - step), or `cap`
+    itself when the company has no previous score. Returns (score, ceiling); ceiling is inf where no guard applies.
+    """
+    n = len(raw)
+    score = raw.astype(float).copy()
+    ceiling = np.full(n, np.inf)
+    prev, prev_company = np.nan, None
+    for i in range(n):
+        if company[i] != prev_company:
+            prev, prev_company = np.nan, company[i]
+        if valid[i] and np.isfinite(cap[i]):
+            ceiling[i] = cap[i] if not np.isfinite(prev) else max(cap[i], prev - step)
+            score[i] = min(raw[i], ceiling[i])
+        prev = score[i] if valid[i] else np.nan
+    return score, ceiling
+
+
 def item_points(items: pd.DataFrame, ref: dict, active: list[spec.Item]) -> pd.DataFrame:
     pts = pd.DataFrame(index=items.index)
     for it in active:
@@ -74,8 +94,8 @@ def score_frame(items: pd.DataFrame, ref: dict, drop_families=frozenset(), min_m
 
     dark = items["dark_level"].to_numpy()
     cap = np.select([dark == 2, dark == 1], [spec.CAP_DARK, spec.CAP_FADING], default=np.inf) if guard else np.full(len(items), np.inf)
-    score = np.minimum(raw.to_numpy(), cap)
     scored = (items["trail_months"] >= min_months).to_numpy() & np.isfinite(raw.to_numpy())
+    score, ceiling = apply_guard(raw.to_numpy(), cap, items["company_id"].to_numpy(), scored)
     score = np.where(scored, score, np.nan)
 
     coverage = W.sum(axis=1) / sum(weights[c] for c in W.columns)
@@ -94,6 +114,6 @@ def score_frame(items: pd.DataFrame, ref: dict, drop_families=frozenset(), min_m
     confidence = np.select([low, high], ["low", "high"], default="medium")
 
     res = pd.DataFrame({
-        "score": score, "score_raw": np.where(scored, raw, np.nan), "guard": np.select([dark == 2, dark == 1], ["dark", "fading"], default=""),
+        "score": score, "score_raw": np.where(scored, raw, np.nan), "guard_ceiling": np.where(scored & np.isfinite(ceiling), ceiling, np.nan), "guard": np.select([dark == 2, dark == 1], ["dark", "fading"], default=""),
         "coverage": coverage.round(3), "confidence": confidence, "confidence_note": note}, index=items.index)
     return {"pts": pts, "contrib": contrib, "cats": cats, "share": share, "res": res, "active": active}

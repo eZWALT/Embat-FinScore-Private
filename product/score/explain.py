@@ -163,12 +163,24 @@ def item_sentence(name: str, r) -> tuple[str, float]:
     return name, np.nan
 
 
+def _guard_effect(r, cap: float) -> str:
+    """How the guard is acting on the score: not yet, on its way down to the cap, or at the cap."""
+    ceiling = r.get("guard_ceiling")
+    if ceiling is None or not np.isfinite(ceiling):
+        return f"la puntuación se limita a {cap:.0f} (sin el límite sería {r['score_raw']:.0f})"
+    if r["score_raw"] <= ceiling + 0.05:
+        return f"todavía no reduce la puntuación, que baja como máximo {spec.GUARD_STEP:.0f} puntos al mes hacia {cap:.0f}"
+    if ceiling <= cap + 0.05:
+        return f"la puntuación se limita a {cap:.0f} (sin el límite sería {r['score_raw']:.0f})"
+    return (f"la puntuación baja como máximo {spec.GUARD_STEP:.0f} puntos al mes hacia {cap:.0f} y ahora está limitada a {ceiling:.0f} "
+            f"(sin la salvaguarda sería {r['score_raw']:.0f})")
+
+
 def _guard_sentence(r) -> tuple[str, float]:
     if r["guard"] == "dark":
-        return (f"Sin movimientos bancarios desde hace {int(r['recency_days'])} días: la puntuación se limita a {spec.CAP_DARK:.0f}"
-                f" (sin el límite sería {r['score_raw']:.0f})."), np.nan
+        return f"Sin movimientos bancarios desde hace {int(r['recency_days'])} días: {_guard_effect(r, spec.CAP_DARK)}.", np.nan
     return (f"Las entradas de caja se hundieron hasta el {pct(max(r['inflow_recent'] / r['inflow_older'], 0.0) + 0.0)} del nivel anterior de la propia empresa "
-            f"({eur(r['inflow_recent'])} al mes frente a {eur(r['inflow_older'])}): la puntuación se limita a {spec.CAP_FADING:.0f}."), r["inflow_older"] - r["inflow_recent"]
+            f"({eur(r['inflow_recent'])} al mes frente a {eur(r['inflow_older'])}): {_guard_effect(r, spec.CAP_FADING)}."), r["inflow_older"] - r["inflow_recent"]
 
 
 def reasons(items: pd.DataFrame, scored: dict, res: pd.DataFrame, attr: pd.DataFrame, top: int = 4) -> pd.DataFrame:
@@ -189,6 +201,8 @@ def reasons(items: pd.DataFrame, scored: dict, res: pd.DataFrame, attr: pd.DataF
     d_guard = attr["d_guard"].to_numpy()
     out_level, out_change = [], []
     guard_now = res["guard"].to_numpy()
+    ceil_now = res["guard_ceiling"].to_numpy()
+    score_prev = res["score"].groupby(items["company_id"], sort=False).shift(1).to_numpy()
     guard_prev = res["guard"].groupby(items["company_id"], sort=False).shift(1).to_numpy()
     for k in range(len(items)):
         row = items.iloc[k]
@@ -206,7 +220,8 @@ def reasons(items: pd.DataFrame, scored: dict, res: pd.DataFrame, attr: pd.DataF
             lv.append({"item": names_arr[j], "points": -float(lost_arr[k, j]), "sentence": s, "eur": None if not np.isfinite(e) else float(e)})
         out_level.append(lv[:top])
         ch = []
-        if guard_now[k] and guard_now[k] == guard_prev[k]:
+        pinned = guard_now[k] and guard_now[k] == guard_prev[k] and np.isfinite(ceil_now[k]) and r["score"] >= ceil_now[k] - 0.05 and abs(r["score"] - score_prev[k]) < 0.5
+        if pinned:
             ch = [{"item": "guard", "points": 0.0, "sentence": f"La puntuación se mantiene en el límite por inactividad ({r['score']:.0f}) mientras no se reanude la actividad.", "eur": None}]
         elif delta_arr is not None and np.isfinite(delta_arr[k]).any():
             order = np.argsort(-np.abs(np.nan_to_num(delta_arr[k])))

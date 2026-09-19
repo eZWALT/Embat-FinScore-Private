@@ -59,7 +59,7 @@ export type SectionId =
 export interface Spec {
   categories: Record<CategoryId, { label: string; nominal_weight: number; effective_weight: number }>;
   items: { id: ItemId; category: CategoryId; label: string; higher_is_better: boolean; unit: Unit; kind: "pct" | "fixed"; why: string }[];
-  guard: { dark_no_booking_days: number; cap_dark: number; fading_inflow_ratio: number; cap_fading: number };
+  guard: { dark_no_booking_days: number; cap_dark: number; fading_inflow_ratio: number; cap_fading: number; max_drop_per_month: number /* 1.3.0 */ };
   trajectory: { states: Trajectory[]; slope3_material: number; slope6_material: number; persist_months: number };
   confidence: { levels: Confidence[]; high_min_coverage: number; medium_min_coverage: number; high_min_months: number; low_below_months: number };
   score_needs_months: number;
@@ -110,9 +110,10 @@ export interface CompanyDetail {
 
 export interface MonthRecord {
   month: string;
-  score: number; // after the guard cap
+  score: number; // after the guard ceiling
   score_pre_cap: number;
   guard: Guard | null;
+  guard_ceiling: number | null; // 1.3.0: while a guard is on, the score cannot exceed this. It comes down at most spec.guard.max_drop_per_month a month toward the cap (30 dark, 50 fading) and lifts at once when the guard ends; null when no guard
   guard_adjustment: number; // score - score_pre_cap, <= 0
   trajectory: Trajectory;
   slope3: number | null; // points per month
@@ -126,7 +127,7 @@ export interface MonthRecord {
   items?: Partial<Record<ItemId, ItemResult>>; // only items available this month
   reasons?: Reason[]; // up to 4, why the score is not higher, largest points lost first
   change_reasons?: Reason[]; // up to 4, why it moved since last month, largest |points| first
-  change_guard?: number | null; // effect of the cap on the change
+  change_guard?: number | null; // effect of the guard on the change
 }
 /** sum(items[*].contribution) + guard_adjustment == score (rounding < 0.15). Sum of delta + change_guard == score change. */
 export interface ItemResult {

@@ -26,6 +26,7 @@ Add a new dated file after meaningful work. Do not rewrite old ones. If the new 
 | `persistent-memory/2026-09-19-1420-pipeline-entry-point.md` | Step 1: clean + feature store entry point. |
 | `persistent-memory/2026-09-19-1615-fico-score-built.md` | Step 2: scorecard, not predictive. |
 | `persistent-memory/2026-09-19-1830-monitor-and-forecast.md` | Steps 3–4: clusters, charts, alerts, forecast. |
+| `persistent-memory/2026-09-19-1815-guard-glide.md` | The going-dark / fading guard glides (10 points a month) instead of capping at once; schema 1.3.0; effect and trade-offs. |
 | `persistent-memory/2026-09-19-1700-web-data-contract.md` | Bundle → Neon `analytics` / `api`. |
 | `persistent-memory/2026-09-19-1450-agents-neon-storage.md` | What the hosted app may load. |
 | `persistent-memory/2026-09-19-1620-alerts-in-spanish.md` | Javi production copy (`language: es`). |

@@ -27,8 +27,8 @@ from .explain import PERSIST_MONTHS, SLOPE3_MATERIAL, SLOPE6_MATERIAL
 from .fit import load_reference
 from .run import score_folder
 
-SCHEMA_VERSION = "1.2.0"
-SCORECARD_VERSION = "v1"
+SCHEMA_VERSION = "1.3.0"
+SCORECARD_VERSION = "v1.1"
 ENGLISH_WORDS = re.compile(r"\b(the|and|of|is|was|against|months|days|with|from|than|customer|billing|score)\b")  # none of these is a Spanish word
 CONTRACT_DIR = Path(__file__).resolve().parent / "contract"
 ITEM_NAMES = [i.name for i in spec.ITEMS]
@@ -96,7 +96,7 @@ def month_record(d, it, detail: bool) -> dict:
                    "contribution": _f(sum(contrib.get(n, 0.0) for n in ITEM_NAMES if spec.ITEM_CATEGORY[n] == c), 2) if avail else 0.0}
     rec = {
         "month": f"{d['period']:%Y-%m}", "score": _f(d["score"], 2), "score_pre_cap": _f(d["score_raw"], 2),
-        "guard": d["guard"] or None, "guard_adjustment": _f(d["score"] - d["score_raw"], 2),
+        "guard": d["guard"] or None, "guard_ceiling": _f(d.get("guard_ceiling"), 2), "guard_adjustment": _f(d["score"] - d["score_raw"], 2),
         "trajectory": d["trajectory"], "slope3": _f(d["slope3"], 2), "slope6": _f(d["slope6"], 2),
         "confidence": d["confidence"], "confidence_note": d["confidence_note"] or None, "coverage": _f(d["coverage"], 3),
         "trail_months": int(it["trail_months"]), "categories": cats,
@@ -122,7 +122,7 @@ def manifest_spec() -> dict:
         "items": [{"id": i.name, "category": i.category, "label": i.label, "higher_is_better": i.higher_better, "unit": spec.UNITS[i.name],
                    "kind": i.kind, "why": i.why} for i in spec.ITEMS],
         "guard": {"dark_no_booking_days": spec.DARK_NO_TX_DAYS, "cap_dark": spec.CAP_DARK,
-                  "fading_inflow_ratio": spec.FADING_INFLOW_RATIO, "cap_fading": spec.CAP_FADING},
+                  "fading_inflow_ratio": spec.FADING_INFLOW_RATIO, "cap_fading": spec.CAP_FADING, "max_drop_per_month": spec.GUARD_STEP},
         "trajectory": {"states": ["improving", "stable", "dip", "deteriorating", "insufficient history"],
                        "slope3_material": SLOPE3_MATERIAL, "slope6_material": SLOPE6_MATERIAL, "persist_months": PERSIST_MONTHS},
         "confidence": {"levels": ["high", "medium", "low"], "high_min_coverage": spec.CONF_HIGH_COVERAGE, "medium_min_coverage": spec.CONF_MED_COVERAGE,
@@ -468,6 +468,15 @@ def validate_bundle(path: Path) -> list[str]:
                 bad.append(f"{f.stem} {r['month']}: confidence/guard {r['confidence']}/{r['guard']}")
             if set(r["categories"]) != set(man["spec"]["categories"]):
                 bad.append(f"{f.stem} {r['month']}: category keys")
+            gd, ce = man["spec"]["guard"], r.get("guard_ceiling")
+            if (r["guard"] is None) != (ce is None):
+                bad.append(f"{f.stem} {r['month']}: guard {r['guard']} but guard_ceiling {ce}")
+            elif ce is not None:
+                cap = gd["cap_dark"] if r["guard"] == "dark" else gd["cap_fading"]
+                if r["score"] > ce + 0.01 or ce < cap - 0.01:
+                    bad.append(f"{f.stem} {r['month']}: score {r['score']} / ceiling {ce} / cap {cap}")
+                if prev is not None and prev["score"] is not None and ce < prev["score"] - gd["max_drop_per_month"] - 0.01 and ce > cap + 0.01:
+                    bad.append(f"{f.stem} {r['month']}: guard ceiling {ce} fell more than {gd['max_drop_per_month']} from the previous score {prev['score']}")
             if "items" in r:
                 known = {i["id"] for i in man["spec"]["items"]}
                 used = set(r["items"]) | {x["item"] for x in r["reasons"] + r["change_reasons"]} - {"guard"}

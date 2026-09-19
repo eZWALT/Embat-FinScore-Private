@@ -3,25 +3,25 @@
  "horizon_months": 6,
  "material_points": 8.0,
  "headline": {
-  "false_alarm_rate": 0.7071110583596957,
+  "false_alarm_rate": 0.7104395554888864,
   "false_alarm_rate_at_chance": 0.693364218918645,
   "median_lead_time_months": 2.0,
   "lift_range": [
-   0.7232664025043206,
-   1.239443378119002
+   0.6740211328951388,
+   1.1320754716981134
   ]
  },
  "volume_per_company_year": {
-  "deterioration": 362,
+  "deterioration": 342,
   "going_dark": 165,
-  "improvement": 195,
-  "per_company_year_risk": 0.5479119736614104,
-  "per_company_year_up": 0.2027378270663663
+  "improvement": 209,
+  "per_company_year_risk": 0.5271183503725524,
+  "per_company_year_up": 0.21729336336856697
  },
  "dips_that_persist": {
-  "one_month_falls_8pts": 848,
-  "became_alert_within_3_months": 397,
-  "share": 0.4681603773584906
+  "one_month_falls_8pts": 1259,
+  "became_alert_within_3_months": 511,
+  "share": 0.40587768069896746
  },
  "top_customer": {
   "base_rate": 0.2879153269024652,
@@ -87,33 +87,33 @@
    {
     "cluster": 0.0,
     "n": 618,
-    "mean_score": 64.24409339433097,
+    "mean_score": 65.01212678854674,
     "mean_log_inflow": 11.625766314759794
    },
    {
     "cluster": 1.0,
     "n": 299,
-    "mean_score": 65.76259925906155,
+    "mean_score": 67.63706130460935,
     "mean_log_inflow": 11.486854859778537
    },
    {
     "cluster": 2.0,
     "n": 234,
-    "mean_score": 56.35359936460642,
+    "mean_score": 58.26143444169072,
     "mean_log_inflow": 11.12470123095309
    },
    {
     "cluster": 3.0,
     "n": 60,
-    "mean_score": 63.00410339165723,
+    "mean_score": 63.09391451016096,
     "mean_log_inflow": 12.278249424616003
    }
   ]
  },
  "group_funnel": {
   "group_months": 1740,
-  "outside_share": 0.023563218390804597,
-  "persistent_share": 0.0028735632183908046
+  "outside_share": 0.015517241379310345,
+  "persistent_share": 0.0005747126436781609
  },
  "note": "Measured on train companies against the accepted outcomes (score recomputed without the outcome's own feature families). Lift near 1 means the alert says nothing about that outcome."
 }

@@ -7,15 +7,15 @@ with the lift column: near 1 means no information about that outcome.
 ## Headline
 
 - Material score falls (>= 8 points below the company's own baseline, 3 of the last 4 months): mean false-alarm rate **71%** across the eight accepted outcomes, against 69% for an alert on a random month (followed = the outcome label is 1 within 6 months of the alert).
-- Lift over chance per outcome: 0.72 to 1.24. Median lead time from alert to the outcome label: **2 months** (alerts that are followed).
+- Lift over chance per outcome: 0.67 to 1.13. Median lead time from alert to the outcome label: **2 months** (alerts that are followed).
 
 ## Volume
 
-At 8 points: 0.55 risk alerts and 0.20 improvement alerts per company-year (362 deteriorations, 165 going dark, 195 improvements on train).
+At 8 points: 0.53 risk alerts and 0.22 improvement alerts per company-year (342 deteriorations, 165 going dark, 209 improvements on train).
 
 ## Dips that do not become alerts
 
-One-month falls of 8 points or more: 848. 47% of them became an alert within 3 months; the rest reverted or stayed inside the company's normal range and raised nothing (this is what the persistence rule is for).
+One-month falls of 8 points or more: 1259. 41% of them became an alert within 3 months; the rest reverted or stayed inside the company's normal range and raised nothing (this is what the persistence rule is for).
 
 ## Alerts against the accepted outcomes
 
@@ -23,38 +23,38 @@ Risk alerts = score falls and going-dark. Score recomputed without the families 
 
 | outcome | material | alerts | followed (95% CI) | chance | lift | false alarms | median lead (months) |
 |---|---|---|---|---|---|---|---|
-| y2_neg_2of3 | 0 | 363 | 9% (5%-14%) | 10% | 0.93 | 91% | 0 |
-| y2_neg_2of3 | 4 | 361 | 9% (5%-14%) | 10% | 0.94 | 91% | 0 |
-| y2_neg_2of3 | 8 | 330 | 9% (5%-12%) | 10% | 0.90 | 91% | 0 |
-| y2_neg_2of3 | 12 | 280 | 9% (5%-12%) | 10% | 0.88 | 91% | 0 |
-| y4_ds_r_double | 0 | 75 | 35% (24%-45%) | 33% | 1.04 | 65% | 2 |
-| y4_ds_r_double | 4 | 76 | 36% (25%-46%) | 33% | 1.07 | 64% | 2 |
-| y4_ds_r_double | 8 | 63 | 35% (24%-47%) | 33% | 1.05 | 65% | 2 |
-| y4_ds_r_double | 12 | 52 | 31% (20%-44%) | 33% | 0.92 | 69% | 2 |
-| y5_ap_od30_ownp80 | 0 | 143 | 20% (13%-29%) | 25% | 0.81 | 80% | 2 |
-| y5_ap_od30_ownp80 | 4 | 131 | 20% (13%-28%) | 25% | 0.79 | 80% | 2 |
-| y5_ap_od30_ownp80 | 8 | 113 | 21% (13%-31%) | 25% | 0.85 | 79% | 3 |
-| y5_ap_od30_ownp80 | 12 | 88 | 20% (13%-31%) | 25% | 0.82 | 80% | 2 |
-| y5_ar_od30_sust | 0 | 100 | 21% (13%-29%) | 20% | 1.04 | 79% | 3 |
-| y5_ar_od30_sust | 4 | 90 | 22% (13%-31%) | 20% | 1.10 | 78% | 3 |
-| y5_ar_od30_sust | 8 | 76 | 25% (14%-37%) | 20% | 1.24 | 75% | 3 |
-| y5_ar_od30_sust | 12 | 54 | 24% (13%-38%) | 20% | 1.19 | 76% | 3 |
-| y7_top1_lost | 0 | 190 | 48% (39%-58%) | 49% | 0.99 | 52% | 1 |
-| y7_top1_lost | 4 | 189 | 48% (38%-56%) | 49% | 0.98 | 52% | 1 |
-| y7_top1_lost | 8 | 141 | 50% (40%-60%) | 49% | 1.01 | 50% | 1 |
-| y7_top1_lost | 12 | 105 | 52% (40%-63%) | 49% | 1.07 | 48% | 1 |
-| y7_top1_lost_inflow | 0 | 177 | 23% (16%-30%) | 21% | 1.12 | 77% | 2 |
-| y7_top1_lost_inflow | 4 | 176 | 23% (16%-30%) | 21% | 1.12 | 77% | 2 |
-| y7_top1_lost_inflow | 8 | 129 | 23% (15%-31%) | 21% | 1.12 | 77% | 2 |
-| y7_top1_lost_inflow | 12 | 93 | 24% (16%-32%) | 21% | 1.14 | 76% | 2 |
-| y9_fee_r_ownp80 | 0 | 370 | 31% (25%-35%) | 39% | 0.79 | 69% | 2 |
-| y9_fee_r_ownp80 | 4 | 364 | 30% (25%-35%) | 39% | 0.78 | 70% | 2 |
-| y9_fee_r_ownp80 | 8 | 326 | 28% (23%-33%) | 39% | 0.72 | 72% | 2 |
-| y9_fee_r_ownp80 | 12 | 276 | 28% (22%-34%) | 39% | 0.73 | 72% | 2 |
-| y9_fee_spike | 0 | 287 | 44% (38%-50%) | 49% | 0.90 | 56% | 2 |
-| y9_fee_spike | 4 | 282 | 44% (38%-50%) | 49% | 0.90 | 56% | 2 |
-| y9_fee_spike | 8 | 248 | 44% (37%-50%) | 49% | 0.90 | 56% | 2 |
-| y9_fee_spike | 12 | 202 | 42% (35%-49%) | 49% | 0.86 | 58% | 2 |
+| y2_neg_2of3 | 0 | 340 | 9% (5%-12%) | 10% | 0.87 | 91% | 0 |
+| y2_neg_2of3 | 4 | 336 | 8% (5%-11%) | 10% | 0.82 | 92% | 0 |
+| y2_neg_2of3 | 8 | 308 | 8% (5%-12%) | 10% | 0.83 | 92% | 0 |
+| y2_neg_2of3 | 12 | 260 | 8% (4%-12%) | 10% | 0.79 | 92% | 0 |
+| y4_ds_r_double | 0 | 67 | 37% (26%-48%) | 33% | 1.12 | 63% | 2 |
+| y4_ds_r_double | 4 | 68 | 38% (27%-50%) | 33% | 1.15 | 62% | 2 |
+| y4_ds_r_double | 8 | 53 | 38% (25%-51%) | 33% | 1.13 | 62% | 3 |
+| y4_ds_r_double | 12 | 38 | 37% (21%-54%) | 33% | 1.11 | 63% | 3 |
+| y5_ap_od30_ownp80 | 0 | 120 | 21% (15%-27%) | 25% | 0.83 | 79% | 2 |
+| y5_ap_od30_ownp80 | 4 | 111 | 21% (15%-29%) | 25% | 0.83 | 79% | 2 |
+| y5_ap_od30_ownp80 | 8 | 87 | 21% (13%-30%) | 25% | 0.82 | 79% | 2 |
+| y5_ap_od30_ownp80 | 12 | 66 | 18% (9%-28%) | 25% | 0.72 | 82% | 3 |
+| y5_ar_od30_sust | 0 | 79 | 22% (12%-31%) | 20% | 1.07 | 78% | 2 |
+| y5_ar_od30_sust | 4 | 73 | 22% (11%-32%) | 20% | 1.09 | 78% | 2 |
+| y5_ar_od30_sust | 8 | 53 | 23% (11%-36%) | 20% | 1.12 | 77% | 4 |
+| y5_ar_od30_sust | 12 | 36 | 19% (5%-36%) | 20% | 0.96 | 81% | 5 |
+| y7_top1_lost | 0 | 178 | 49% (39%-59%) | 49% | 1.01 | 51% | 1 |
+| y7_top1_lost | 4 | 179 | 50% (39%-58%) | 49% | 1.02 | 50% | 1 |
+| y7_top1_lost | 8 | 129 | 50% (40%-61%) | 49% | 1.03 | 50% | 1 |
+| y7_top1_lost | 12 | 90 | 57% (46%-69%) | 49% | 1.16 | 43% | 1 |
+| y7_top1_lost_inflow | 0 | 165 | 24% (15%-32%) | 21% | 1.14 | 76% | 2 |
+| y7_top1_lost_inflow | 4 | 166 | 24% (17%-31%) | 21% | 1.16 | 76% | 2 |
+| y7_top1_lost_inflow | 8 | 117 | 23% (15%-32%) | 21% | 1.11 | 77% | 2 |
+| y7_top1_lost_inflow | 12 | 78 | 23% (13%-34%) | 21% | 1.11 | 77% | 2 |
+| y9_fee_r_ownp80 | 0 | 341 | 28% (23%-33%) | 39% | 0.74 | 72% | 2 |
+| y9_fee_r_ownp80 | 4 | 338 | 28% (23%-33%) | 39% | 0.74 | 72% | 2 |
+| y9_fee_r_ownp80 | 8 | 296 | 26% (20%-31%) | 39% | 0.67 | 74% | 2 |
+| y9_fee_r_ownp80 | 12 | 243 | 29% (22%-35%) | 39% | 0.75 | 71% | 2 |
+| y9_fee_spike | 0 | 264 | 44% (38%-51%) | 49% | 0.91 | 56% | 2 |
+| y9_fee_spike | 4 | 259 | 44% (38%-52%) | 49% | 0.91 | 56% | 2 |
+| y9_fee_spike | 8 | 221 | 43% (36%-51%) | 49% | 0.88 | 57% | 2 |
+| y9_fee_spike | 12 | 174 | 45% (37%-55%) | 49% | 0.93 | 55% | 2 |
 
 Materiality (points) was fixed a priori at 8; the other rows show how the result moves.
 
@@ -81,11 +81,11 @@ k = 4 chosen by silhouette ({'4': 0.1885, '5': 0.1414, '6': 0.1496, '7': 0.1553,
 
 | cluster | companies (train) | mean latest score | mean log inflow |
 |---|---|---|---|
-| 0 | 618 | 64.2 | 11.63 |
-| 1 | 299 | 65.8 | 11.49 |
-| 2 | 234 | 56.4 | 11.12 |
-| 3 | 60 | 63.0 | 12.28 |
+| 0 | 618 | 65.0 | 11.63 |
+| 1 | 299 | 67.6 | 11.49 |
+| 2 | 234 | 58.3 | 11.12 |
+| 3 | 60 | 63.1 | 12.28 |
 
 ## Group funnel
 
-Train group-months judged (groups of at least 3): 1740. Outside the 3-sigma funnel: 2.4%; persistent (3 of 4): 0.3%.
+Train group-months judged (groups of at least 3): 1740. Outside the 3-sigma funnel: 1.6%; persistent (3 of 4): 0.1%.
