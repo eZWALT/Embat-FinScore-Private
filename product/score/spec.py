@@ -24,11 +24,11 @@ NEW_CREDIT_SHRINK = 0.5  # 10 -> 5 nominal points; the 5 points are redistribute
 EFFECTIVE_WEIGHTS = {c: w * (NEW_CREDIT_SHRINK if c == "new_credit" else 1.0) for c, w in CATEGORY_WEIGHTS.items()}
 
 CATEGORY_LABELS = {
-    "payment_history": "Payment history",
-    "amounts_owed": "Amounts owed and liquidity",
-    "stability": "Length and stability",
-    "new_credit": "New credit",
-    "mix": "Customer mix",
+    "payment_history": "Historial de pagos",
+    "amounts_owed": "Liquidez y deuda",
+    "stability": "Estabilidad",
+    "new_credit": "Nuevo crédito",
+    "mix": "Combinación de clientes",
 }
 
 # a category is scored when at least this share of its items is available
@@ -69,43 +69,43 @@ class Item:
 
 ITEMS: list[Item] = [
     # ---- payment history (35): both directions of the payment flow, four equal items
-    Item("delay_paid", "payment_history", "pct", False, "e", "Days paid after due date (suppliers)",
+    Item("delay_paid", "payment_history", "pct", False, "e", "Días de pago tras el vencimiento (proveedores)",
          "Own payment behaviour is the closest analogue of FICO payment history. Amount-weighted days between due and "
          "payment on invoices paid in the trailing 3 months (e_delay_coll/e_delay_paid construction), averaged over 3 months."),
-    Item("delay_coll", "payment_history", "pct", False, "e", "Days customers pay after due date",
+    Item("delay_coll", "payment_history", "pct", False, "e", "Días que tardan los clientes en pagar tras el vencimiento",
          "Collections lateness drives liquidity stress. Same construction on the receivables side."),
-    Item("ap_overdue30", "payment_history", "pct", False, "e", "Payables > 30 days overdue",
+    Item("ap_overdue30", "payment_history", "pct", False, "e", "Pagos a proveedores con más de 30 días de retraso",
          "Share of open payables more than 30 days past due (Banque de France: only > 30 days moves default risk)."),
-    Item("ar_overdue30", "payment_history", "pct", False, "e", "Receivables > 30 days overdue",
+    Item("ar_overdue30", "payment_history", "pct", False, "e", "Cobros de clientes con más de 30 días de retraso",
          "Share of open receivables more than 30 days past due."),
     # ---- amounts owed (30): liquidity and debt burden
-    Item("runway", "amounts_owed", "pct", True, "b", "Months of outflows covered by cash",
+    Item("runway", "amounts_owed", "pct", True, "b", "Meses de salidas cubiertos por la caja",
          "Period-end cash / mean monthly operating outflow (6-month, 3-month when the trail is shorter), clipped -6..24, "
          "averaged over 3 months. The 6-month denominator makes it slow to react to a one-quarter outflow collapse."),
-    Item("neg_liq", "amounts_owed", "pct", False, "b", "Month-ends with negative cash",
+    Item("neg_liq", "amounts_owed", "pct", False, "b", "Cierres de mes con caja negativa",
          "Share of the last 3 month-ends with cash < 0 (recomputed from cash rounded to cents; the store's flag has float noise at zero)."),
-    Item("neg_episodes", "amounts_owed", "pct", False, "b", "Times cash turned negative",
+    Item("neg_episodes", "amounts_owed", "pct", False, "b", "Veces que la caja pasó a negativo",
          "Onsets of negative cash in the last 6 month-ends."),
-    Item("ds_ratio", "amounts_owed", "pct", False, "f", "Debt service / inflows",
+    Item("ds_ratio", "amounts_owed", "pct", False, "f", "Pago de deuda / entradas de caja",
          "3-month debt repayment over 3-month operating inflow (f_ds_r), averaged over 3 months. Debt load, the analogue of amounts owed."),
-    Item("fc_ratio", "amounts_owed", "pct", False, "f", "Bank fees and interest / inflows",
+    Item("fc_ratio", "amounts_owed", "pct", False, "f", "Comisiones e intereses bancarios / entradas de caja",
          "3-month fees + interest over 3-month operating inflow (f_fc_r), averaged over 3 months."),
     # ---- length / stability (15)
-    Item("months_observed", "stability", "fixed", True, "", "Months of history",
+    Item("months_observed", "stability", "fixed", True, "", "Meses de historial",
          "Fixed mapping: 100 x min(months observed, 12) / 12. A thin file is less certain; the confidence flag says so too."),
-    Item("active_share", "stability", "fixed", True, "c", "Months with incoming money",
+    Item("active_share", "stability", "fixed", True, "c", "Meses con entrada de dinero",
          "Fixed mapping: 100 x share of the last 6 months with any incoming movement. Guard item: a company that goes dark loses points here."),
-    Item("out_vol", "stability", "pct", False, "a", "Outflow volatility",
+    Item("out_vol", "stability", "pct", False, "a", "Volatilidad de las salidas",
          "Std / mean of monthly operating outflows over 6 months (a_out_vol, clip 3). A company trait (night: 74% between-company variance), fine for a level score."),
     # ---- new credit (10, shrunk to 5): what the trail can observe of it
-    Item("ds_increase", "new_credit", "pct", False, "f", "Debt service rising",
+    Item("ds_increase", "new_credit", "pct", False, "f", "Pago de deuda al alza",
          "Rise of debt service / inflows vs the same window 6 months earlier (0 if it fell). Facility counts are excluded: connection dates make them rise with time."),
-    Item("fc_increase", "new_credit", "pct", False, "f", "Fees and interest rising",
+    Item("fc_increase", "new_credit", "pct", False, "f", "Comisiones e intereses al alza",
          "Rise of fees + interest / inflows vs the same window 6 months earlier (0 if it fell)."),
     # ---- mix (10): concentration and credit notes, both from invoices
-    Item("cust_tail", "mix", "pct", False, "d", "Dependence on one customer",
+    Item("cust_tail", "mix", "pct", False, "d", "Dependencia de un solo cliente",
          "Customer HHI above 0.975 only (night: the body of the distribution is noise, the one-buyer tail is not), 3-month mean."),
-    Item("credit_note", "mix", "pct", False, "e", "Credit notes / billing",
+    Item("credit_note", "mix", "pct", False, "e", "Notas de crédito / facturación",
          "Share of billing reversed by credit notes, 3-month mean. Experimental: no paper measures it."),
 ]
 ITEM_BY_NAME = {i.name: i for i in ITEMS}

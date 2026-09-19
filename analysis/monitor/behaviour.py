@@ -20,25 +20,25 @@ MIN_MONTHS = 6
 SEED = 20260919
 K_RANGE = range(4, 9)
 
-# feature -> (source description, phrase when high, phrase when low)
+# feature -> (source description, phrase when high, phrase when low); the phrases become the cluster labels, so they are in Spanish
 FEATURES = {
-    "in_cv": ("variation of monthly inflows", "lumpy inflows", "steady inflows"),
-    "out_cv": ("variation of monthly outflows", "lumpy outflows", "steady outflows"),
-    "zero_in": ("share of months without incoming money", "months without incoming money", "money coming in every month"),
-    "days": ("median days with movements per month", "movements almost daily", "few days with movements"),
-    "gap_sd": ("spread of gaps between movements", "irregular timing", "regular timing"),
-    "salary": ("share of months with payroll", "runs payroll", "no payroll"),
-    "tax": ("share of months with tax payments", "regular tax payments", "few tax payments"),
-    "ss": ("share of months with social security", "pays social security", "no social security"),
-    "ds": ("mean debt service / inflows", "heavy debt service", "little debt service"),
-    "fc": ("mean bank fees and interest / inflows", "high bank costs", "low bank costs"),
-    "margin": ("median net margin", "positive operating margin", "negative operating margin"),
-    "io": ("median inflow / outflow coverage", "inflows well above outflows", "outflows above inflows"),
-    "has_invoices": ("has invoice data", "invoice-based", "bank-only"),
-    "delay_coll": ("median collection delay", "slow-paying customers", "fast-paying customers"),
-    "ar_od30": ("median share of receivables > 30 days overdue", "many overdue receivables", "few overdue receivables"),
-    "hhi": ("median customer concentration", "dependent on few customers", "diversified customers"),
-    "credit_note": ("median credit-note share", "many credit notes", "few credit notes"),
+    "in_cv": ("variación de las entradas mensuales", "entradas irregulares", "entradas estables"),
+    "out_cv": ("variación de las salidas mensuales", "salidas irregulares", "salidas estables"),
+    "zero_in": ("proporción de meses sin entrada de dinero", "meses sin entrada de dinero", "entra dinero todos los meses"),
+    "days": ("mediana de días con movimientos al mes", "movimientos casi a diario", "pocos días con movimientos"),
+    "gap_sd": ("dispersión de los intervalos entre movimientos", "calendario irregular", "calendario regular"),
+    "salary": ("proporción de meses con nóminas", "paga nóminas", "sin nóminas"),
+    "tax": ("proporción de meses con pagos de impuestos", "pagos de impuestos regulares", "pocos pagos de impuestos"),
+    "ss": ("proporción de meses con Seguridad Social", "paga Seguridad Social", "sin Seguridad Social"),
+    "ds": ("media del pago de deuda / entradas", "mucho pago de deuda", "poco pago de deuda"),
+    "fc": ("media de comisiones e intereses bancarios / entradas", "costes bancarios altos", "costes bancarios bajos"),
+    "margin": ("mediana del margen neto", "margen operativo positivo", "margen operativo negativo"),
+    "io": ("mediana de la cobertura entradas / salidas", "entradas muy por encima de las salidas", "salidas por encima de las entradas"),
+    "has_invoices": ("tiene datos de facturas", "basada en facturas", "solo bancos"),
+    "delay_coll": ("mediana del retraso de cobro", "clientes que pagan tarde", "clientes que pagan rápido"),
+    "ar_od30": ("mediana de la parte de cobros con más de 30 días de retraso", "muchos cobros vencidos", "pocos cobros vencidos"),
+    "hhi": ("mediana de la concentración de clientes", "dependiente de pocos clientes", "clientes diversificados"),
+    "credit_note": ("mediana de la proporción de notas de crédito", "muchas notas de crédito", "pocas notas de crédito"),
 }
 INVOICE_FEATURES = ["delay_coll", "ar_od30", "hhi", "credit_note"]
 STORE_COLS = ["company_id", "period", "a_op_in", "a_op_out", "a_io_ratio", "a_net_margin", "c_zero_in_month", "c_n_days_with_tx",

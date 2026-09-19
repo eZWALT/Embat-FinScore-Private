@@ -48,6 +48,7 @@ export interface Manifest {
     forecast?: ForecastStats; // 1.2.0
   }; // 1.1.0
   spec: Spec;
+  language?: "es"; // language of alert text (title, summary, action, persistence.rule, reasons[].label/sentence) and of item and category labels; ids and enums stay English codes
   disclaimer: string; // show it where the score is shown; the score is not a predictor
   files: Record<string, { bytes?: number; sha256: string; count?: number }>;
 }
@@ -201,7 +202,8 @@ export interface ControlChart {
 /**
  * alerts.json: the proactive feed. An alert is the ONSET of a persistent, material move (a company that stays low does not alert every month).
  * Two-sided: improving companies alert too (direction "opportunity"). Group alerts reuse the score kinds with entity.type "group".
- * Wording fixed by the plan for "top_customer_quiet": "top customer stopped billing, review exposure and collections", never "revenue at risk".
+ * Wording fixed by the plan for "top_customer_quiet": "el cliente principal ha dejado de facturar, revisa la exposición y los cobros" (English: "top customer stopped billing,
+ * review exposure and collections"), never "ingresos en riesgo" ("revenue at risk").
  */
 export type AlertSeverity = "info" | "watch" | "act";
 export type AlertKind =

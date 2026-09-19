@@ -28,7 +28,7 @@ EWMA_LIMIT = L_EWMA * np.sqrt(LAMBDA / (2 - LAMBDA))
 
 METHOD = {"name": "robust_ewma_cusum", "params": {
     "lambda": LAMBDA, "ewma_L": L_EWMA, "cusum_k": CUSUM_K, "cusum_h": CUSUM_H, "baseline_lag_months": BASELINE_LAG,
-    "baseline_window_months": BASELINE_WINDOW, "min_baseline_months": MIN_PRIOR, "persistence": f"{PERSIST_K} of last {PERSIST_N}"}}
+    "baseline_window_months": BASELINE_WINDOW, "min_baseline_months": MIN_PRIOR, "persistence": f"{PERSIST_K} de los últimos {PERSIST_N}"}}
 
 
 def raw_scale(x: np.ndarray) -> tuple[np.ndarray, np.ndarray]:

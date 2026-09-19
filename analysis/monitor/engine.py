@@ -20,14 +20,15 @@ import numpy as np
 import pandas as pd
 
 from product.score import spec
-from product.score.explain import _guard_sentence, eur, item_sentence
+from product.score.explain import _guard_sentence, eur, has_value, item_sentence
+from product.score.explain import pct as pct_text
 
 from . import behaviour, control, routing, topcustomer
 from .fit import CATEGORIES, MIN_GROUP, group_mean_series, wide
 
 MATERIAL = {"score": 8.0, "cluster_gap": 8.0, "payment_history": 10.0, "amounts_owed": 10.0, "stability": 10.0, "group": 8.0}
 SEVERITY_ACT, SEVERITY_WATCH = 20.0, 12.0   # points away from the baseline
-RULE = f"{control.PERSIST_K} of the last {control.PERSIST_N} months"
+RULE = f"{control.PERSIST_K} de los últimos {control.PERSIST_N} meses"
 ITEM_NAMES = [i.name for i in spec.ITEMS]
 MOVER_MIN = 0.5      # contribution points
 ITEM_MOVE_MIN = 5.0  # item points (0-100)
@@ -102,7 +103,7 @@ def _movers(detail, contrib, pts, items, i_now: int, i_prev: int | None, directi
             n = ITEM_NAMES[j]
             if direction > 0 and n in ("ds_increase", "fc_increase"):
                 continue  # their sentence describes a rise; an improvement here is only "no longer rising"
-            if not np.isfinite(d[j]) or d[j] * direction < MOVER_MIN or dp[j] * direction < ITEM_MOVE_MIN or (cat and spec.ITEM_CATEGORY[n] != cat):
+            if not np.isfinite(d[j]) or d[j] * direction < MOVER_MIN or dp[j] * direction < ITEM_MOVE_MIN or (cat and spec.ITEM_CATEGORY[n] != cat) or not has_value(n, row_i):
                 continue
             s, e = item_sentence(n, row_i)
             out.append({"item": n, "points": float(d[j]), "sentence": s, "eur": None if not np.isfinite(e) else float(e)})
@@ -114,7 +115,7 @@ def _movers(detail, contrib, pts, items, i_now: int, i_prev: int | None, directi
             s, e = _guard_sentence({**row_i.to_dict(), **detail.iloc[i_now].to_dict()})
             out.append({"item": "guard", "points": float(dg), "sentence": s, "eur": None if not np.isfinite(e) else float(e)})
     if cat is None and direction > 0 and i_prev is not None and not detail["guard"].iat[i_now] and detail["guard"].iat[i_prev]:
-        out.append({"item": "guard", "points": float(detail["score"].iat[i_now] - detail["score"].iat[i_prev]), "sentence": "The activity cap no longer applies: bank activity has resumed.", "eur": None})
+        out.append({"item": "guard", "points": float(detail["score"].iat[i_now] - detail["score"].iat[i_prev]), "sentence": "El límite por inactividad ya no se aplica: se ha reanudado la actividad bancaria.", "eur": None})
     if not out and "reasons" in detail.columns and direction < 0:
         # no single item moved enough (a spread-out fall): fall back to why the score is not higher, restricted to the category if there is one
         out = [x for x in detail["reasons"].iat[i_now] if x["item"] == "guard" or not cat or spec.ITEM_CATEGORY.get(x["item"]) == cat]
@@ -207,8 +208,8 @@ def run_monitor(detail: pd.DataFrame, items: pd.DataFrame, store: pd.DataFrame, 
             now, base = float(xs[t]), float(ch["center"][t])
             add(cid, t, kind, direction, _severity(gap), gap, reasons,
                 {"score": round(now, 1), "baseline": round(base, 1), "gap_points": round(gap, 1), "chart": "own_history"}, int((ch["signal"][max(0, t - control.PERSIST_N + 1): t + 1] == d).sum()),
-                title=("Score is deteriorating against its own history" if d < 0 else "Score is improving against its own history"),
-                summary=(f"Score {now:.0f} against a usual {base:.0f} ({gap:+.0f} points), outside its normal range in {RULE}. "
+                title=("La puntuación se deteriora frente a su propio histórico" if d < 0 else "La puntuación mejora frente a su propio histórico"),
+                summary=(f"Puntuación {now:.0f} frente a una habitual de {base:.0f} ({gap:+.0f} puntos), fuera de su rango normal en {RULE}. "
                          + (mv[0]["sentence"] if mv else "")).strip(),
                 owner=owner, action=action)
         # cluster comparison: gap to the cluster median
@@ -244,8 +245,8 @@ def run_monitor(detail: pd.DataFrame, items: pd.DataFrame, store: pd.DataFrame, 
                 add(cid, t, "category_drop", "risk", _severity(gap * 0.5 if cat != "amounts_owed" else gap), gap, [_to_reason(x, items.iloc[i_now]) for x in mv],
                     {"category": cat, "category_score": round(float(xc[t]), 1), "baseline": round(float(chc["center"][t]), 1), "gap_points": round(gap, 1)},
                     int((chc["signal"][max(0, t - control.PERSIST_N + 1): t + 1] == d).sum()),
-                    title=f"{label} is dropping against its own history",
-                    summary=(f"{label} {xc[t]:.0f}/100 against a usual {chc['center'][t]:.0f}, outside its normal range in {RULE}. " + (mv[0]["sentence"] if mv else "")).strip(),
+                    title=f"{label}: cae frente a su propio histórico",
+                    summary=(f"{label} {xc[t]:.0f}/100 frente a una habitual de {chc['center'][t]:.0f}, fuera de su rango normal en {RULE}. " + (mv[0]["sentence"] if mv else "")).strip(),
                     owner=owner, action=action)
         # going dark: first month of a dark run
         for t in np.flatnonzero(dark > 0):
@@ -258,7 +259,7 @@ def run_monitor(detail: pd.DataFrame, items: pd.DataFrame, store: pd.DataFrame, 
                 add(cid, t, "going_dark", "risk", "act", float(row_d["score"] - row_d["score_raw"]),
                     [_to_reason({"item": "guard", "points": float(row_d["score"] - row_d["score_raw"]), "sentence": s, "eur": None}, row_i)],
                     {"recency_days": int(row_i["recency_days"]), "score": round(float(row_d["score"]), 1), "score_pre_cap": round(float(row_d["score_raw"]), 1)}, 1,
-                    title="Going dark: no bank movement for 60 days", summary=s, owner="treasurer", action=routing.DARK_ACTION)
+                    title="Empresa inactiva: sin movimientos bancarios en 60 días", summary=s, owner="treasurer", action=routing.DARK_ACTION)
         mon.charts[cid] = charts
 
     # --- vs cluster snapshot (latest scored month)
@@ -310,9 +311,9 @@ def run_monitor(detail: pd.DataFrame, items: pd.DataFrame, store: pd.DataFrame, 
                  "gap_points": round(gap, 1), "outside_funnel_vs_other_groups": bool(fn["persistent"][t] == d),
                  "members_moving_most": ", ".join(f"{w['company_id']} ({w['change_3m']:+.1f})" for w in worst)},
                 int((ch["signal"][max(0, t - control.PERSIST_N + 1): t + 1] == d).sum()), entity="group",
-                title=("Group mean score is deteriorating" if d < 0 else "Group mean score is improving"),
-                summary=(f"Mean score of {int(nn[t])} companies {x[t]:.0f} against a usual {ch['center'][t]:.0f} ({gap:+.0f} points)"
-                         + (", also beyond what other groups of this size do" if fn["persistent"][t] == d else "") + "."),
+                title=("La puntuación media del grupo se deteriora" if d < 0 else "La puntuación media del grupo mejora"),
+                summary=(f"Puntuación media de {int(nn[t])} empresas: {x[t]:.0f} frente a una habitual de {ch['center'][t]:.0f} ({gap:+.0f} puntos)"
+                         + (", también más allá de lo que hacen otros grupos de este tamaño" if fn["persistent"][t] == d else "") + "."),
                 owner="cfo", action=routing.GROUP_ACTION)
 
     # --- top customer went quiet (a rule; the model only ranks)
@@ -331,14 +332,14 @@ def run_monitor(detail: pd.DataFrame, items: pd.DataFrame, store: pd.DataFrame, 
             rank = None if pd.isna(r.rank_score) else round(float(r.rank_score), 4)
             sev = "act" if (rank is not None and cut is not None and rank >= cut) else "info" if r.months_billed_of_3 >= 3 else "watch"
             open_e = None if pd.isna(r.open_receivable_eur) else float(r.open_receivable_eur)
-            sent = (f"Customer {r.customer_id}, {r.share:.0%} of last quarter's billing ({eur(r.last_quarter_amount)}), has not been invoiced this month"
-                    + (f"; {eur(open_e)} is still open with them." if open_e else "."))
-            reason = {"item": "top_customer", "label": "Top customer stopped billing", "points": 0.0, "value": round(float(r.share), 3), "unit": "share",
+            sent = (f"El cliente {r.customer_id}, con el {pct_text(r.share)} de la facturación del último trimestre ({eur(r.last_quarter_amount)}), no ha sido facturado este mes"
+                    + (f"; quedan {eur(open_e)} pendientes de cobro con él." if open_e else "."))
+            reason = {"item": "top_customer", "label": "El cliente principal ha dejado de facturar", "points": 0.0, "value": round(float(r.share), 3), "unit": "share",
                       "eur": None if pd.isna(r.last_quarter_amount) else round(float(r.last_quarter_amount), 0), "sentence": sent}
             add(r.company_id, r.period, "top_customer_quiet", "risk", sev, 0.0, [reason],
                 {"counterparty_id": r.customer_id, "share_last_quarter": round(float(r.share), 3), "last_quarter_amount": round(float(r.last_quarter_amount), 0),
                  "months_billed_of_last_3": int(r.months_billed_of_3), "months_quiet": 1, "open_receivable_eur": None if open_e is None else round(open_e, 0)}, 1,
-                rank=rank, title="Top customer stopped billing", summary=sent + " Review exposure and collections.",
+                rank=rank, title="El cliente principal ha dejado de facturar", summary=sent + " Revisa la exposición y los cobros.",
                 owner="collections", action=routing.top_customer_action(r.customer_id, open_e))
     mon.alerts = pd.DataFrame(alerts, columns=["company_id", "period", "kind", "alert"]).sort_values(["period", "company_id", "kind"]).reset_index(drop=True)
     return mon

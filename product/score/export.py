@@ -13,6 +13,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import re
 import shutil
 import sys
 from datetime import datetime, timezone
@@ -28,6 +29,7 @@ from .run import score_folder
 
 SCHEMA_VERSION = "1.2.0"
 SCORECARD_VERSION = "v1"
+ENGLISH_WORDS = re.compile(r"\b(the|and|of|is|was|against|months|days|with|from|than|customer|billing|score)\b")  # none of these is a Spanish word
 CONTRACT_DIR = Path(__file__).resolve().parent / "contract"
 ITEM_NAMES = [i.name for i in spec.ITEMS]
 DISCLAIMER = ("Documented, explainable score computed from the company's own treasury trail. It is a monitoring aid, not a "
@@ -76,7 +78,7 @@ def item_value(name: str, r) -> float | None:
 def _reason(x: dict, row_items, digits: int = 1) -> dict:
     item = x["item"]
     if item == "guard":
-        label, unit, value = "Activity guard", None, None
+        label, unit, value = "Límite por inactividad", None, None
     else:
         label, unit, value = spec.ITEM_BY_NAME[item].label, spec.UNITS[item], item_value(item, row_items)
     return {"item": item, "label": label, "points": _f(x["points"], digits), "value": value, "unit": unit,
@@ -152,23 +154,34 @@ def run_monitor_and_forecast(work_dir: Path, detail: pd.DataFrame, items: pd.Dat
     return mon, rows, {**params, "material": engine.MATERIAL}, fparams
 
 
+def _points(n: int) -> str:
+    return f"{n} punto{'s' if n != 1 else ''}"
+
+
 def _gap(x: float, ref: str) -> str:
-    """'N point(s) above/below <ref>', or 'in line with <ref>' when the gap is under a point."""
+    """'N punto(s) por encima/por debajo de <ref>', or 'en línea con <ref>' when the gap is under a point."""
     n = round(abs(x))
-    return f"in line with {ref}" if n == 0 else f"{n} point{'s' if n > 1 else ''} {'above' if x > 0 else 'below'} {ref}"
+    return f"en línea con {ref}" if n == 0 else f"{_points(n)} {'por encima' if x > 0 else 'por debajo'} de {ref}"
 
 
 def _driver_text(factor: str, d: dict, centre: float) -> str:
-    """Plain-language sentence for one part of the 3-month forecast drivers (d: the drivers dict plus the company's own average)."""
+    """Frase en español para una parte de los motores del pronóstico a 3 meses (d: el dict de motores más la media propia de la empresa)."""
     if factor == "own_average":
-        ref = "the company's own average (%.0f)" % d["own_average"]
-        return "the last score is " + _gap(d["own_deviation"], ref)
+        return "la última puntuación está " + _gap(d["own_deviation"], "la media propia de la empresa (%.0f)" % d["own_average"])
     if factor == "portfolio_level":
-        return "the score is " + _gap(d["level_vs_portfolio"], "the typical company (%.0f)" % centre)
+        return "la puntuación está " + _gap(d["level_vs_portfolio"], "la empresa típica (%.0f)" % centre)
     if factor == "recent_move":
-        move = d["last_3_month_move"]
-        return "the score is flat over the last 3 months" if round(abs(move)) == 0 else f"the score moved {move:+.0f} points over the last 3 months"
-    return "typical drift for a company with this volatility"
+        n = round(abs(d["last_3_month_move"]))
+        return "la puntuación es estable en los últimos 3 meses" if n == 0 else "la puntuación ha variado %+d %s en los últimos 3 meses" % (round(d["last_3_month_move"]), "punto" if n == 1 else "puntos")
+    return "deriva típica para una empresa con esta volatilidad"
+
+
+def _forecast_note(fparams: dict) -> str:
+    won = [h for h, m in fparams["method_by_horizon"].items() if m == "reversion_quantile"]
+    verdict = ("El abanico de reversión superó al abanico ingenuo, con el intervalo por encima de cero, en los horizontes de " + ", ".join(won) + " meses."
+               if won else "El abanico de reversión no superó al abanico ingenuo en ningún horizonte, así que se usa el último valor.")
+    return ("Mejora de la pérdida pinball de este abanico frente al abanico ingenuo (último valor con cuantiles agrupados del error), medida con validación cruzada "
+            "a 3 meses y en cada horizonte. " + verdict + " Es un abanico de persistencia, no una predicción de resultados.")
 
 
 def forecast_json(row: dict, grid, fparams: dict) -> dict:
@@ -184,8 +197,7 @@ def forecast_json(row: dict, grid, fparams: dict) -> dict:
     return {"metric": "score", "method": fparams["method"], "origin_month": f"{origin:%Y-%m}", "horizon_months": fparams["horizon"], "points": pts,
             "naive_last": _f(row["naive_last"], 1), "own_average": _f(row["own_average"], 1), "drivers": drivers,
             "skill_vs_naive": _f(fparams["skill_h3"], 3), "skill_by_horizon": [_f(fparams["skill_by_horizon"][str(h)], 3) for h in range(1, fparams["horizon"] + 1)],
-            "note": "skill: cross-validated pinball-loss improvement of this fan over the naive fan (last value, pooled error quantiles) at 3 months and at each horizon; "
-                    + fparams["why"] + ". A persistence fan, not a prediction of outcomes."}
+            "note": _forecast_note(fparams)}
 
 
 def pick_sample(detail: pd.DataFrame, n: int, alert_companies: dict[str, list[str]] | None = None) -> list[str]:
@@ -212,7 +224,7 @@ def pick_sample(detail: pd.DataFrame, n: int, alert_companies: dict[str, list[st
         take(last["trajectory"] == traj, 1)
     take(last["guard"] == "dark")
     take(last["guard"] == "fading")
-    take(last["confidence_note"].str.contains("no invoice", na=False), 2)
+    take(last["confidence_note"].str.contains("sin pagos de facturas", na=False), 2)
     take(last["trail_months"] <= 4 if "trail_months" in last else last["confidence"] == "low")
     take(last["confidence"] == "medium", n)
     return picks[:n]
@@ -325,8 +337,8 @@ def build_bundle(csv_folder: Path, out: Path, work_dir: Path | None = None, deta
 
     clusters = {"schema_version": SCHEMA_VERSION, "clusters": mon.clusters,
                 "quality": {"silhouette": mparams["clusters"]["model"]["silhouette_by_k"], "chosen_k": mparams["clusters"]["model"]["k"],
-                            "note": "weak structure (silhouette below 0.2): use as a peer group for a comparison, not as a segment. Fitted on train; size signal regressed out; "
-                                    "membership is a whole-trail trait, never an alert trigger."}}
+                            "note": "Estructura débil (silueta por debajo de 0,2): úsalos como grupo de referencia para comparar, no como segmentos. Ajustados con empresas de entrenamiento, "
+                                    "sin la señal de tamaño; la pertenencia es un rasgo de todo el historial y nunca dispara una alerta."}}
     files["clusters.json"] = _write(out / "clusters.json", clusters)
     stats = json.loads((Path(__file__).resolve().parents[2] / "analysis" / "monitor" / "monitor_stats.json").read_text(encoding="utf8"))
     vol = stats["volume_per_company_year"]
@@ -335,9 +347,9 @@ def build_bundle(csv_folder: Path, out: Path, work_dir: Path | None = None, deta
                       "median_lead_time_months": _f(stats["headline"]["median_lead_time_months"], 1),
                       "top_customer_precision": _f(stats["top_customer"]["onset_only"]["precision"], 3), "top_customer_base_rate": _f(stats["top_customer"]["base_rate"], 3),
                       "alerts_per_company_year": _f(vol["per_company_year_risk"] + vol["per_company_year_up"], 2),
-                      "note": ("Measured on train companies against the eight accepted outcomes. Score-fall alerts are about as often followed by those outcomes as an alert on a "
-                               "random month (lift 0.7-1.2): they say a company moved away from its own normal, with the reason and the amount, not that it will fail. "
-                               "The top-customer alert is the one with a measured lift (about 2x). Details: analysis/monitor/evaluation.md.")},
+                      "note": ("Medido en empresas de entrenamiento frente a los ocho resultados aceptados. Las alertas de caída de la puntuación van seguidas de esos resultados "
+                               "aproximadamente tan a menudo como una alerta en un mes al azar (lift 0,7-1,2): indican que una empresa se ha alejado de su normalidad, con el motivo y el importe, no que vaya a fallar. "
+                               "La alerta de cliente principal es la única con un lift medido (unas 2 veces). Detalles: analysis/monitor/evaluation.md.")},
             "alerts": sorted(alert_list, key=lambda a: (a["month"], sev_rank[a["severity"]], a["rank_score"] or 0.0), reverse=True)}
     files["alerts.json"] = _write(out / "alerts.json", feed)
 
@@ -370,7 +382,7 @@ def build_bundle(csv_folder: Path, out: Path, work_dir: Path | None = None, deta
                                  "time_split": {"split_month": fparams["time_split_check"]["split_month"],
                                                 "per_horizon": {h: {k: v[k] for k in ("pinball_skill", "cover50", "cover80")} for h, v in fparams["time_split_check"]["per_horizon"].items()}},
                                  "move_persistence": fparams["move_persistence"]}},
-        "spec": manifest_spec(), "disclaimer": DISCLAIMER, "files": files,
+        "language": "es", "spec": manifest_spec(), "disclaimer": DISCLAIMER, "files": files,
     }
     files["manifest.json"] = None
     _write(out / "manifest.json", {k: v for k, v in manifest.items() if k != "files"} | {"files": {k: v for k, v in files.items() if v}})
@@ -399,6 +411,11 @@ def validate_bundle(path: Path) -> list[str]:
             bad.append(f"{a['alert_id']}: kind/severity/direction")
         if a["owner"] not in ("treasurer", "cfo", "collections") or not a["action"]:
             bad.append(f"{a['alert_id']}: owner/action missing")
+        texts = [a["title"], a["summary"], a["action"]] + [r["sentence"] for r in a["reasons"]]
+        if any(re.search(r"\b(nan|inf)\b|-0 %", t) for t in texts):
+            bad.append(f"{a['alert_id']}: alert text prints nan/inf/-0 %")
+        if any(ENGLISH_WORDS.search(t) for t in texts + [a["persistence"]["rule"]]):
+            bad.append(f"{a['alert_id']}: alert text has English words")
         if len(a["reasons"]) > 4 or a["entity"]["type"] not in ("company", "group"):
             bad.append(f"{a['alert_id']}: reasons or entity type")
         if a["kind"] == "top_customer_quiet" and ("revenue at risk" in (a["summary"] + a["action"]).lower() or a["persistence"]["months_flagged"] != 1):
@@ -427,6 +444,11 @@ def validate_bundle(path: Path) -> list[str]:
             if any(len(c[k]) != ln for k in ("values", "center", "lower", "upper", "signal", "persistent")):
                 bad.append(f"{f.stem}: control chart {c['comparison']}/{c['metric']} arrays differ in length")
         fc = doc.get("forecast")
+        user_text = [m.get("confidence_note") or "" for m in doc["months"]]
+        if fc:
+            user_text += [fc["note"]] + [x["text"] for x in (fc.get("drivers") or {}).get("parts", [])]
+        if any(ENGLISH_WORDS.search(t) for t in user_text):
+            bad.append(f"{f.stem}: forecast or confidence text has English words")
         if fc:
             for p_ in fc["points"]:
                 v = [p_["lo80"], p_["lo50"], p_["median"], p_["hi50"], p_["hi80"]]

@@ -80,14 +80,14 @@ def score_frame(items: pd.DataFrame, ref: dict, drop_families=frozenset(), min_m
 
     coverage = W.sum(axis=1) / sum(weights[c] for c in W.columns)
     reasons = []
-    for cat, why in (("payment_history", "no invoice payments in the window"), ("amounts_owed", "no cash balances"),
-                     ("mix", "no customer concentration data"), ("new_credit", "too short to compare debt service with 6 months ago")):
+    for cat, why in (("payment_history", "sin pagos de facturas en la ventana"), ("amounts_owed", "sin saldos de caja"),
+                     ("mix", "sin datos de concentración de clientes"), ("new_credit", "historial demasiado corto para comparar el pago de deuda con hace 6 meses")):
         if cat in W.columns:
             reasons.append(pd.Series(np.where(W[cat] == 0, why, ""), index=items.index))
-    reasons.append(pd.Series(np.where(items["trail_months"] < spec.CONF_MIN_MONTHS, f"under {spec.CONF_MIN_MONTHS} months of history", ""), index=items.index))
+    reasons.append(pd.Series(np.where(items["trail_months"] < spec.CONF_MIN_MONTHS, f"menos de {spec.CONF_MIN_MONTHS} meses de historial", ""), index=items.index))
     quiet = (items["active_share"] < 50).to_numpy()
-    reasons.append(pd.Series(np.where(quiet, "incoming money in under half of the last 6 months", ""), index=items.index))
-    reasons.append(pd.Series(np.select([dark == 2, dark == 1], ["no recent activity: score capped", "inflows collapsed: score capped"], default=""), index=items.index))
+    reasons.append(pd.Series(np.where(quiet, "entra dinero en menos de la mitad de los últimos 6 meses", ""), index=items.index))
+    reasons.append(pd.Series(np.select([dark == 2, dark == 1], ["sin actividad reciente: puntuación limitada", "entradas de caja hundidas: puntuación limitada"], default=""), index=items.index))
     note = pd.concat(reasons, axis=1).apply(lambda r: "; ".join(x for x in r if x), axis=1) if reasons else ""
     low = (coverage < spec.CONF_MED_COVERAGE) | (items["trail_months"] < spec.CONF_MIN_MONTHS) | (dark == 2)
     high = (coverage >= spec.CONF_HIGH_COVERAGE) & (items["trail_months"] >= spec.CONF_HIGH_MONTHS) & (dark == 0) & ~quiet

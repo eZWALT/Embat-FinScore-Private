@@ -13,7 +13,7 @@
     "baseline_lag_months": 3,
     "baseline_window_months": 12,
     "min_baseline_months": 4,
-    "persistence": "3 of last 4"
+    "persistence": "3 de los últimos 4"
    }
   },
   "floors": {
@@ -280,16 +280,16 @@
     ]
    ],
    "labels": [
-    "pays social security · runs payroll",
-    "inflows well above outflows · positive operating margin",
-    "lumpy inflows · months without incoming money",
-    "many credit notes · diversified customers"
+    "paga Seguridad Social · paga nóminas",
+    "entradas muy por encima de las salidas · margen operativo positivo",
+    "entradas irregulares · meses sin entrada de dinero",
+    "muchas notas de crédito · clientes diversificados"
    ],
    "descriptions": [
-    "pays social security; runs payroll; steady outflows; movements almost daily",
-    "inflows well above outflows; positive operating margin; no social security; no payroll",
-    "lumpy inflows; months without incoming money; irregular timing; few days with movements",
-    "many credit notes; diversified customers; invoice-based; few overdue receivables"
+    "paga Seguridad Social; paga nóminas; salidas estables; movimientos casi a diario",
+    "entradas muy por encima de las salidas; margen operativo positivo; sin Seguridad Social; sin nóminas",
+    "entradas irregulares; meses sin entrada de dinero; calendario irregular; pocos días con movimientos",
+    "muchas notas de crédito; clientes diversificados; basada en facturas; pocos cobros vencidos"
    ],
    "sizes": [
     618,

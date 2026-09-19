@@ -67,16 +67,26 @@ def attribution(keys: pd.DataFrame, contrib: pd.DataFrame, res: pd.DataFrame) ->
     return pd.concat([keys[["company_id", "period"]], delta.where(both)], axis=1)
 
 
+def num(x: float, nd: int = 0) -> str:
+    """Spanish decimal comma."""
+    return f"{x:.{nd}f}".replace(".", ",")
+
+
+def pct(x: float, nd: int = 0) -> str:
+    """A share (0-1) as '64 %' with the Spanish space and decimal comma."""
+    return num(x * 100.0, nd) + " %"
+
+
 def eur(x: float) -> str:
     if x is None or not np.isfinite(x):
         return ""
     a = abs(x)
     sign = "-" if x < 0 else ""
     if a >= 1e6:
-        return f"{sign}€{a / 1e6:.1f}M"
+        return f"{sign}{num(a / 1e6, 1)} M€"
     if a >= 1e3:
-        return f"{sign}€{a / 1e3:.0f}k"
-    return f"{sign}€{a:.0f}"
+        return f"{sign}{a / 1e3:.0f} k€"
+    return f"{sign}{a:.0f} €"
 
 
 def _paren(*parts: str) -> str:
@@ -84,74 +94,81 @@ def _paren(*parts: str) -> str:
     return f" ({'; '.join(parts)})" if parts else ""
 
 
-def item_sentence(name: str, r) -> tuple[str, float]:
-    """(sentence, euro amount) for item `name` from a row `r` of items (+ amounts). Amount is NaN when unknown.
+def has_value(name: str, r) -> bool:
+    """False when the item has no figure in this row (no invoices, no debt data...): a sentence about it would print 'nan'."""
+    return name == "months_observed" or (name in r.index and pd.notna(r[name]))
 
-    The euro amount covers the same window as the figure quoted next to it (5 months for the delay and debt ratios,
-    which average three 3-month windows; the current month-end for stocks).
+
+def item_sentence(name: str, r) -> tuple[str, float]:
+    """(frase en español, importe en euros) del ítem `name` a partir de una fila `r` de items (+ importes). El importe es NaN si se desconoce.
+
+    El importe cubre la misma ventana que la cifra citada a su lado (5 meses para los retrasos y los ratios de deuda,
+    que promedian tres ventanas de 3 meses; el cierre del mes actual para los saldos).
     """
     g = lambda k: float(r[k]) if k in r.index and pd.notna(r[k]) else np.nan
     v = g(name)
     if name in ("ds_ratio", "fc_ratio", "ds_increase", "fc_increase") and np.isfinite(v):
-        v = max(v, 0.0) + 0.0  # a tiny negative ratio must not print as "-0%"
+        v = max(v, 0.0) + 0.0  # a tiny negative ratio must not print as "-0 %"
     if name == "delay_paid":
         e = g("ap_late5")
-        return f"Suppliers were paid {v:.0f} days after the due date on average over the last 5 months{_paren(eur(e) + ' paid late' if np.isfinite(e) else '')}.", e
+        return f"De media en los últimos 5 meses, se pagó a los proveedores {v:.0f} días después del vencimiento{_paren(eur(e) + ' pagados con retraso' if np.isfinite(e) else '')}.", e
     if name == "delay_coll":
         e = g("ar_late5")
-        return f"Customers paid {v:.0f} days after the due date on average over the last 5 months{_paren(eur(e) + ' collected late' if np.isfinite(e) else '')}.", e
+        return f"De media en los últimos 5 meses, los clientes pagaron {v:.0f} días después del vencimiento{_paren(eur(e) + ' cobrados con retraso' if np.isfinite(e) else '')}.", e
     if name == "ap_overdue30":
         e = g("ap_od30_eur")
-        return f"On average over the last 3 month-ends {v:.0%} of open payables was more than 30 days overdue{_paren(eur(e) + ' now')}.", e
+        return f"De media en los últimos 3 cierres de mes, el {pct(v)} de los pagos pendientes a proveedores llevaba más de 30 días vencido{_paren(eur(e) + ' ahora')}.", e
     if name == "ar_overdue30":
         e = g("ar_od30_eur")
-        return f"On average over the last 3 month-ends {v:.0%} of open receivables was more than 30 days overdue{_paren(eur(e) + ' now')}.", e
+        return f"De media en los últimos 3 cierres de mes, el {pct(v)} de los cobros pendientes de clientes llevaba más de 30 días vencido{_paren(eur(e) + ' ahora')}.", e
     if name == "runway":
         liq, out = g("liq"), g("out_month")
         if liq < 0:
-            return f"Cash is negative ({eur(liq)}).", liq
-        return f"Cash covered {v:.1f} months of outflows on average over the last 3 month-ends{_paren(eur(liq) + ' now', eur(out) + ' of outflows a month')}.", liq
+            return f"La caja es negativa ({eur(liq)}).", liq
+        return f"De media en los últimos 3 cierres de mes, la caja cubrió {num(v, 1)} meses de salidas{_paren(eur(liq) + ' ahora', eur(out) + ' de salidas al mes')}.", liq
     if name == "neg_liq":
         e = g("min_liq3")
-        return f"Cash was negative at {round(v * 3)} of the last 3 month-ends{_paren('lowest ' + eur(e))}.", e
+        return f"La caja fue negativa en {round(v * 3)} de los últimos 3 cierres de mes{_paren('mínimo: ' + eur(e))}.", e
     if name == "neg_episodes":
         e = g("min_liq3")
-        return f"Cash turned negative {v:.0f} time(s) in the last 6 months{_paren('lowest month-end in the last 3: ' + eur(e))}.", e
+        n = round(v)
+        return f"La caja pasó a negativo {n} {'vez' if n == 1 else 'veces'} en los últimos 6 meses{_paren('cierre de mes más bajo de los últimos 3: ' + eur(e))}.", e
     if name == "ds_ratio":
         e = g("ds5")
-        return f"Debt repayments took {v:.0%} of inflows over the last 5 months{_paren(eur(e) + ' repaid')}.", e
+        return f"El pago de deuda supuso el {pct(v)} de las entradas de caja en los últimos 5 meses{_paren(eur(e) + ' devueltos')}.", e
     if name == "fc_ratio":
         e = g("fc5")
-        return f"Bank fees and interest took {v:.1%} of inflows over the last 5 months{_paren(eur(e) + ' paid')}.", e
+        return f"Las comisiones e intereses bancarios supusieron el {pct(v, 1)} de las entradas de caja en los últimos 5 meses{_paren(eur(e) + ' pagados')}.", e
     if name == "out_vol":
         e = g("out_sd6")
-        return f"Monthly outflows swing by {v:.0%} of their average over 6 months{_paren('std ' + eur(e))}.", e
+        return f"Las salidas mensuales oscilan un {pct(v)} de su media en 6 meses{_paren('desviación típica ' + eur(e))}.", e
     if name == "months_observed":
-        return f"Only {int(r['trail_months'])} months of history so far.", np.nan
+        n = int(r["trail_months"])
+        return f"Solo {n} {'mes' if n == 1 else 'meses'} de historial hasta ahora.", np.nan
     if name == "active_share":
         e = g("in3")
-        return f"Money came in during {round(v / 100 * 6)} of the last 6 months{_paren(eur(e) + ' received in the last 3')}.", e
+        return f"Entró dinero en {round(v / 100 * 6)} de los últimos 6 meses{_paren(eur(e) + ' recibidos en los últimos 3')}.", e
     if name == "ds_increase":
         e = v * g("in5") if np.isfinite(g("in5")) else np.nan
-        return f"Debt repayments rose from {max(g('ds_increase_prior'), 0.0) + 0.0:.1%} to {max(g('ds_ratio'), 0.0) + 0.0:.1%} of inflows compared with 6 months earlier{_paren(eur(e) + ' more over 5 months')}.", e
+        return f"El pago de deuda subió del {pct(max(g('ds_increase_prior'), 0.0) + 0.0, 1)} al {pct(max(g('ds_ratio'), 0.0) + 0.0, 1)} de las entradas de caja frente a 6 meses antes{_paren(eur(e) + ' más en 5 meses')}.", e
     if name == "fc_increase":
         e = v * g("in5") if np.isfinite(g("in5")) else np.nan
-        return f"Fees and interest rose from {max(g('fc_increase_prior'), 0.0) + 0.0:.1%} to {max(g('fc_ratio'), 0.0) + 0.0:.1%} of inflows compared with 6 months earlier{_paren(eur(e) + ' more over 5 months')}.", e
+        return f"Las comisiones e intereses subieron del {pct(max(g('fc_increase_prior'), 0.0) + 0.0, 1)} al {pct(max(g('fc_ratio'), 0.0) + 0.0, 1)} de las entradas de caja frente a 6 meses antes{_paren(eur(e) + ' más en 5 meses')}.", e
     if name == "cust_tail":
         e = g("top1_eur")
-        return f"{g('cust_top1'):.0%} of billing comes from one customer{_paren(eur(e) + ' in 3 months')}.", e
+        return f"El {pct(g('cust_top1'))} de la facturación procede de un solo cliente{_paren(eur(e) + ' en 3 meses')}.", e
     if name == "credit_note":
         e = g("cn3")
-        return f"{v:.0%} of billing was reversed by credit notes{_paren(eur(e) + ' in 3 months')}.", e
+        return f"El {pct(v)} de la facturación se revirtió con notas de crédito{_paren(eur(e) + ' en 3 meses')}.", e
     return name, np.nan
 
 
 def _guard_sentence(r) -> tuple[str, float]:
     if r["guard"] == "dark":
-        return (f"No bank movement for {int(r['recency_days'])} days: the score is capped at {spec.CAP_DARK:.0f}"
-                f" (it would be {r['score_raw']:.0f} otherwise)."), np.nan
-    return (f"Inflows collapsed to {r['inflow_recent'] / r['inflow_older']:.0%} of the company's own earlier level "
-            f"({eur(r['inflow_recent'])} a month vs {eur(r['inflow_older'])}): the score is capped at {spec.CAP_FADING:.0f}."), r["inflow_older"] - r["inflow_recent"]
+        return (f"Sin movimientos bancarios desde hace {int(r['recency_days'])} días: la puntuación se limita a {spec.CAP_DARK:.0f}"
+                f" (sin el límite sería {r['score_raw']:.0f})."), np.nan
+    return (f"Las entradas de caja se hundieron hasta el {pct(max(r['inflow_recent'] / r['inflow_older'], 0.0) + 0.0)} del nivel anterior de la propia empresa "
+            f"({eur(r['inflow_recent'])} al mes frente a {eur(r['inflow_older'])}): la puntuación se limita a {spec.CAP_FADING:.0f}."), r["inflow_older"] - r["inflow_recent"]
 
 
 def reasons(items: pd.DataFrame, scored: dict, res: pd.DataFrame, attr: pd.DataFrame, top: int = 4) -> pd.DataFrame:
@@ -190,17 +207,17 @@ def reasons(items: pd.DataFrame, scored: dict, res: pd.DataFrame, attr: pd.DataF
         out_level.append(lv[:top])
         ch = []
         if guard_now[k] and guard_now[k] == guard_prev[k]:
-            ch = [{"item": "guard", "points": 0.0, "sentence": f"The score is held at the activity cap ({r['score']:.0f}) while activity has not resumed.", "eur": None}]
+            ch = [{"item": "guard", "points": 0.0, "sentence": f"La puntuación se mantiene en el límite por inactividad ({r['score']:.0f}) mientras no se reanude la actividad.", "eur": None}]
         elif delta_arr is not None and np.isfinite(delta_arr[k]).any():
             order = np.argsort(-np.abs(np.nan_to_num(delta_arr[k])))
             for j in order[:top]:
                 dv = float(np.nan_to_num(delta_arr[k, j]))
-                if abs(dv) < 0.5:
+                if abs(dv) < 0.5 or not has_value(names[j], row):
                     continue
                 s, e = item_sentence(names[j], row)
                 ch.append({"item": names[j], "points": dv, "sentence": s, "eur": None if not np.isfinite(e) else float(e)})
             if np.isfinite(d_guard[k]) and abs(d_guard[k]) >= 0.5:
-                gs, ge = _guard_sentence({**row.to_dict(), **r.to_dict()}) if r["guard"] else ("The activity cap no longer applies.", np.nan)
+                gs, ge = _guard_sentence({**row.to_dict(), **r.to_dict()}) if r["guard"] else ("El límite por inactividad ya no se aplica.", np.nan)
                 ch.append({"item": "guard", "points": float(d_guard[k]), "sentence": gs, "eur": None if not np.isfinite(ge) else float(ge)})
             ch = sorted(ch, key=lambda x: -abs(x["points"]))[:top]
         out_change.append(ch)
