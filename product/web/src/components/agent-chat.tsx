@@ -301,18 +301,29 @@ export function AgentChat({
                         </div>
                       );
                     }
+                    const runs: { name: string; items: typeof segment.items }[] = [];
+                    for (const item of segment.items) {
+                      const name = getToolName(item.part);
+                      const last = runs.at(-1);
+                      if (last?.name === name) last.items.push(item);
+                      else runs.push({ name, items: [item] });
+                    }
                     return (
                       <div key={segment.key} className="flex min-w-0 flex-col gap-0.5">
-                        {segment.items.map((item, itemIndex) => {
-                          const plot = getToolName(item.part) === "plot_series" ? plotFromPart(item.part) : null;
-                          const lastTool = itemIndex === segment.items.length - 1;
+                        {runs.map((run, runIndex) => {
+                          const lastRun = runIndex === runs.length - 1;
                           return (
-                            <div key={item.key} className="min-w-0 space-y-1">
+                            <div key={run.items[0]?.key ?? `${segment.key}-${run.name}`} className="min-w-0 space-y-1">
                               <AgentTrace
-                                part={item.part}
-                                keepBusy={showPulse && lastTool}
+                                parts={run.items.map((item) => item.part)}
+                                keepBusy={showPulse && lastRun}
                               />
-                              {plot ? <AgentPlot spec={plot} /> : null}
+                              {run.name === "plot_series"
+                                ? run.items.map((item) => {
+                                    const plot = plotFromPart(item.part);
+                                    return plot ? <AgentPlot key={item.key} spec={plot} /> : null;
+                                  })
+                                : null}
                             </div>
                           );
                         })}

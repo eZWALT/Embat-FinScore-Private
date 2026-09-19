@@ -52,6 +52,7 @@ Add a new dated file after meaningful work. Do not rewrite old ones. If the new 
 | `persistent-memory/2026-09-20-0120-thinking-max-exa.md` | Exa + `max` superseded. |
 | `persistent-memory/2026-09-20-0130-drop-exa.md` | No Exa. No `search_web`. No `EXA_API_KEY`. |
 | `persistent-memory/2026-09-20-0135-thinking-icon-high.md` | Brain on: `reasoning_effort=high`. Pensando chip like a tool row. Do not dump CoT. |
+| `persistent-memory/2026-09-20-0140-tool-count-row.md` | Same tool kind = one row, count ticks `×1` `×2` `×3`. |
 
 Plain-language method (not a journal file): `product/score/METHOD.md`.
 
