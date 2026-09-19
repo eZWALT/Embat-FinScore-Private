@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Search, X } from "lucide-react";
 import {
   CartesianGrid,
@@ -22,6 +22,7 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { Input } from "@/components/ui/input";
+import { HealthScoreChat } from "@/components/health-score-chat";
 import { formatMonth } from "@/lib/format-month";
 import type { DashboardCompany, DashboardData } from "@/lib/data/types";
 
@@ -93,12 +94,15 @@ function yDomainForSelection(
   return [Math.max(0, Math.floor(min - pad)), Math.min(100, Math.ceil(max + pad))];
 }
 
-const LIST_CAP = 80;
+const PAGE_SIZE = 50;
 
 export function HealthScoreView({ data }: { data: DashboardData }) {
   const [selectedIds, setSelectedIds] = useState<string[]>(() => defaultSelection(data.companies));
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const listRef = useRef<HTMLUListElement>(null);
+  const sentinelRef = useRef<HTMLLIElement>(null);
 
   const selected = useMemo(
     () =>
@@ -108,17 +112,40 @@ export function HealthScoreView({ data }: { data: DashboardData }) {
     [data.companies, selectedIds],
   );
 
-  const matches = useMemo(() => {
+  const filtered = useMemo(() => {
     const needle = query.trim().toLowerCase();
-    return data.companies
-      .filter((company) => {
-        if (selectedIds.includes(company.companyId)) return false;
-        if (!needle) return true;
-        const haystack = `${company.companyId} ${company.groupId ?? ""}`.toLowerCase();
-        return haystack.includes(needle);
-      })
-      .slice(0, LIST_CAP);
+    return data.companies.filter((company) => {
+      if (selectedIds.includes(company.companyId)) return false;
+      if (!needle) return true;
+      const haystack = `${company.companyId} ${company.groupId ?? ""}`.toLowerCase();
+      return haystack.includes(needle);
+    });
   }, [data.companies, query, selectedIds]);
+
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE);
+  }, [query, selectedIds]);
+
+  const matches = filtered.slice(0, visibleCount);
+  const hasMore = visibleCount < filtered.length;
+
+  useEffect(() => {
+    if (!open || !hasMore) return;
+    const root = listRef.current;
+    const sentinel = sentinelRef.current;
+    if (!root || !sentinel) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setVisibleCount((count) => count + PAGE_SIZE);
+        }
+      },
+      { root, rootMargin: "48px" },
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [open, hasMore, matches.length]);
 
   const chartConfig = useMemo(() => {
     const config: ChartConfig = {};
@@ -162,6 +189,8 @@ export function HealthScoreView({ data }: { data: DashboardData }) {
         </h1>
       </div>
 
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_22rem] xl:items-start">
+        <div className="space-y-4">
       <Card className="overflow-visible">
         <CardHeader className="flex-row items-center justify-between gap-4 space-y-0">
           <CardTitle className="text-base">Empresas</CardTitle>
@@ -204,6 +233,7 @@ export function HealthScoreView({ data }: { data: DashboardData }) {
             </div>
             {open && !atCap && matches.length > 0 ? (
               <ul
+                ref={listRef}
                 role="listbox"
                 aria-label="Empresas coincidentes"
                 className="max-h-64 overflow-y-auto rounded-lg border bg-popover p-1 shadow-md"
@@ -223,6 +253,11 @@ export function HealthScoreView({ data }: { data: DashboardData }) {
                     </button>
                   </li>
                 ))}
+                {hasMore ? (
+                  <li ref={sentinelRef} className="px-2 py-1.5 text-center text-xs text-muted-foreground">
+                    Cargando más…
+                  </li>
+                ) : null}
               </ul>
             ) : null}
           </div>
@@ -321,6 +356,9 @@ export function HealthScoreView({ data }: { data: DashboardData }) {
           )}
         </CardContent>
       </Card>
+        </div>
+        <HealthScoreChat />
+      </div>
     </div>
   );
 }
