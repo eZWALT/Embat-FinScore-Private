@@ -2,22 +2,22 @@ import Image from "next/image";
 
 const TEAM = [
   {
-    name: "Walter J.T.V",
+    name: "Rubén Godoy",
     role: "CEO",
+    src: "/landing/team/ruben.jpg",
+    href: "https://www.linkedin.com/in/rubengodoy/",
+  },
+  {
+    name: "Walter J.T.V",
+    role: "CTO",
     src: "/landing/team/walter.png",
     href: "https://www.linkedin.com/in/walterjtv/",
   },
   {
     name: "Javier Boix",
-    role: "CTO",
+    role: "CSO",
     src: "/landing/team/javier.png",
     href: "https://www.linkedin.com/in/javier-boix-campos/",
-  },
-  {
-    name: "Rubén Godoy",
-    role: "CSO",
-    src: "/landing/team/ruben.jpg",
-    href: "https://www.linkedin.com/in/rubengodoy/",
   },
 ] as const;
 
