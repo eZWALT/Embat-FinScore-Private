@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build --webpack",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "bench:ask": "node scripts/bench-ask.mjs"
   },
   "dependencies": {
     "@ai-sdk/openai": "^4.0.71",

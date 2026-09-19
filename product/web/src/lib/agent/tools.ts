@@ -631,8 +631,31 @@ const plot_series = tool({
   },
 });
 
-export function chatTools() {
+function withTiming<T extends { execute?: (...args: never[]) => unknown }>(name: string, definition: T): T {
+  const execute = definition.execute;
+  if (typeof execute !== "function") return definition;
   return {
+    ...definition,
+    execute: (async (input: never, options: never) => {
+      const started = performance.now();
+      const result = await execute(input, options);
+      const timing_ms = Math.round(performance.now() - started);
+      if (result && typeof result === "object" && !Array.isArray(result)) {
+        return { ...(result as object), timing_ms };
+      }
+      return { result, timing_ms };
+    }) as T["execute"],
+  };
+}
+
+function timeAll<T extends Record<string, { execute?: (...args: never[]) => unknown }>>(tools: T): T {
+  return Object.fromEntries(
+    Object.entries(tools).map(([name, definition]) => [name, withTiming(name, definition)]),
+  ) as T;
+}
+
+export function chatTools() {
+  return timeAll({
     list_companies,
     get_company,
     explain_change,
@@ -643,15 +666,15 @@ export function chatTools() {
     get_forecast,
     query_clean_db,
     plot_series,
-  };
+  });
 }
 
 export function sentinelTools() {
-  return {
+  return timeAll({
     get_company,
     get_group,
     get_alerts,
     get_control_chart,
     plot_series,
-  };
+  });
 }

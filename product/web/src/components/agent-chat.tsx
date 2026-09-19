@@ -8,8 +8,8 @@ import { useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AgentPlot } from "@/components/agent-plot";
-import { ToolCallChip } from "@/components/watcher-post-view";
-import { contextBody, plotsFromParts, type AgentContext } from "@/lib/agent/chat-parts";
+import { AgentTrace } from "@/components/agent-trace";
+import { contextBody, plotFromPart, type AgentContext } from "@/lib/agent/chat-parts";
 
 export function AgentChat({
   api,
@@ -85,17 +85,16 @@ export function AgentChat({
             <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
               {message.role === "user" ? "Tú" : "Centinela"}
             </p>
-            {message.role === "assistant"
-              ? message.parts
-                  .filter(isToolUIPart)
-                  .map((part, index) => (
-                    <ToolCallChip
-                      key={`${message.id}-tool-${part.toolCallId || index}`}
-                      name={getToolName(part)}
-                    />
-                  ))
-              : null}
             {message.parts.map((part, index) => {
+              if (message.role === "assistant" && isToolUIPart(part)) {
+                const plot = getToolName(part) === "plot_series" ? plotFromPart(part) : null;
+                return (
+                  <div key={`${message.id}-tool-${part.toolCallId || index}`} className="space-y-2">
+                    <AgentTrace part={part} />
+                    {plot ? <AgentPlot spec={plot} /> : null}
+                  </div>
+                );
+              }
               if (part.type === "text" && part.text) {
                 return (
                   <p key={`${message.id}-t-${index}`} className="whitespace-pre-wrap text-sm leading-snug">
@@ -105,11 +104,6 @@ export function AgentChat({
               }
               return null;
             })}
-            {message.role === "assistant"
-              ? plotsFromParts(message.parts).map((spec, index) => (
-                  <AgentPlot key={`${message.id}-plot-${index}`} spec={spec} />
-                ))
-              : null}
           </li>
         ))}
         {busy && messages.at(-1)?.role !== "assistant" ? (

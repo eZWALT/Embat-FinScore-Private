@@ -9,6 +9,7 @@ const FILES = {
   product: "product_context.md",
   wording: "wording_rules.md",
   format: "watcher_format.md",
+  tools: "tools_catalog.md",
   schema: "clean_schema.md",
 } as const;
 
@@ -26,6 +27,7 @@ export async function loadSystemPrompt(role: AgentRole, extra?: string) {
     await readPrompt(FILES.product),
     await readPrompt(FILES.wording),
     await readPrompt(FILES.format),
+    await readPrompt(FILES.tools),
   ];
   if (role === "chat") parts.push(await readPrompt(FILES.schema));
   if (extra) parts.push(extra);

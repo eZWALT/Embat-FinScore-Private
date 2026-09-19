@@ -40,6 +40,7 @@ export async function streamAgentResponse({
   const modelMessages = await convertToModelMessages(uiMessages);
   const tools = role === "sentinel" ? sentinelTools() : chatTools();
 
+  const started = Date.now();
   const result = streamText({
     model: createHelmcodeModel(),
     system,
@@ -47,6 +48,15 @@ export async function streamAgentResponse({
     tools,
     stopWhen: isStepCount(8),
     temperature: 0.2,
+    onStepFinish({ toolCalls }) {
+      const names = toolCalls.map((call) => call.toolName);
+      if (names.length) {
+        console.info(`[agent] ${role} tools=${names.join(",")} +${Date.now() - started}ms`);
+      }
+    },
+    onFinish({ steps }) {
+      console.info(`[agent] ${role} steps=${steps.length} total_ms=${Date.now() - started}`);
+    },
   });
 
   return createUIMessageStreamResponse({

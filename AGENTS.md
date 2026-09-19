@@ -70,6 +70,7 @@ Build Watcher and Ask **inside the existing product**, not as extra tabs. Vigila
 | `prompts/watcher_format.md` | **The** month-post shape: 1 line + 1 line + ≤4 bullets. Not free prose. |
 | `prompts/sentinel_system.md` | Watcher: replies only in live; opening posts are formatted |
 | `prompts/chat_system.md` | Ask: scores/alerts from Neon `api`/`analytics` first, then records |
+| `prompts/tools_catalog.md` | When/in/out for every retrieval tool. UI labels live in `tool-catalog.ts`. |
 | `prompts/clean_schema.md` | Record tables (pipeline `clean.*`; hosted as Neon `core`) |
 
 Tools read **Neon** at runtime: `api` / `analytics` for scores, reasons, alerts (never recompute a score). Record questions go to `core` (invoices, transactions, balances, debt) through a guarded `SELECT` + `LIMIT` 200. DuckDB is a load/audit artifact, not the app's database. The same SQL guard applies if a local clean DuckDB is used in development.

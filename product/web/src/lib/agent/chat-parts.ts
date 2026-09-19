@@ -39,14 +39,13 @@ export function toolChipsFromParts(parts: UIMessage["parts"]): { id: string; nam
   return chips;
 }
 
+export function plotFromPart(part: UIMessage["parts"][number]): PlotSpec | null {
+  if (!isToolUIPart(part) || getToolName(part) !== "plot_series") return null;
+  const output = "output" in part ? part.output : undefined;
+  const plot = output && typeof output === "object" && "plot" in output ? output.plot : output;
+  return isPlotSpec(plot) ? plot : null;
+}
+
 export function plotsFromParts(parts: UIMessage["parts"]): PlotSpec[] {
-  const plots: PlotSpec[] = [];
-  for (const part of parts) {
-    if (!isToolUIPart(part)) continue;
-    if (getToolName(part) !== "plot_series") continue;
-    const output = "output" in part ? part.output : undefined;
-    const plot = output && typeof output === "object" && "plot" in output ? output.plot : output;
-    if (isPlotSpec(plot)) plots.push(plot);
-  }
-  return plots;
+  return parts.map(plotFromPart).filter((plot): plot is PlotSpec => plot != null);
 }
