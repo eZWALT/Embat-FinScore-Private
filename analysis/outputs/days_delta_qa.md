@@ -1,6 +1,6 @@
 # Unused leftover of Δdays after days-level (Norden lead without utilisation)
 
-Generated `2026-09-19T07:43:55+02:00` by `analysis/evaluate/days_delta_qa.py`.
+Generated `2026-09-19T07:45:06+02:00` by `analysis/evaluate/days_delta_qa.py`.
 DuckDB `clean` read-only. `monthly.parquet` / `targets.parquet` read-only.
 Rates and leftover on **train**. Holdout 72 / 1073 CM
 coverage only. Seed 20260918 group folds. No 0–100. No parquet rewrite.
@@ -75,11 +75,11 @@ Sign from the train side of each fold. Never holdout fit. Never Y7.
 
 | stem | sign | raw | leftover | folds | n_pos |
 | --- | --- | --- | --- | --- | --- |
-| days level (≥18m) | -1 | 0.714 | 0.714 | [{'fold': 0, 'auroc': 0.6717440974866717, 'n_pos': 52}, {'fold': 1, 'auroc': 0.7476249483684428, 'n_pos': 81}, {'fold': 2, 'auroc': 0.6911061452513967, 'n_pos': 50}, {'fold': 3, 'auroc': 0.7250243902439024, 'n_pos': 75}, {'fold': 4, 'auroc': 0.7358701575911712, 'n_pos': 97}] | 355 |
-| Δ3 raw (≥18m) | -1 | 0.557 | 0.557 | [{'fold': 0, 'auroc': 0.5565381031553176, 'n_pos': 49}, {'fold': 1, 'auroc': 0.5199327956989247, 'n_pos': 75}, {'fold': 2, 'auroc': 0.5737048492212526, 'n_pos': 44}, {'fold': 3, 'auroc': 0.5755930318754633, 'n_pos': 71}, {'fold': 4, 'auroc': 0.5606684981684982, 'n_pos': 88}] | 327 |
-| Δ6 raw (≥18m) | -1 | 0.585 | 0.585 | [{'fold': 0, 'auroc': 0.5871423319649531, 'n_pos': 38}, {'fold': 1, 'auroc': 0.6118296789028497, 'n_pos': 66}, {'fold': 2, 'auroc': 0.5576130765785938, 'n_pos': 35}, {'fold': 3, 'auroc': 0.5786371696360719, 'n_pos': 65}, {'fold': 4, 'auroc': 0.5913892741562644, 'n_pos': 70}] | 274 |
-| size log1p(a_in3) (≥18m) | -1 | 0.609 | 0.609 | [{'fold': 0, 'auroc': 0.5589324829274578, 'n_pos': 52}, {'fold': 1, 'auroc': 0.6275603915277487, 'n_pos': 81}, {'fold': 2, 'auroc': 0.6469826888852936, 'n_pos': 49}, {'fold': 3, 'auroc': 0.5504106501216328, 'n_pos': 74}, {'fold': 4, 'auroc': 0.6628923766816144, 'n_pos': 95}] | 351 |
-| days_lag1 (≥18m) | -1 | 0.685 | 0.685 | [{'fold': 0, 'auroc': 0.6318941990352881, 'n_pos': 52}, {'fold': 1, 'auroc': 0.7310569553444398, 'n_pos': 81}, {'fold': 2, 'auroc': 0.6772290502793296, 'n_pos': 50}, {'fold': 3, 'auroc': 0.6906775067750678, 'n_pos': 75}, {'fold': 4, 'auroc': 0.6963190880603115, 'n_pos': 97}] | 355 |
+| days level (≥18m) | -1 | 0.714 | 0.714 | 0.672 0.748 0.691 0.725 0.736 | 355 |
+| Δ3 raw (≥18m) | -1 | 0.557 | 0.557 | 0.557 0.520 0.574 0.576 0.561 | 327 |
+| Δ6 raw (≥18m) | -1 | 0.585 | 0.585 | 0.587 0.612 0.558 0.579 0.591 | 274 |
+| size log1p(a_in3) (≥18m) | -1 | 0.609 | 0.609 | 0.559 0.628 0.647 0.550 0.663 | 351 |
+| days_lag1 (≥18m) | -1 | 0.685 | 0.685 | 0.632 0.731 0.677 0.691 0.696 | 355 |
 | Δ3 leftover after days (≥18m) | -1 | 0.557 | 0.484 | 0.517 0.462 0.467 0.474 0.501 | 327 |
 | Δ6 leftover after days (≥18m) | -1 | 0.585 | 0.517 | 0.526 0.529 0.508 0.510 0.513 | 274 |
 | days leftover after Δ3 (inverse) | -1 | 0.714 | 0.712 | 0.681 0.756 0.667 0.727 0.730 | 327 |
@@ -132,6 +132,20 @@ First six months of a long book vs later. Δ3 needs lag3 so first6 is mostly emp
 
 Δ3 leftover after days+SS on ≥18m 0.514 (must not steal the SS reason).
 Y2 leftover of Δ3 after days-level on ≥18m 0.524 — do not merge with Y2 trees.
+
+## Extra — falling-only / |Δ3| / leftover after days_lag1
+
+Norden's lead is activity *falling*. Restricting to Δ3<0 does not rescue leftover.
+
+| slice | n_pos | raw | leftover after days | folds |
+| --- | ---: | ---: | ---: | --- |
+| Δ3<0 (falling) | 146 | 0.626 | 0.458 | 0.504 0.363 0.452 0.575 0.398 |
+| Δ3>0 (rising) | 119 | — | 0.580 | 0.630 0.575 0.515 0.602 0.578 |
+| abs(Δ3) | 327 | 0.543 | 0.577 | 0.646 0.435 0.567 0.655 0.579 |
+| Δ3 leftover after days_lag1 | 327 | — | 0.536 | 0.543 0.494 0.556 0.553 0.536 |
+
+`days_lag1` 0.684 stays q6_keep. Δ3 leftover after the lag still dies — the 3-month change is not a lead beyond last month's level.
+Rising leftover 0.580 is unused leftover below the 0.60 KEEP bar, fold-noisy, and the **wrong sign story** for quiet-stressed recover. Do not KEEP it. abs(Δ3) leftover 0.577 is the same: lives thin, fold 1 dies (0.435).
 
 ## Explicitly out
 

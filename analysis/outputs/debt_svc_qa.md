@@ -1,6 +1,6 @@
 # Unused leftover of contemporaneous `a_debt_service` after days as Y3 X
 
-Generated `2026-09-19T07:43:46+02:00` by agent `572fb928`. DuckDB `clean` read-only. `monthly.parquet` / `targets.parquet` read-only. Rates and AUROC on **train**. Holdout 72 is coverage only. Seed 20260918 group folds. No 0–100. No parquet rewrite. No new GBM. No `build_targets`. Do not invent `y_debt_service`. Do not put `a_debt_service` on the 15-col card. Do not overwrite `ds_r_qa.*`, `fc_r_qa.*`, `op_out_qa.*`, `in3_qa.*`. Do not grow TURNOVER. `f_ds_r` leftover 0.528 DROP stays. `f_fc_r` leftover 0.449 DROP stays.
+Generated `2026-09-19T07:52:06+02:00` by agent `572fb928`. DuckDB `clean` read-only. `monthly.parquet` / `targets.parquet` read-only. Rates and AUROC on **train**. Holdout 72 is coverage only. Seed 20260918 group folds. No 0–100. No parquet rewrite. No new GBM. No `build_targets`. Do not invent `y_debt_service`. Do not put `a_debt_service` on the 15-col card. Do not overwrite `ds_r_qa.*`, `fc_r_qa.*`, `op_out_qa.*`, `in3_qa.*`. Do not grow TURNOVER. `f_ds_r` leftover 0.528 DROP stays. `f_fc_r` leftover 0.449 DROP stays.
 
 `a_debt_service` = -sum(amount | grp = debt_service) this month. Store twins: `f_debt_service` / `f_ds_r` / `a_fin_cost` / `f_fc_r`.
 
@@ -210,6 +210,70 @@ T3 leftover after days+a_n_tx 0.615 after days+a_op_out 0.599 after days+size+f_
 ### leftover of within-company rank / leftover after days+f_ds_r+a_n_tx
 
 within-co rank Y3 0.462 leftover 0.530 dies=True. after days+f_ds_r+a_n_tx 0.480. high-days leftover 0.604 low-days leftover 0.555.
+
+### leftover of f_ds_r / a_fin_cost after days on T3; leftover of high-days after f_ds_r
+
+T3 f_ds_r leftover after days 0.634 Y3 0.660. T3 a_fin_cost leftover 0.524 Y3 0.582. high-days leftover after days+f_ds_r 0.590 after days+size+f_ds_r 0.595. T3 2025 leftover — 2026 leftover —.
+
+### leftover of a_debt_service_lag1 after days; last-3 leftover after days+f_ds_r
+
+a_debt_service_lag1 leftover after days 0.467 after days_lag1 0.522 Y3 0.611. last-3 leftover after days+f_ds_r 0.515 n=1869.
+
+### T3 leftover of f_ds_r after days+size; ERP leftover
+
+T3 f_ds_r leftover after days+size 0.649 after days+a_n_tx 0.638. ERP leftover 0.454. after days+f_ds_r+a_op_out 0.478. f_ds_r-notna leftover 0.471.
+
+### leftover of winsorized / long-labeled / leftover after days+f_ds_r+a_fin_cost+a_op_out
+
+winsor99 Y3 0.613 leftover 0.484. ≥6 labeled leftover 0.478 Y3 0.628 n=4869. after days+f_ds_r+a_fin_cost+a_op_out 0.484. T3 leftover after days+f_ds_r+a_op_out 0.579.
+
+### leftover of a_debt_service/a_fin_cost; leftover on T3∩high-days
+
+a_debt_service/a_fin_cost Y3 0.626 leftover 0.540. T3∩high-days leftover — n=1888. after days+f_ds_r+f_fc_r 0.476. T3 leftover after days+f_ds_r+f_fc_r 0.593.
+
+### T3 leftover after days+f_ds_r+a_n_tx+a_op_out; leftover on Q4 days
+
+T3 leftover after days+f_ds_r+a_n_tx+a_op_out 0.581 fake=False. Q4-days leftover 0.642 Y3 0.642 n=2082. T3 ERP leftover — n=1410. ever-fin-cost leftover 0.469.
+
+### Q4-days leftover after f_ds_r / size; leftover of f_ds_r on Q4-days
+
+Q4-days leftover after days+f_ds_r 0.598 after days+size 0.630 after days+size+f_ds_r 0.593. Q4 f_ds_r leftover 0.671 Y3 0.674. Q4 a_debt_service Y3 0.642.
+
+### leftover of Q4 f_ds_r after days+size; leftover on Q3 days
+
+Q4 f_ds_r leftover after days+size 0.667 after days+a_n_tx 0.665. Q3-days leftover 0.546 Y3 0.575 n=1518. Q4 leftover after days+a_n_tx 0.631.
+
+### leftover on Q1/Q2 days; leftover of Q4 after days+f_ds_r+a_n_tx
+
+Q1-days leftover 0.550 Y3 0.488 n=807. Q2-days leftover 0.514 Y3 0.537 n=1241. Q4 leftover after days+f_ds_r+a_n_tx 0.584 after days+size+f_ds_r+a_n_tx 0.589.
+
+### leftover on Q4∩T3; leftover of Q4 after days+f_ds_r+a_n_tx+a_op_out
+
+Q4∩T3 leftover — Y3 — n=1318 after days+f_ds_r —. Q4 leftover after days+f_ds_r+a_n_tx+a_op_out 0.550. Q4∩T3 f_ds_r leftover —.
+
+### leftover of Q4 after days+f_ds_r+a_fin_cost; leftover on Q4 a_n_tx
+
+Q4 leftover after days+f_ds_r+a_fin_cost 0.572 after days+f_ds_r+a_n_tx+a_op_out+a_fin_cost 0.550. Q4 a_n_tx leftover 0.609 Y3 0.638 n=1845 after days+f_ds_r 0.573.
+
+### leftover of Q4 last-3; leftover of Q4 after days+f_ds_r+size+a_fin_cost
+
+Q4 last-3 leftover 0.625 Y3 0.631 n=597 after days+f_ds_r —. Q4 leftover after days+f_ds_r+size+a_fin_cost 0.570.
+
+### leftover of Q4 last-labeled; leftover of Q4 after days+f_ds_r+size+a_fin_cost+a_n_tx
+
+Q4 last-labeled leftover — Y3 — n=199. Q4 leftover after days+f_ds_r+size+a_fin_cost+a_n_tx 0.566. Q4 f_ds_r leftover after days+size+a_n_tx 0.668.
+
+### leftover of Q4 f_ds_r after days+size+a_n_tx+a_fin_cost; leftover of Q4 in 2025
+
+Q4 f_ds_r leftover after days+size+a_n_tx+a_fin_cost 0.657. Q4 2025 leftover — Y3 — n=1602. Q4 2026 leftover — Y3 — n=318. Q4 leftover after days+f_ds_r+size+a_n_tx+a_fin_cost+a_op_out 0.556.
+
+### leftover of Q4 f_ds_r after full stack; leftover of Q4 ever-ds
+
+Q4 f_ds_r leftover after days+size+a_n_tx+a_fin_cost+a_op_out 0.650. Q4 ever-ds leftover — Y3 — n=1525 after days+f_ds_r —.
+
+### leftover of T3 f_ds_r after full stack
+
+T3 f_ds_r leftover after days+size+a_n_tx+a_fin_cost+a_op_out 0.645 Y3 0.660. T3 leftover of a_debt_service after days+f_ds_r+size+a_n_tx+a_op_out 0.590.
 
 ## Night quotes (unchanged)
 

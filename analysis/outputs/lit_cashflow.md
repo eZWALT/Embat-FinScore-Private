@@ -1,17 +1,19 @@
 # Cash-flow underwriting literature — ultra cluster
 
-As-of `2026-09-19` morning (live fetches; no invented cites).
-Owner: cash-flow underwriting + FICO-like SME / bank-statement scorecards.
+As-of `2026-09-19` ~09:00 CEST (live fetches; no invented cites).
+Waves A/B/C/D now **landed** on this note. Owner: cash-flow underwriting + FICO-like SME / bank-statement scorecards.
 Sibling: invoice / concentration / trade-credit / DSO / NSF-as-invoice / lead-time → **see `lit_invoice`**. One-line pointers only below.
 
 Object: a FICO-like **company-health reading of a 24-month treasury trail**. Not a bankruptcy classifier. Trajectory (45→65 recover vs 82→68 deteriorate), not last-month snapshot. No `product/`. No 0–100.
 
 Night engine this note maps onto (do not change):
 
-- Q1 KEEP last-value `b_runway` / `b_liq` (walk is an identity; never B as Y2/Y3 X).
+- Q1 KEEP last-value `b_runway` / `b_liq` (walk is an identity; never B as Y2/Y3 X). Wave A: Hair 3-month mean is **APPLICATION-ONLY** (last-month still ρ **0.946** twin; `run3_prior` **0.873**). Y3 leftover of `run3` after last-value **0.608** is a B-after-B leak screen, never engine X.
 - Y2 trees PARK: already-negative persistence, not Y4’s crash.
 - Y3 engine **0.762** / 15-col **0.752**; quiet-stressed recover (SS/salary −); days bar **0.711**; size bar **0.617**; `a_in3` DROP as engine X leftover **0.521**.
-- 15-col card KEEP after leftover QAs: `c_ss_month` leftover **0.635**, `c_salary_month` **0.603**, `c_n_days_with_tx` + lags. `a_n_tx` DROP. `f_ds_r` DROP from card.
+- 15-col card KEEP after leftover QAs + Wave C: `c_ss_month` leftover **0.635**, `c_salary_month` **0.603**, `c_n_days_with_tx` + lags (`days_lag1` **0.684**, `ss_lag1` leftover **0.631**). `a_n_tx` DROP. `f_ds_r` DROP from card. Siddiqi reasons = those stems only.
+- Wave B: Δdays leftover after days-level **DROP** (Δ3 **0.484** / Δ6 **0.517** on ≥18m books). Inverse days-after-Δ3 **0.712** lives.
+- Wave D: FinRegLab NSF-as-X is a **dataset hole**. No NSF token. Leftover-after-days undefined. `descubierto` (250 train txs / 83 co) is overdraft *interest/fee* text → Y9, not a count.
 - Javier 14: 11 SAME / 2 CLOSE / 1 DRIFT (vol). `a_out_vol` **0.722** is a company trait (demean **0.549**) — not the engine.
 - Referee: leftover-after-days (beat size ≥0.02 AND leftover after days AND not SIZE AND not twin). Literature often quotes raw AUROC without this.
 - Connection clocks (`g_has_*`, `g_n_accounts` leftover **0.428**, `created_at`, `f_has_*`) are not health.
@@ -78,7 +80,7 @@ Companion verified, **not** extra cluster rows:
 
 - **SAME as Farrell & Wheat 2016.** Cash buffer days = balance / outflow. Ours is months: `b_runway = clip(liq / max(out3/3, 1), −6, 24)`. Night p50 **1.079 months ≈ 32 days** sits next to their median **27 days** (2016), not the later 2020 metro median of **15**. Last-vs-snap ρ **0.966**: the 2026-09 still *is* the photograph. Walk identity (median |resid| 9.1e-12). Facing Uncertainty Finding 3: thin buffer + irregular = worst survival cell — that is a **health** sentence, not a PD. 2018: firms “mitigate irregular cash flows by holding more cash.”
 - **SAME as Mester 2007** that the bank’s privilege is the **monthly last-value balance** as a monitor.
-- **CONTRADICT FinRegLab/Hair 2025 if we put B on Y2/Y3 X.** They average 3 months of balances *as application X for default*. We KEEP last-value as Q1 **description** and **forbid B as Y2/Y3 X** (honest leftover after days dies; `b_below_0` Y2 0.896 is the lock, not a KEEP). Hair’s 3-month mean is a different job (origination PD) than our last-value photograph.
+- **CONTRADICT FinRegLab/Hair 2025 if we put B on Y2/Y3 X.** They average 3 months of balances *as application X for default*. We KEEP last-value as Q1 **description** and **forbid B as Y2/Y3 X** (honest leftover after days dies; `b_below_0` Y2 0.896 is the lock, not a KEEP). Wave A (`runway_window_qa`): last-month still ρ(`run3`, last) **0.946** and `run3_prior` **0.873** are twins (gate 0.80). Hair’s 3-month mean is **APPLICATION-ONLY** — the same photograph, smoother. Y3 leftover of `run3` after last-value **0.608** is a B-after-B leak screen, not a KEEP-as-photograph. p50 **1.079** matches the night quote. Do not reopen.
 - **NEW:** the walk is an identity. Literature never had to reconstruct backwards from a single still. Do not rewrite `liquidity.py`.
 
 ### Quiet-stressed recover (Y3 0.762 / 0.752; SS/salary −; days 0.711)
@@ -86,7 +88,7 @@ Companion verified, **not** extra cluster rows:
 - **NEW vs the default literature; SAME as JPMC payroll.** FinRegLab/Hair: higher credits and balances → *lower* default. Yao: low/unstable inflows raise default. Norden: inflows fall ~12 months before default. Our Y3 is the **opposite slice**: among *already-stressed* months, quiet firms (no SS, no salary, fewer days-with-tx) are the ones whose runway later prints ≥3 for three months. All top-10 SHAP signs are −. That is de-escalation / mean reversion at the bottom — the 45→65 direction Javier already saw when “inflow −40%” failed. Farrell & Wheat 2017 give the cash-buffer reason: employer payroll is **18%** of outflows and cuts median buffer from **27 → 18 days**. `c_ss_month` leftover after days **0.635** and `c_salary_month` **0.603** are that drain, not a skip (`c_missed_salary` 0.513 CLOSE).
 - **CONTRADICT raw “more activity = healthier”.** Hair’s most powerful variables are deposits and balances (size-like). Withdrawals are their distress sign. Our size bar **0.617** loses to days **0.711**; `a_in3` leftover after days **0.521** dies. `a_op_out` leftover after days **0.586 lives** but is **SIZE** (ρ vs log1p(a_in3) **0.741**) and a twin of `a_out3` (**0.907**) — CLOSE unused leftover / DROP from the 44 (07:30 QA). Hair would quote the raw 0.678; leftover-after-days plus SIZE/twin is why we do not. Quiet is not “small,” and euro withdrawals are not a Y3 leftover.
 - **PARTIAL SAME as Farrell/Wheat/Mac 2018 + Facing Uncertainty 2019** that the object is a **cash-flow pattern over time**, not a last-month snapshot. 2018: firms “transition from less regular … to more regular … **or exit**” — vitality language for 45→65 vs 82→68. **CONTRADICT if we treat their irregularity as our days.** Irregularity is timing consistency (7 patterns). We DROPPED `c_gap_sd` as a days twin (ρ −0.905; leftover after days 0.535 dies). Days leftover after gap **0.658** still lives — activity level, not irregularity. Do not revive `c_gap_sd`. 2018’s “volatile expenses → exit” is a **survival** sentence; our `a_out_vol` 0.722 demean 0.549 is a trait, not that month’s shock.
-- **SAME as Siddiqi** that an 8–15 stem card is the FICO-like object. 15-col A **0.752** beats days 0.711. After leftover QAs the KEEP stems are `c_ss_month` (0.635 leftover), `c_salary_month` (0.603), `c_n_days_with_tx` + lags. `a_n_tx` DROP (days twin ρ 0.938). `f_ds_r` DROP (unused leftover 0.528). Do not rewrite `gbm_core.py`. Family I CLOSE (best add 0.7615 < 0.772).
+- **SAME as Siddiqi** that an 8–15 stem card is the FICO-like object. 15-col A **0.752** beats days 0.711. Wave C (`y3_reasons.md`) **landed**: the judge-facing reasons are only leftover-KEEP stems — `c_ss_month` leftover **0.635**, `c_salary_month` **0.603**, `c_n_days_with_tx` bar **0.711**, `days_lag1` **0.684**, `ss_lag1` leftover **0.631**, `salary_lag1` leftover **0.606**. All signs −. Will not say `a_n_tx` (leftover 0.538), `a_op_in`, `a_transfer`, `e_dso_proxy`, `f_ds_r`, `c_gap_sd`, B, vol 0.722. Dark salary leftover 0.547 dies; dark sentence = days + SS. Do not rewrite `gbm_core.py`. Family I CLOSE (best add 0.7615 < 0.772).
 
 ### Leftover-after-days referee vs raw AUROC
 
@@ -102,7 +104,7 @@ Companion verified, **not** extra cluster rows:
 ### Utilisation impossible / connection clocks not health
 
 - **CONTRADICT capability, not the finding.** Norden (usage → 80–100% in the last year), Jiménez (usage rises as condition worsens), Yao (limit violations) are the classic 6–12 month lead. Sufi 2009 adds: lines are liquidity only for high-cash-flow firms. We have `f_util_snapshot` last-month-only **1.6%**, native Y3 n_pos=0, fillna0 leftover 0.711 is a fake days leak. Y10 **impossible**. Do not invent a utilisation Y. Last-value cash is the constrained firm’s actual buffer (Sufi + Farrell).
-- **Norden AMPLI is not our days.** Fetched Mannheim PDF: `AMPLI = HIGH − LOW` of the **account balance** (euro range). Median AMPLI of defaulters drops from ~€1,000 about **five months** before default. That is a **B-family** object. We forbid B as Y2/Y3 X, so we cannot score ΔAMPLI. Wave B’s Δdays leftover is the **legal activity-clock** leftover of that paper, not a reconstruction of HIGH–LOW. Same PDF: on accounts **without a credit line**, the cumulative number of overdrafts (ΔCUMOVER) is the **only** significant account-activity predictor. That is Wave D’s object, not utilisation.
+- **Norden AMPLI is not our days.** Fetched Mannheim PDF: `AMPLI = HIGH − LOW` of the **account balance** (euro range). Median AMPLI of defaulters drops from ~€1,000 about **five months** before default. That is a **B-family** object. We forbid B as Y2/Y3 X, so we cannot score ΔAMPLI. Wave B (`days_delta_qa`) **landed DROP**: on ≥18m books, leftover of 3-/6-month **change** in `c_n_days_with_tx` after the days-**level** is Δ3 **0.484** / Δ6 **0.517**. Raw Δ3 0.557 loses to days 0.714. Inverse days-after-Δ3 **0.712** lives — the level already ate the path. q6_keep stays `days_lag1` 0.684. Off the 15-col card. Do not reopen. Same PDF: on accounts **without a credit line**, ΔCUMOVER is the **only** significant account-activity predictor. That is Wave D’s object, and Wave D found **no NSF/overdraft token** (hole; leftover undefined).
 - **CONTRADICT treating `created_at` / `g_has_*` / `g_n_accounts` / `f_has_*` as Hair’s “firm age.”** Hair’s young firm is **<5 years operating history**. Ng v4’s strongest *application* IV is **business operational duration 0.213** — that is the same object (years operating), not `created_at`. Our `created_at` after 2024-09 is **73.6%** — a **connection clock**. `g_n_accounts` leftover after days **0.428**; rise-only 1561/0. Access ≠ ERP (dark p50 accounts = 3 = invoiced). Norden 2010 **conditions on** n_accounts / duration / distance as *relationship controls*, not as the health X. PARK as health Ys. CLOSE as X.
 
 ### Pedregal Tobit ETS
@@ -111,8 +113,8 @@ Companion verified, **not** extra cluster rows:
 
 ### Scorecard reasons (Siddiqi)
 
-- **SAME** that reasons must be the factors actually scored. Current `y3_importances.md` still lists `a_n_tx` (perm 0.030) and `f_ds_r`. Those are **DROP from the card**. A judge-facing reason list that still names them fails Siddiqi/ECOA-style practice even though we are not writing a 0–100 tonight.
-- **PARTIAL CONTRADICT “fill to 8–15.”** Siddiqi prefers 8–15 over 4–5. After leftover QAs the KEEP stems are **three families** (SS, salary, days + lags). Do **not** refill the 15-col historical card with DROPped SHAP names (`a_n_tx`, `a_op_in`, `a_transfer`, `e_dso_proxy`, `f_ds_r`) just to hit 15. 278 is too many; 3 leftover-KEEP families is honest. Wave C writes the thin card, not a padded one.
+- **SAME** that reasons must be the factors actually scored. Wave C **landed** (`y3_reasons.md`). Current `y3_importances.md` still lists `a_n_tx` (perm 0.030) and `f_ds_r`. Those are **DROP from the card**. A judge-facing reason list that still names them fails Siddiqi/ECOA-style practice even though we are not writing a 0–100 tonight.
+- **PARTIAL CONTRADICT “fill to 8–15.”** Siddiqi prefers 8–15 over 4–5. After leftover QAs the KEEP stems are **three families** (SS, salary, days + lags). Do **not** refill the 15-col historical card with DROPped SHAP names (`a_n_tx`, `a_op_in`, `a_transfer`, `e_dso_proxy`, `f_ds_r`) just to hit 15. 278 is too many; 3 leftover-KEEP families is honest. The thin card is written. Do not reopen.
 
 ---
 
@@ -120,53 +122,41 @@ Companion verified, **not** extra cluster rows:
 
 The contest asks whether a 24-month treasury trail can say how a company is — 45→65 versus 82→68 — not whether it will file. The cash-flow literature that actually uses bank statements is almost all **origination PD** on a **3-month average** (FinRegLab 2025 / Hair 2025; FinRegLab 2019 AUC 0.592–0.725) or **existing-borrower default monitoring** with credit-line usage as the 12-month lead (Norden 2010; Mester 2007; Formisano/Modina overdraft days). A 2021–2024 search for *portfolio-monitoring SME cash-flow scorecards* returns the same two families plus JPMC vitality/survival — not a FICO-like health trajectory. We are building the missing object: a **behavior-style health reading** of an already-open book, which is the job Siddiqi (2017) calls behavior scoring and Farrell & Wheat (2016) call cash-buffer vitality.
 
-Healthy, tonight, is last-value reconstructed cash / `b_runway` on the 2026-09 still (last-vs-snap ρ 0.966; persist 0.85; p50 1.079 months ≈ JPMC 2016’s **27** cash-buffer days, not the later 2020 metro median of **15**). That photograph is Q1. It is not Y2/Y3 X. Putting balances into the recovery model would repeat Hair’s application recipe and recreate the 16h mistake (Y and X from the same cash). 2018 Growth/Vitality: firms hold more cash to **mitigate irregular flows**, then either regularise or exit — the contest pictures, not a PD.
+Healthy, tonight, is last-value reconstructed cash / `b_runway` on the 2026-09 still (last-vs-snap ρ 0.966; liq persist t↔t−3 **0.848**; p50 1.079 months ≈ JPMC 2016’s **27** cash-buffer days, not the later 2020 metro median of **15**). Wave A: Hair’s 3-month mean is the **same photograph** (last-month still ρ 0.946 twin) tagged APPLICATION-ONLY. That photograph is Q1. It is not Y2/Y3 X. Putting balances into the recovery model would repeat Hair’s application recipe and recreate the 16h mistake (Y and X from the same cash). 2018 Growth/Vitality: firms hold more cash to **mitigate irregular flows**, then either regularise or exit — the contest pictures, not a PD.
 
 Turning toward 45→65 is Y3 quiet-stressed recover: 278-col shallow 0.762 ± 0.016, 15-col A 0.752 ± 0.037, beating days 0.711 and size 0.617. Among already-stressed months, SS leftover after days 0.635 and salary leftover 0.603 live; `a_in3` leftover 0.521 dies. Farrell & Wheat 2017: employer payroll is 18% of outflows and cuts median buffer 27→18 days — so SS/salary − is de-escalating a known drain, not “more activity is healthier.” The default literature would have expected bigger credits to help. They do not, once the firm is already on the floor.
 
 The published papers quote raw AUROC. Ours died at 0.86 when Y shared `net`/`overdue` with X. Ng’s IV≥0.5 is a leakage smell; leftover-after-days (beat size ≥0.02, leftover after days, not SIZE, not twin) is the referee a judge can audit. `a_out_vol` 0.722 is what raw AUROC looks like when the feature is a company trait (demean 0.549). Lundmark 2020: survivors keep their volatility; the cohort only looks calmer because volatile firms exit. Do not quote vol as the recover engine.
 
-Norden’s 12-month lead is real and it is **utilisation plus inflows**. We cannot score utilisation (Y10 last-month 1.6%). Q6 tonight is days_lag1 (short 0.684 / 100%) and SS_lag1 leftover 0.631 — one-month claims, hidden 72 included. Connection clocks (`created_at` 73.6%, `g_n_accounts` leftover 0.428, `f_has_*`) are not Hair’s firm age and are not health.
+Norden’s 12-month lead is real and it is **utilisation plus inflows**. We cannot score utilisation (Y10 last-month 1.6%). Wave B: the legal activity-clock leftover (Δdays after days-level) **died** (0.484 / 0.517). Q6 tonight is days_lag1 (short 0.684 / 100%) and SS_lag1 leftover 0.631 — one-month claims, hidden 72 included. Wave D: FinRegLab NSF **count** is a dataset hole (word-bound `nsf`/`overdraft` = 0; `descubierto` 250 txs is Y9 fee text). Connection clocks (`created_at` 73.6%, `g_n_accounts` leftover 0.428, `f_has_*`) are not Hair’s firm age and are not health.
 
-A FICO-like later score, if the team ever writes one, has reasons equal to the leftover-KEEP stems (SS, salary, days + lags). Siddiqi prefers 8–15 over 4–5; leftover QA left **three families**. Do not pad with DROPped SHAP names to hit 15. It is not Altman’s Z, not a 278-column tree, and not a 0–100 tonight.
+A FICO-like later score, if the team ever writes one, has reasons equal to the leftover-KEEP stems (SS, salary, days + lags). Siddiqi prefers 8–15 over 4–5; leftover QA left **three families**. Wave C wrote that thin list. Do not pad with DROPped SHAP names to hit 15. It is not Altman’s Z, not a 278-column tree, and not a 0–100 tonight.
 
 ---
 
-## 5. Next waves (3–4)
+## 5. Waves — landed (do not reopen)
 
-Literature asks for these. None reopens a parked Y. None rewrites `gbm_core.py`. None merges parquet. None touches leftover QA files already in flight.
+Literature asked for these. None reopened a parked Y. None rewrote `gbm_core.py`. None merged parquet.
 
-### Wave A — Last-value vs 3-month mean runway (Q1 photograph only)
+### Wave A — LANDED. Last-value KEEP; Hair 3-month mean APPLICATION-ONLY
 
-- **Owner files:** `analysis/evaluate/runway_window_qa.py` → `analysis/outputs/runway_window_qa.md` (new). Do not edit `liquidity.py`.
-- **Forbidden X families:** B as Y2/Y3 X. No new Y. No holdout fit.
-- **Acceptance:** Spearman and leftover-after-last-value of a 3-month mean `b_runway` / `b_liq` (Hair’s recipe) vs last-value. If leftover dies (<0.55), last-value KEEP stays and Hair’s 3-month average is tagged application-only. If it lives, still **PARK as forecast Y**, never engine X.
-- **Why literature asks:** FinRegLab/Hair 2025 average three months of balances as the cash-flow X; Farrell & Wheat average daily balances to get buffer days. We only published last-value.
-- **Why not a redo:** Y1 liquidity path already PARK (last-value wins CV OOF; Spearman t↔t+3 = 0.85). This is a Q1 description bake-off, not a reconstruction model.
+- **Files:** `analysis/outputs/runway_window_qa.md`. Do not edit `liquidity.py`. Do not reopen.
+- **Decision:** last-value `b_runway` KEEP Q1 (p50 1.079). Last-month still ρ(`run3`, last) **0.946** twin; `run3_prior` **0.873**. Y3 leftover of `run3` after last-value **0.608** is a B-after-B leak screen, never engine X.
 
-### Wave B — Norden lead without utilisation (Δdays leftover after days-level)
+### Wave B — LANDED DROP. Δdays leftover after days-level
 
-- **Owner files:** `analysis/evaluate/days_delta_qa.py` → `analysis/outputs/days_delta_qa.md` (new). May append `q6_quoted.md` footnotes only if the parent asks.
-- **Forbidden X families:** F (no `f_util_snapshot`, no `f_ds_r` back on the card). B. `created_at`. Hidden-72 claims beyond one month.
-- **Acceptance:** on train books with months-on-book ≥18, leftover of a 3- or 6-month **change** in `c_n_days_with_tx` after the **level** of days. KEEP only if leftover ≥0.60 AND beat-size ≥0.02 AND not a twin of days (ρ<0.80) AND not SIZE. Otherwise CLOSE. Hidden 72 stays 1-month.
-- **Why literature asks:** Norden’s 12-month signal is usage + inflows; AMPLI (HIGH−LOW of **balances**) warns ~5 months. Jiménez is usage. We cannot score usage or AMPLI (B forbidden). A 3-/6-month **change in days-with-tx**, leftover after the *level* of days, is the legal activity-clock leftover — not a recreation of HIGH−LOW.
-- **Why not a redo:** not Y10 (impossible). not F lag3 (already CLOSE, empty until so-far≥6). not Y2 trees (already-neg persistence). not Y4 crash (Jaccard 0.057).
+- **Files:** `analysis/outputs/days_delta_qa.md`. Do not reopen.
+- **Decision:** ≥18m books Δ3 leftover **0.484** / Δ6 **0.517**. Inverse days-after-Δ3 **0.712**. q6_keep stays `days_lag1` 0.684. Off the 15-col card. AMPLI never built.
 
-### Wave C — Siddiqi reasons on the post-leftover KEEP card (Q5)
+### Wave C — LANDED. Siddiqi reasons = leftover-KEEP stems only
 
-- **Owner files:** `analysis/outputs/y3_reasons.md` (new). Read-only on existing SHAP / leftover numbers. **Do not rewrite `gbm_core.py`.** Do not refit.
-- **Forbidden X families:** quoting `a_n_tx`, `f_ds_r`, `a_op_in`, `e_dso_proxy`, `a_transfer` (leftover 0.579 / ICC 0.956 TRAIT), B, I, M, J as reasons. Historical SHAP still ranks those (00:16 `y3_importances.md`); leftover QAs DROPped them as card stems. No new column on the 15-col card.
-- **Acceptance:** a judge-facing reason list whose named levers are only the leftover-KEEP stems (`c_ss_month`, `c_salary_month`, `c_n_days_with_tx` ± lags) with the published leftovers (0.635 / 0.603 / days 0.711). `y3_importances.md` stays the 50-tree historical SHAP; this file is the **card** reasons.
-- **Why literature asks:** Siddiqi — reasons = factors actually scored; 8–15 characteristic profile. CFPB Circular 2023-03 (fetched PDF + landing): reasons must “relate to and accurately describe the factors actually considered or scored”; “closest identifiable factor” on a sample form is not enough; credit-scoring reasons “must relate only to those factors actually scored.” Current importances still advertise `a_n_tx` (perm 0.030) after it was DROPped. [PDF](https://files.consumerfinance.gov/f/documents/cfpb_adverse_action_notice_circular_2023-09.pdf) · [landing](https://www.consumerfinance.gov/compliance/circulars/circular-2023-03-adverse-action-notification-requirements-and-the-proper-use-of-the-cfpbs-sample-forms-provided-in-regulation-b/)
-- **Why not a redo:** not a new Y3 engine; not Family I merge (0.7615 already CLOSE); not a 0–100.
+- **Files:** `analysis/outputs/y3_reasons.md`. Do not rewrite `gbm_core.py`.
+- **Decision:** SS 0.635 / salary 0.603 / days 0.711 + `days_lag1` 0.684 / `ss_lag1` 0.631. Will not say DROPped SHAP names. CFPB 2023-03: reasons = factors actually scored. [PDF](https://files.consumerfinance.gov/f/documents/cfpb_adverse_action_notice_circular_2023-09.pdf)
 
-### Wave D — NSF-like **count** leftover after days (FinRegLab distress, not Y9 trees)
+### Wave D — LANDED HOLE. NSF/overdraft token does not exist
 
-- **Owner files:** a scratch extract (not Family M, not a parquet merge) + `analysis/outputs/nsf_count_qa.md`. In-memory only.
-- **Forbidden X families:** M (fee/fin shares **are** the Y9 label, ρ 0.875). B (`b_below_0` / `b_neg_episodes` are the lock). F. Family I (`i_below0_x_payroll` already CLOSE). Do not score vs Y9. Do not invent `y_nsf`. Dictionary has **no NSF/overdraft token** — count must come from raw `description`/`category` strings, not reconstructed balances.
-- **Acceptance:** leftover-after-days of an NSF/overdraft **count** (not euro fee) ≥0.60 AND beat-size ≥0.02 AND ρ vs Y9 <0.80 AND not SIZE. Else CLOSE / PARK. Trees stay PARK. **Do not reconstruct negative-balance days from B** — that is the Y2 lock (`b_below_0`).
-- **Why literature asks:** FinRegLab 2025’s three distress flags are NSF counts, low/neg ending balances, daily-pay MCAs. Formisano/Modina: overdraft **days** and consecutive months overdrawn lift PD ~10% after FS (0→1 day ≈ +1 pp). Norden (same PDF as #4): on accounts **without a credit line**, ΔCUMOVER is the only significant activity predictor. We have no line (Y10 1.6%). We have the balance photograph (Q1) and Y9 as a fee/interest **label**. We do not have an NSF *token* count.
-- **Why not a redo:** Y9 GBM already PARK (own-p80 0.554 loses to `a_out6` 0.565). Family M CLOSE. This is one leftover gate on a count, not a new fee model.
+- **Files:** `analysis/outputs/nsf_count_qa.md`.
+- **Decision:** `data_dictionary.md` has no NSF token. CAT_MAP / monthly.parquet / word-bound train descriptions (`nsf`, `overdraft`, `bounce`) = 0. Leftover-after-days is **undefined**. `descubierto` 250 train txs / 83 co is overdraft *interest/fee* text (often filed as `utility`) — Y9 / Family M, not a count. Do not reconstruct from B. Do not invent `y_nsf`. Do not score vs Y9. Last-value Q1 + quiet-stressed Y3 stay the cash-flow engine.
 
 ---
 

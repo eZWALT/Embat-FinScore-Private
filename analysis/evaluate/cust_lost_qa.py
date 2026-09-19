@@ -1197,6 +1197,43 @@ def pass_rate_ntx(tr: pd.DataFrame) -> dict:
     }
 
 
+def pass_ncust_lag_joint(tr: pd.DataFrame) -> dict:
+    after = leftover_diag(
+        tr[Y3], tr["d_cust_lost"], (tr["d_n_cust_lag1"],), tr["fold"], tr[Y3].notna()
+    )
+    after_days = leftover_diag(
+        tr[Y3],
+        tr["d_cust_lost"],
+        (tr["d_n_cust_lag1"], tr["c_n_days_with_tx"]),
+        tr["fold"],
+        tr[Y3].notna(),
+    )
+    joint = leftover_diag(
+        tr[Y3],
+        tr["d_cust_lost"],
+        (tr["d_n_cust"], tr["d_cust_new"], tr["c_n_days_with_tx"]),
+        tr["fold"],
+        tr[Y3].notna(),
+    )
+    rows = [
+        {"bar": "leftover after n_cust_lag1", "rank": _f(after["rank"]), "OLS": _f(after["ols"])},
+        {"bar": "leftover after n_cust_lag1+days", "rank": _f(after_days["rank"]), "OLS": _f(after_days["ols"])},
+        {"bar": "leftover after n_cust+new+days", "rank": _f(joint["rank"]), "OLS": _f(joint["ols"])},
+    ]
+    prose = (
+        f"leftover after n_cust_lag1 {_f(after['rank'])} +days {_f(after_days['rank'])}; "
+        f"n_cust+new+days {_f(joint['rank'])}. Twin of the customer book."
+    )
+    print(prose)
+    return {
+        "rows": rows,
+        "lag": after["rank"],
+        "lag_days": after_days["rank"],
+        "joint": joint["rank"],
+        "prose": prose,
+    }
+
+
 def pass_y4_report(tr: pd.DataFrame) -> dict:
     d = leftover_diag(
         tr[Y4], tr["d_cust_lost"], (tr["d_cust_top1"],), tr["fold"], tr[Y4].notna()
@@ -1477,6 +1514,12 @@ def write_md(ctx: dict) -> None:
         "",
         _md_table(ctx["prt"]["rows"]),
         "",
+        "## Extra — leftover after n_cust_lag1 / n_cust+new+days",
+        "",
+        ctx["pnl"]["prose"],
+        "",
+        _md_table(ctx["pnl"]["rows"]),
+        "",
         "## What failed / next (held for wave note)",
         "",
     ]
@@ -1656,6 +1699,8 @@ def run() -> dict:
     pq6 = pass_q6_midlong(tr)
     print("extra lost/n_cust rate / n_tx")
     prt = pass_rate_ntx(tr)
+    print("extra leftover after n_cust_lag1 / joint")
+    pnl = pass_ncust_lag_joint(tr)
     png = make_png(tr, p4)
     decision = decide(p1, p2, p3, p4, p5)
     failed = [
@@ -1677,13 +1722,14 @@ def run() -> dict:
         f"company-median ρ vs n_cust {_f(pcm['rho_ncust'])} twin={pcm['twin']}",
         f"Q6 mid leftover {_f(pq6['mid'])} long raw {_f(pq6['long'])}",
         f"lost/n_cust leftover-days {_f(prt['rate'])} raw {_f(prt['rate_raw'])} leftover-ntx {_f(prt['ntx'])} new-after-lost {_f(prt['new_after'])}",
+        f"leftover after n_cust_lag1 {_f(pnl['lag'])} +days {_f(pnl['lag_days'])} n_cust+new+days {_f(pnl['joint'])}",
         f"card: {decision['card']}",
         "do not grow TURNOVER 0.720; do not put d_cust_lost on the 15-col card; PARK y_cust_lost",
     ]
     ctx = {
         "p1": p1, "p2": p2, "p3": p3, "p4": p4, "p5": p5, "p6": p6, "p7": p7, "p8": p8,
         "ph": ph, "pk": pk, "pt": pt, "psf": psf, "pf": pf, "pbl": pbl, "psn": psn, "py4": py4,
-        "pci": pci, "pcm": pcm, "pq6": pq6, "prt": prt,
+        "pci": pci, "pcm": pcm, "pq6": pq6, "prt": prt, "pnl": pnl,
         "png": png, "decision": decision, "failed": failed,
     }
     write_md(ctx)

@@ -778,10 +778,11 @@ Norden's lead is activity *falling*. Restricting to Δ3<0 does not rescue leftov
 | --- | ---: | ---: | ---: | --- |
 | Δ3<0 (falling) | {ctx['left_fall']['n_pos']} | {_f(ctx['raw_fall']['cv'])} | {_f(ctx['left_fall']['rank'])} | {ctx['left_fall']['folds']} |
 | Δ3>0 (rising) | {ctx['left_rise']['n_pos']} | — | {_f(ctx['left_rise']['rank'])} | {ctx['left_rise']['folds']} |
-| \|Δ3\| | {ctx['left_abs']['n_pos']} | {_f(ctx['raw_abs']['cv'])} | {_f(ctx['left_abs']['rank'])} | {ctx['left_abs']['folds']} |
+| abs(Δ3) | {ctx['left_abs']['n_pos']} | {_f(ctx['raw_abs']['cv'])} | {_f(ctx['left_abs']['rank'])} | {ctx['left_abs']['folds']} |
 | Δ3 leftover after days_lag1 | {ctx['left_d3_l1']['n_pos']} | — | {_f(ctx['left_d3_l1']['rank'])} | {ctx['left_d3_l1']['folds']} |
 
 `days_lag1` {DAYS_LAG1} stays q6_keep. Δ3 leftover after the lag still dies — the 3-month change is not a lead beyond last month's level.
+Rising leftover 0.580 is unused leftover below the 0.60 KEEP bar, fold-noisy, and the **wrong sign story** for quiet-stressed recover. Do not KEEP it. abs(Δ3) leftover 0.577 is the same: lives thin, fold 1 dies (0.435).
 
 ## Explicitly out
 

@@ -1,6 +1,7 @@
 # Contextualized night summary — analysis / features / explainability
 
-- **As of:** 2026-09-19 ~07:40 CEST
+- **As of:** 2026-09-19 ~09:05 CEST
+- **Morning briefing (start here):** `overnight/dashboards/MORNING_REPORT.md` and `overnight/dashboards/morning.html`
 - **Brief:** `overnight/NORTH_STAR.md` (working copy of the X Ray artifact)
 - **Product:** out of scope tonight
 
@@ -36,7 +37,8 @@ and SHAP so “why” is not a black box. No 0–100. No web.
   and **`c_last_tx_before_2026_06`**, and **`f_outstanding_gt_granted`**,
   and **`e_ar_open`**, and **`e_ap_open`**, and
   **`g_n_accounts`**, and **`f_util_snapshot`**, and **`e_ap_overdue`**,
-  and **`a_op_out`**.
+  and **`a_op_out`**, and **`a_fin_cost`**, and **`a_debt_service`**,
+  and **`d_cust_lost`**.
   Size control is
   `log1p(a_in3)`, not raw this-month inflow (acf1 ≈ 0).
 - **`c_gap_sd`** ([regularity QA](87e59905-b29f-452d-963a-854dcb3e8895)):
@@ -256,22 +258,65 @@ and SHAP so “why” is not a black box. No 0–100. No web.
   Q6 lag1 leftover **0.561** not added to `q6_keep`. **PARK** `y_op_out`.
   Outflow CV leftover **0.734** is a later owner. Do not quote
   a_out_vol 0.722 as the engine.
+- **`a_fin_cost`** ([leftover QA](fd8977c1-61b4-42c3-8c84-8f3faa2bb904)):
+  **CLOSE unused leftover. DROP from the 44 as Y3 X.** Honest leftover
+  after days **0.483** dies. OLS **0.683** is a fake days leak
+  (ρ **−0.845**). Exact twin of `f_fin_cost` (ρ **1.000**). Native
+  0.634 vs days 0.711 vs size 0.617; beat-size **+0.018 FAIL**. KEEP
+  `f_fc_r_lag3` on TURNOVER. Q6 lag1 leftover **0.469** CLOSE. Do not
+  put amount or high-fee dummy on the 15-col card. Do not merge M.
+- **`a_debt_service`** ([leftover QA](572fb928-40f3-4948-9ab9-0fde761a9d50)):
+  **CLOSE unused leftover. DROP from the 44 as Y3 X.** Honest leftover
+  after days **0.484** dies. OLS **0.631** is not a fake days clone.
+  Beat-size **FAIL** (0.613 vs size 0.617). Exact twin of
+  `f_debt_service` (ρ **1.000**) and twin of `f_ds_r` (ρ **0.881**).
+  **PARK** `y_debt_service`. Off the 15-col card. Do not grow TURNOVER.
+  `f_ds_r` leftover **0.528 DROP** stays. Slice leftovers on T3/Q4
+  (0.610 / 0.642) are leftover of the already-DROP ratio.
+- **Δdays** ([leftover QA](f6fc63bd-3cca-43b9-9560-d57ce46a4b8f)):
+  **DROP as Y3 X.** On ≥18m books leftover after days-level is Δ3
+  **0.484** / Δ6 **0.517**. Inverse days-after-Δ3 **0.712** lives —
+  the level already ate the path. `q6_keep` stays `days_lag1` **0.684**.
+  Off the 15-col card. Not AMPLI / not B. Hidden 72 stays 1-month.
+- **top-1 PastDue%** ([leftover QA](689100e7-9d3a-41a4-b281-a0e6a8a87d65)):
+  **CLOSE** Y7 leftover after issued_lag1+CN **0.576** (below 0.58) and
+  a twin of firm `e_ar_overdue` (ρ **0.858**). Delay footnote **0.581**
+  stays. Do not grow TURNOVER **0.720**. Y3 leftover after days
+  **0.451**. Q6 short lag1 **0.581** KEEP; issued_lag1 **0.626** stays
+  the invoice lead. Dark 470 stay NaN.
+- **`d_cust_lost`** ([leftover QA](553c6ea4-a745-42a3-962a-2299b600d939)):
+  **CLOSE unused leftover. DROP from the 44 as Y3 X.** Leftover after
+  days rank **0.522** dies. Twin of `d_n_cust` (ρ **0.861**). Y3
+  **0.581** vs days **0.711**. **PARK** `y_cust_lost`. Dark 470 stay
+  NaN. Not Y7 top-1 lost. Y4 footnote KEEP locked. Q6 lag1 leftover
+  **0.464** dies.
+- **issued-to-top-1** ([leftover QA](689100e7-9d3a-41a4-b281-a0e6a8a87d65)):
+  **KEEP** as a Y7 leftover after issued_lag1 (**0.789**). Not a twin.
+  Beat-size PASS (raw 0.810 vs size 0.469). Engine is
+  **thinning-to-zero** (Y7 57.7% vs 8.1% if they still billed).
+  **CLOSE** as a TURNOVER add-on — issued_lag1 **0.626** stays the
+  card lead. Q6 lag1 leftover **0.749** is a named-volume footnote,
+  not a replace. Off the 15-col card. Dark 470 stay NaN.
 - **Cash-flow literature** ([cluster](f6fc63bd-3cca-43b9-9560-d57ce46a4b8f)):
   11 papers, URLs fetched. Last-value `b_runway` **SAME** Farrell 2016
   (p50 1.079m ≈ 27 cash-buffer days). Quiet-stressed recover is **NEW**
   vs default PD. Leftover-after-days is the unpublished referee (Ng v4
   quotes raw 0.806 / 0.850). Lundmark: `a_out_vol` 0.722 stays a trait.
   Siddiqi reasons landed: say no SS **0.635**, no salary **0.603**,
-  fewer days **0.711** + lag1. Do not say dropped SHAP names. Next:
-  Δdays leftover after days-level; Hair 3-month mean runway as Q1
-  photograph.
+  fewer days **0.711** + lag1. Do not say dropped SHAP names. Δdays
+  leftover **DROP** 0.484 / 0.517. Hair 3-month mean is
+  **APPLICATION-ONLY** (last-month still ρ **0.946** twin of last-value;
+  `run3_prior` 0.873). Last-value KEEP Q1 p50 **1.079**. Y3 leftover of
+  `run3` after last-value **0.608** is a B-after-B leak screen, never
+  engine X. Next: NSF token hole (dictionary has none).
 - **Invoice literature** ([cluster](689100e7-9d3a-41a4-b281-a0e6a8a87d65)):
   12 papers, URLs fetched. **DSO is not PD; issued volume is** — SAME
   as TURNOVER **0.720** and the DSO DROP. Pérez-Salazar is the only
   CONTRADICT (synthetic supplier-HHI = fragility; our Y5 tail is
-  protective 2.7% vs 8.6%). CN ratio is a literature gap. Next waves
-  queued: top-1 PastDue% leftover, issued-to-top-1 thinning, Y5 net
-  TC × activity. Do not grow TURNOVER.
+  protective 2.7% vs 8.6%). CN ratio is a literature gap. Wave A
+  top-1 PastDue leftover **CLOSE 0.576**. Issued-to-top-1 leftover
+  **KEEP 0.789** / CLOSE TURNOVER add-on. Next: Y5 net TC × activity.
+  Do not grow TURNOVER.
 - **Supplier HHI** ([leftover QA](ee13dffe-d5f0-4ddc-a0f3-b73a2992a169)):
   **DROP `d_supp_hhi` from the 44.** Twin of `d_supp_top1` (ρ **0.987**).
   Leftovers die after days (Y3 **0.464**), customer HHI lag3 (Y4

@@ -3675,3 +3675,20 @@ ts,round,wave,agent,x_families,y,model,split,metric,value,coverage,notes
 2026-09-19T07:42:57+02:00,R4,4,689100e7,E,y7_top1_lost,top1_pastdue_qa,train_cv,leftover_gap_named_minus_overdue,0.5433332680063623,0.32641678876967434,pd30=0.556 triple=0.524
 2026-09-19T07:43:55+02:00,R4,4,days_delta_qa,C,y3_recover_cash_6m,days_delta_qa,train_cv,d3_left,0.4842,0.5171,DROP card=DROP from Y3 X / KEEP off the 15-col car
 2026-09-19T07:44:34+02:00,R4,4,689100e7,E,y7_top1_lost,top1_pastdue_qa,train_cv,leftover_div_after_overdue,0.45434931147728436,0.32641678876967434,twins=[]
+2026-09-19T07:44:37+02:00,R4,4,days_delta_qa,C,y3_recover_cash_6m,days_delta_qa,train_cv,d3_left,0.4842,0.5171,DROP card=DROP from Y3 X / KEEP off the 15-col car
+2026-09-19T07:45:06+02:00,R4,4,days_delta_qa,C,y3_recover_cash_6m,days_delta_qa,train_cv,d3_left,0.4842,0.5171,DROP card=DROP from Y3 X / KEEP off the 15-col car
+2026-09-19T07:51:32+02:00,R4,4,runway_window_qa,-,y3_recover_cash_6m,runway_window_qa,train_cv,run3_left,0.6078,0.7915,PARK-as-photograph photo=3-month mean leftover lives — PARK as photograph
+2026-09-19T07:52:00+02:00,R4,4,runway_window_qa,-,y3_recover_cash_6m,runway_window_qa,train_cv,run3_left,0.6078,0.7915,PARK-as-photograph photo=3-month mean leftover lives — PARK as photograph
+2026-09-19T07:52:35+02:00,R4,4,runway_window_qa,-,y3_recover_cash_6m,runway_window_qa,train_cv,run3_left,0.6078,0.7915,APPLICATION-ONLY photo=last-value KEEP stays; Hair 3-month mean is appl
+2026-09-19T07:53:03+02:00,R4,4,runway_window_qa,-,y3_recover_cash_6m,runway_window_qa,train_cv,run3_left,0.6078,0.7915,APPLICATION-ONLY photo=last-value KEEP stays; Hair 3-month mean is appl
+2026-09-19T07:53:07+02:00,R4,4,689100e7,E,y7_top1_lost,issued_top1_qa,train_cv,auroc_issued_top1,0.809740772376203,0.4062012572670984,e_issued_top1 defined 40.6% of train CM; dark 470 NaN CONFIRM. zero-among-defined 39.9%. ρ vs issued_lag1 0.456 issued 0.615 d_cust_top1 0.196 not a twin. Y7 raw 0.810 vs issued_lag1 0.630 size 0.469 beat-size PASS. Leftover after issued_la
+2026-09-19T07:53:07+02:00,R4,4,689100e7,E,y7_top1_lost,issued_top1_qa,train_cv,leftover_iss_lag1_rank,0.7894219266450635,0.4062012572670984,ols=0.779 keep=KEEP
+2026-09-19T07:53:07+02:00,R4,4,689100e7,E,y7_top1_lost,issued_top1_qa,train_cv,rho_vs_issued_lag1,0.4558230511934817,0.4062012572670984,twins=[]
+2026-09-19T07:54:46+02:00,R4,4,689100e7,E,y7_top1_lost,issued_top1_qa,train_cv,leftover_zero_dummy,0.7742735131684013,0.4062012572670984,pos_only=0.576 q6_left=0.749
+2026-09-19T07:54:46+02:00,R4,4,689100e7,E,y7_top1_lost,issued_top1_qa,train_cv,leftover_div_share50,0.7548718023211611,0.4062012572670984,mono=0.812 tail=0.828
+2026-09-19T09:06:04+02:00,R4,4,nsf_count_qa,-,y3_recover_cash_6m,nsf_count_qa,train,nsf_token_hits,1,481135,TOKEN inspect n_cat=22 fee_n=167758
+2026-09-19T09:07:06+02:00,R4,4,nsf_count_qa,-,y3_recover_cash_6m,nsf_count_qa,train,nsf_token_hits,0,252,HOLE leftover undefined n_cat=22 fee_n=167758
+2026-09-19T09:09:12+02:00,R4,4,689100e7,diag,y5_ap_od30_ownp80,y5_net_tc_qa,train_cv,auroc_net_x_shock,0.467915003902192,0.6406390319988656,diag_net_tc defined 64.1%; dark 470 NaN CONFIRM. Neither 222/341 (65.1%; night 65.1%). Y5 diag_net_x_shock raw 0.468 vs size 0.556 beat-size PASS. Leftover after size+days rank 0.534 OLS 0.516 (neither 0.450; plain net 0.466). Shock 0.524 v
+2026-09-19T09:09:12+02:00,R4,4,689100e7,diag,y5_ap_od30_ownp80,y5_net_tc_qa,train_cv,leftover_size_days_rank,0.5338173336004794,0.6406390319988656,ols=0.516 keep=CLOSE
+2026-09-19T09:09:12+02:00,R4,4,689100e7,diag,y5_ap_od30_ownp80,y5_net_tc_qa,train_cv,leftover_neither_rank,0.4504547014627625,0.6510263929618768,shock=0.524 quiet=0.466
+2026-09-19T09:10:03+02:00,R4,4,689100e7,diag,y5_ap_od30_ownp80,y5_net_tc_qa,train_cv,leftover_shock_vs_quiet,0.5239150393182944,0.6406390319988656,quiet=0.466 dip=0.539

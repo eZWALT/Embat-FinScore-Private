@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Embat X Ray — what the money trail told us</title>
+  <style>
+    :root {
+      --bg: #f6f5f2;
+      --ink: #1c1b18;
+      --muted: #5c5a54;
+      --line: #d8d4cb;
+      --card: #fffdf8;
+      --keep: #1f4d3a;
+      --warn: #7a4a12;
+      --drop: #6b2a2a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font: 16px/1.55 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+    }
+    main { max-width: 880px; margin: 0 auto; padding: 40px 28px 80px; }
+    h1 { font-size: 28px; line-height: 1.2; margin: 0 0 8px; font-weight: 650; }
+    h2 { font-size: 20px; margin: 40px 0 10px; font-weight: 650; }
+    h3 { font-size: 16px; margin: 22px 0 8px; font-weight: 650; }
+    p { margin: 0 0 12px; }
+    .lede { color: var(--muted); font-size: 17px; margin: 0 0 14px; }
+    .meta { font-size: 13px; color: var(--muted); margin: 0 0 22px; }
+    .pills { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 24px; }
+    .pill { font: 12px/1.2 ui-sans-serif, system-ui, sans-serif; letter-spacing: .02em; border: 1px solid var(--line); padding: 4px 8px; background: var(--card); }
+    .pill.on { background: var(--ink); color: var(--card); border-color: var(--ink); }
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 0 0 28px; }
+    .stat { background: var(--card); border: 1px solid var(--line); padding: 12px 12px 10px; }
+    .stat b { display: block; font-size: 22px; font-weight: 650; }
+    .stat span { font: 12px/1.35 ui-sans-serif, system-ui, sans-serif; color: var(--muted); }
+    .box { background: var(--card); border: 1px solid var(--line); padding: 16px 18px; margin: 0 0 24px; }
+    .box ol, .box ul { margin: 0; padding-left: 20px; }
+    .box li { margin: 0 0 8px; }
+    .box p:last-child { margin-bottom: 0; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; background: var(--card); margin: 0 0 8px; }
+    th, td { text-align: left; vertical-align: top; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+    th { font: 12px/1.3 ui-sans-serif, system-ui, sans-serif; color: var(--muted); font-weight: 600; }
+    .keep { color: var(--keep); font-weight: 650; }
+    .warn { color: var(--warn); font-weight: 650; }
+    .drop { color: var(--drop); font-weight: 650; }
+    .cap { font: 12px/1.45 ui-sans-serif, system-ui, sans-serif; color: var(--muted); margin: 0 0 22px; }
+    .bars { display: grid; gap: 7px; margin: 0 0 8px; }
+    .bar { display: grid; grid-template-columns: 210px 1fr 52px; gap: 8px; align-items: center; font: 13px/1.25 ui-sans-serif, system-ui, sans-serif; }
+    .bar i { display: block; height: 9px; background: var(--ink); }
+    .bar i.ref { background: var(--line); }
+    .two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 720px) { .two { grid-template-columns: 1fr; } .bar { grid-template-columns: 130px 1fr 48px; } }
+    footer { margin-top: 40px; font-size: 13px; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Embat X Ray — what the money trail told us overnight</h1>
+    <p class="lede">Can a 24-month treasury trail say how a company is doing? We tested that all night on 1,214 companies and kept only what survived three honesty checks. Two clean readings did.</p>
+    <p class="meta">Saturday 19 Sep 2026, 09:10 CEST · 1,214 training companies / 21,157 company-months · 72 companies frozen and never used to fit · engine evidence only, no score or product yet</p>
+    <div class="pills">
+      <span class="pill on">signals</span>
+      <span class="pill on">honest outcomes</span>
+      <span class="pill on">explanations</span>
+      <span class="pill">0–100 score: later</span>
+      <span class="pill">product: later</span>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><b>0.762</b><span>Recovery reading — ranking score (0.5 = coin flip)</span></div>
+      <div class="stat"><b>0.720</b><span>Top-customer-loss reading — ranking score</span></div>
+      <div class="stat"><b>32 days</b><span>Median cash runway on the latest balance</span></div>
+      <div class="stat"><b>1 month</b><span>Lead time we can honestly claim</span></div>
+      <div class="stat"><b>~40</b><span>Candidate signals audited and set aside</span></div>
+    </div>
+
+    <h2>The question</h2>
+    <p>The brief gives two pictures: Northbrook Foods recovering from <strong>45 to 65</strong> and Velasco Industrial sliding from <strong>82 to 68</strong>. In the last month they can look alike. So the object is the <strong>trajectory</strong>, with a reason and with how early it showed. Judges will score companies we have never seen, so we froze 72 companies at the start and never touched them.</p>
+
+    <h2>How to read the numbers</h2>
+    <div class="box">
+      <p><strong>Ranking score.</strong> 0.5 is a coin flip, 1.0 is perfect. Read 0.76 as: pick one company-month that later recovered and one that did not; the model puts the recovering one first 76 times in 100.</p>
+      <p><strong>Two bars every signal must clear.</strong> Company size alone already ranks recovery at <strong>0.617</strong>. The number of days with any bank movement (“the activity clock”) already ranks it at <strong>0.711</strong>. For every candidate we strip out what the activity clock explains and measure what is <em>left over</em>; under 0.55 means nothing new. A candidate also has to beat size by at least 0.02, and must not be a near-copy (correlation above 0.80) of something we already keep.</p>
+      <p><strong>Dark companies.</strong> 470 of the 1,214 have no invoices connected. Invoice-based readings stay blank for them, never zero.</p>
+    </div>
+
+    <h2>The story of the night</h2>
+    <p>The first overnight run reported a ranking score of <strong>0.86</strong>. It predicted a company’s future cash from its own cash columns — target and input were the same thing. We erased it and fixed one rule: <em>the outcome we predict may never be built from the columns the model is allowed to see.</em></p>
+    <p>We then built the trail (118 measurements per company per month from all eight tables), defined nine yes/no outcomes with rules taken from the credit literature, and audited roughly forty candidate signals one by one. Two readings survived every check. Everything else was size in disguise, a twin of the activity clock, or a stable company trait rather than monthly news. That is the finding.</p>
+
+    <h2>What to quote</h2>
+    <div class="bars" aria-label="Ranking scores, training cross-validation">
+      <div class="bar"><span>Recovery, full model</span><i style="width:90%"></i><span>0.762</span></div>
+      <div class="bar"><span>Recovery, 15 measurements</span><i style="width:88%"></i><span>0.752</span></div>
+      <div class="bar"><span>Top customer lost, 5 measurements</span><i style="width:82%"></i><span>0.720</span></div>
+      <div class="bar"><span>Activity clock alone</span><i class="ref" style="width:80%"></i><span>0.711</span></div>
+      <div class="bar"><span>Company size alone</span><i class="ref" style="width:49%"></i><span>0.617</span></div>
+      <div class="bar"><span>Cash going negative (best legal signal)</span><i class="ref" style="width:30%"></i><span>0.571</span></div>
+    </div>
+    <p class="cap">Bar length is (score − 0.50) / 0.29, so a coin flip sits at the left edge. Grey bars are baselines the readings must beat. Five-fold cross-validation on training companies, always tested on company groups the model did not learn from.</p>
+
+    <h2>Reading 1 — quiet stress recovers (the 45 → 65 engine)</h2>
+    <p><strong>What it predicts.</strong> Among companies in cash stress now (negative cash, or under one month of runway), which ones will be back to three months of runway within half a year. It happens in 7% of stressed months.</p>
+    <p><strong>What it says.</strong> The stressed months that recover are the quiet ones. Every reason points the same way: less payroll-type outflow and less activity, more likely to recover. That is de-escalation at the bottom — and partly mean reversion, which we say out loud.</p>
+    <table>
+      <thead><tr><th>What we will tell a company</th><th>Strength after removing the activity clock</th></tr></thead>
+      <tbody>
+        <tr><td>No social-security payment was booked this month</td><td>0.635</td></tr>
+        <tr><td>No payroll payment was booked this month</td><td>0.603</td></tr>
+        <tr><td>Fewer days with any bank movement this month</td><td>0.711 (the clock itself)</td></tr>
+        <tr><td>Fewer movement days last month</td><td>0.684</td></tr>
+        <tr><td>No social-security payment last month</td><td>0.631</td></tr>
+      </tbody>
+    </table>
+    <p class="cap">For companies without invoices and for the smallest third, say movement days + social security; the payroll flag stops adding information there. Reasons we will <em>not</em> give: transaction count (a twin of movement days), operating inflows (company size), transfers and outflow volatility (stable traits), days sales outstanding and debt-service ratio (add nothing once activity is removed).</p>
+
+    <h2>Reading 2 — the big customer goes quiet (dip vs fall)</h2>
+    <p><strong>What it predicts.</strong> Whether the customer who billed the most in the last quarter bills nothing in the next quarter. It happens in 29% of company-months with an invoice book.</p>
+    <p><strong>What it says.</strong> The lead is <strong>last month’s invoicing volume</strong> and how jumpy it has been, plus credit-note share and the financing-cost ratio three months back. <strong>Days sales outstanding</strong> — how long customers take to pay — is deliberately off the card: it ranked first in a naive model and was worse than a coin flip on the companies with the shortest collection times. Removing it lifted the weakest fold from 0.556 to 0.680.</p>
+    <p>A late result this morning: whether the top customer was billed at all this month is a strong one-month lead (leftover 0.789). When last quarter’s top customer received no invoice this month, 58% are gone next quarter versus 8% when they were still billed. That is a reason we can show; it does not replace the card because it is nearly the outcome itself, one month early.</p>
+
+    <h2>The six questions</h2>
+    <table>
+      <thead><tr><th>Question</th><th>Answer this morning</th><th>How sure</th></tr></thead>
+      <tbody>
+        <tr><td>1 Who is healthy?</td><td>Months of runway on the latest balance. Median 1.08 months ≈ 32 days, next to the 27-day US small-business median.</td><td class="keep">The last month is the photograph (0.97 with the snapshot). Metadata adds nothing.</td></tr>
+        <tr><td>2 Who is improving?</td><td>Only a thin three-month inflow forecast beats the historical mean. Cash is best forecast by its last value.</td><td class="warn">Honest but thin.</td></tr>
+        <tr><td>3 Who is turning (45→65)?</td><td>Reading 1: quiet stressed months recover.</td><td class="keep">0.762 / 0.752 vs 0.711 activity and 0.617 size.</td></tr>
+        <tr><td>4 Dip or fall?</td><td>Reading 2 for customer loss. The deterioration side (cash going and staying negative) is a real event we could not explain without the cash columns — 82% are already underwater when the alert would fire.</td><td class="warn">0.720 for customer loss. Deterioration: honest failure.</td></tr>
+        <tr><td>5 Why did it change?</td><td>Recovery: payroll-type drains stopped, activity fell. Customer loss: invoicing thinned. Extreme customer concentration (one buyer) doubles the debt-shock rate (22% vs 12%).</td><td class="keep">Five plain sentences plus the invoicing lead.</td></tr>
+        <tr><td>6 How many months earlier?</td><td>One month, from last month’s invoicing, movement days and social-security flag.</td><td class="warn">One month is solid. Longer leads need histories the hidden set mostly lacks.</td></tr>
+      </tbody>
+    </table>
+
+    <h2>What the research says</h2>
+    <table>
+      <thead><tr><th>Our result</th><th>Literature (23 papers, all fetched)</th><th>Verdict</th></tr></thead>
+      <tbody>
+        <tr><td>Runway on the latest balance is the health photograph</td><td>JPMorgan Institute 2016 cash-buffer days, median 27. A 3-month average is the same picture (0.95).</td><td class="keep">Same</td></tr>
+        <tr><td>Quiet stressed months recover</td><td>Bank-statement scoring (FinRegLab, Yao, Ng, Norden) predicts default, where more credits is good. Nobody scores recovery.</td><td class="warn">New</td></tr>
+        <tr><td>Strip the activity clock before crediting a signal</td><td>Published scorecards quote raw scores (Ng 2025: 0.81–0.85).</td><td class="warn">New referee</td></tr>
+        <tr><td>Invoicing volume, not DSO, predicts customer loss</td><td>Banque de France 2019: DSO growth unrelated to default. Ellingsen: weaker buyers owe more because they buy more.</td><td class="keep">Same</td></tr>
+        <tr><td>Concentrated suppliers are protective here</td><td>Pérez-Salazar 2026 (simulated data): concentration = fragility.</td><td class="drop">Contradicts</td></tr>
+        <tr><td>Outflow volatility is a company trait</td><td>Lundmark 2020: volatile ventures exit; survivors do not calm down.</td><td class="keep">Same</td></tr>
+        <tr><td>Credit-line utilisation as early warning</td><td>Norden &amp; Weber: usage rises ~12 months before default.</td><td class="drop">Hole — one month of data</td></tr>
+      </tbody>
+    </table>
+
+    <h2>What we set aside, grouped</h2>
+    <div class="box">
+      <ul>
+        <li><strong>Twins of the activity clock</strong> — transaction count, gap regularity, recency, change in movement days.</li>
+        <li><strong>Company size in disguise</strong> — operating inflows and outflows, number of suppliers or customers.</li>
+        <li><strong>Stable traits, not monthly news</strong> — own-account transfers, outflow volatility, uncategorised share, pending-invoice share.</li>
+        <li><strong>Connection artefacts</strong> — number of accounts, product flags, opening dates. They only ever go up as accounts are connected.</li>
+        <li><strong>Invoice rewrites</strong> — DSO, DPO, open receivables/payables, this month’s issuance, debt-service and finance-cost amounts.</li>
+        <li><strong>Snapshots we cannot use</strong> — credit-line utilisation exists for one month only (1.6% coverage).</li>
+      </ul>
+    </div>
+
+    <h2>What we will not claim</h2>
+    <div class="box">
+      <p>A 0–100 index or pillar weights (team decision on top of this). A score on the hidden 72 as proof (too few events). A lead longer than one month on the hidden set. An explanation of 82 → 68 without the cash columns. Reasons taken from importance plots that failed the leftover test. Bankruptcy or default language — this is a health reading.</p>
+    </div>
+
+    <h2>What this sets up</h2>
+    <p>Two literature agents run until about 10:00. No further model fitting this morning. When the team opens the score and product goals: a <strong>small, monotone scorecard</strong> on the five recovery reasons plus a separate customer-loss reading from last month’s invoicing — not a 118-column tree — with reason codes that are the plain sentences above. Then hidden-test scores, both directions, a trajectory view, and the company-facing web and assistant.</p>
+
+    <footer>
+      Full report with glossary: overnight/dashboards/MORNING_REPORT.md · Every audit and number: overnight/dashboards/CONTEXT.md · Brief: overnight/NORTH_STAR.md
+    </footer>
+  </main>
+</body>
+</html>

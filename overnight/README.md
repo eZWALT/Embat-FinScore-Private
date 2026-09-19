@@ -12,6 +12,7 @@ python -m analysis.features.build_feature_store
 ```
 
 Brief (re-read always): `overnight/NORTH_STAR.md`.
+Morning briefing: `overnight/dashboards/MORNING_REPORT.md` (+ `morning.html`).
 Plan: `.agents/persistent-memory/2026-09-18-2350-feature-store-and-y-plan.md`.
 Contract: `overnight/CONTRACT.md`.
 Queue: `overnight/QUEUE.md`.

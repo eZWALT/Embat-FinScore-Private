@@ -1,6 +1,6 @@
 # Unused leftover of `d_cust_lost` after `c_n_days_with_tx`
 
-Generated `2026-09-19T07:27:08+02:00` by agent `e8b2c0d4`. DuckDB `clean` read-only. `monthly.parquet` / `targets.parquet` read-only. Rates and AUROC on **train**. Holdout 72 is coverage only. Seed 20260918 group folds. No 0–100. No parquet rewrite. No new GBM. No `build_targets`. Do not invent `y_cust_lost`. Night Y7 stays **TURNOVER 0.720 / B_shallow 0.712**. Do **not** grow TURNOVER. Do **not** put d_cust_lost on the 15-col Y3 card. Night Y3 stays **0.762 / 0.752**. Days **0.711**. Size **0.617**. Y7 never D. Y3 never B. Dark 470 stay NaN not 0. `d_n_cust` leftover 0.545 DROP — do not overwrite n_cust_qa. `d_cust_top1` leftover 0.525 DROP — do not overwrite top1_qa. Y4 HHI >0.975 footnote KEEP locked — do not overwrite y4_why / cust_hhi_qa.
+Generated `2026-09-19T07:50:01+02:00` by agent `e8b2c0d4`. DuckDB `clean` read-only. `monthly.parquet` / `targets.parquet` read-only. Rates and AUROC on **train**. Holdout 72 is coverage only. Seed 20260918 group folds. No 0–100. No parquet rewrite. No new GBM. No `build_targets`. Do not invent `y_cust_lost`. Night Y7 stays **TURNOVER 0.720 / B_shallow 0.712**. Do **not** grow TURNOVER. Do **not** put d_cust_lost on the 15-col Y3 card. Night Y3 stays **0.762 / 0.752**. Days **0.711**. Size **0.617**. Y7 never D. Y3 never B. Dark 470 stay NaN not 0. `d_n_cust` leftover 0.545 DROP — do not overwrite n_cust_qa. `d_cust_top1` leftover 0.525 DROP — do not overwrite top1_qa. Y4 HHI >0.975 footnote KEEP locked — do not overwrite y4_why / cust_hhi_qa.
 
 `d_cust_lost` = |prev \ cur| of AR counterparties in the calendar quarter vs the previous quarter. Different object from Y7 `y7_top1_lost`. Feature report: 53.6% cov, acf1 0.58, ICC 0.98 BETWEEN.
 
@@ -273,6 +273,17 @@ lost/n_cust raw 0.587 leftover-days 0.623; leftover after n_tx 0.519 +days 0.522
 | new leftover after lost |  |  |
 
 
+## Extra — leftover after n_cust_lag1 / n_cust+new+days
+
+leftover after n_cust_lag1 0.555 +days 0.540; n_cust+new+days 0.549. Twin of the customer book.
+
+| bar | rank | OLS |
+| --- | --- | --- |
+| leftover after n_cust_lag1 | 0.555 | 0.627 |
+| leftover after n_cust_lag1+days | 0.540 | 0.440 |
+| leftover after n_cust+new+days | 0.549 | 0.482 |
+
+
 ## What failed / next (held for wave note)
 
 - Y3 lost 0.581 vs days 0.711 vs size 0.617 beat=-0.036
@@ -293,5 +304,6 @@ lost/n_cust raw 0.587 leftover-days 0.623; leftover after n_tx 0.519 +days 0.522
 - company-median ρ vs n_cust 0.896 twin=True
 - Q6 mid leftover 0.545 long raw —
 - lost/n_cust leftover-days 0.623 raw 0.587 leftover-ntx 0.519 new-after-lost 0.613
+- leftover after n_cust_lag1 0.555 +days 0.540 n_cust+new+days 0.549
 - card: DROP from the 44 as Y3 X / CLOSE unused leftover
 - do not grow TURNOVER 0.720; do not put d_cust_lost on the 15-col card; PARK y_cust_lost

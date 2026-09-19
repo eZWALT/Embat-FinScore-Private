@@ -45,5 +45,6 @@ DROP leftover-after-days rank 0.522 (OLS 0.663, fake=False). Y3 lost 0.581 vs da
 - company-median ρ vs n_cust 0.896 twin=True
 - Q6 mid leftover 0.545 long raw —
 - lost/n_cust leftover-days 0.623 raw 0.587 leftover-ntx 0.519 new-after-lost 0.613
+- leftover after n_cust_lag1 0.555 +days 0.540 n_cust+new+days 0.549
 - card: DROP from the 44 as Y3 X / CLOSE unused leftover
 - do not grow TURNOVER 0.720; do not put d_cust_lost on the 15-col card; PARK y_cust_lost

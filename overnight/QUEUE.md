@@ -98,17 +98,18 @@ Filled by `overnight/LIVE.json` `slots`.
 | 68 | f_ogtg | data | done | `analysis/evaluate/ogtg_qa.py` | fd8977c1 — PARK as snapshot X. DROP from 44. Native Y3 n_pos=0. Honest leftover after last-month days+n_types 0.540. |
 | 74 | f_util_snapshot | data | done | `analysis/evaluate/util_snap_qa.py` | fd8977c1 — PARK as snapshot X. Last-month 1.6%. Native Y3 n_pos=0. Hole leftover 0.711 fake days. Y10 impossible. |
 | 77 | a_op_out | data | done | `analysis/evaluate/op_out_qa.py` | 572fb928 — CLOSE unused leftover. Leftover 0.586 lives but SIZE ρ 0.741 and twin a_out3 0.907. Demean 0.525 dies. DROP from 44. PARK y_op_out. |
-| 85 | a_debt_service | data | running | `analysis/evaluate/debt_svc_qa.py` | 572fb928 — unused a_debt_service leftover after days. f_ds_r already DROP leftover 0.528. Do not overwrite ds_r_qa / fc_r_qa / op_out_qa / in3_qa. |
-| 78 | a_fin_cost | data | running | `analysis/evaluate/fin_cost_qa.py` | fd8977c1 — unused a_fin_cost leftover after days. Y9 is the fee label. Do not overwrite y9_why / fc_r_qa / catmix. Do not merge M. |
-| 79 | d_cust_lost | data | running | `analysis/evaluate/cust_lost_qa.py` | 553c6ea4 — unused d_cust_lost leftover after days. Y7 is top1 lost — different object. Do not overwrite top1_qa / cust_hhi_qa / n_cust_qa / y4_why. Do not grow TURNOVER. |
+| 85 | a_debt_service | data | done | `analysis/evaluate/debt_svc_qa.py` | 572fb928 — CLOSE unused leftover. Leftover after days 0.484 dies. Twin f_debt_service ρ 1.000 / f_ds_r 0.881. Beat-size FAIL 0.613 vs 0.617. PARK y_debt_service. Off the card. |
+| 78 | a_fin_cost | data | done | `analysis/evaluate/fin_cost_qa.py` | fd8977c1 — CLOSE unused leftover. Leftover after days 0.483 dies. OLS 0.683 fake days. Twin f_fin_cost ρ 1.000. beat_size +0.018 FAIL. KEEP f_fc_r_lag3 on TURNOVER. |
+| 79 | d_cust_lost | data | done | `analysis/evaluate/cust_lost_qa.py` | 553c6ea4 — CLOSE unused leftover. Leftover after days 0.522 dies. Twin d_n_cust ρ 0.861. PARK y_cust_lost. Dark 470 NaN. |
 | 80 | lit_cashflow | explainability | done | `analysis/outputs/lit_cashflow.md` | f6fc63bd — 11-paper cluster. Last-value runway SAME Farrell. Quiet-stressed NEW vs default PD. Leftover-after-days unpublished referee. |
 | 86 | y3_reasons | explainability | done | `analysis/outputs/y3_reasons.md` | f6fc63bd — Siddiqi KEEP-stem reasons. Say SS 0.635 / salary 0.603 / days 0.711 + lag1. Do not say dropped SHAP names. |
-| 87 | days_delta | data | running | `analysis/evaluate/days_delta_qa.py` | f6fc63bd — Wave B. Norden lead without utilisation. Δdays leftover after days-level on ≥18m books. Hidden 72 stays 1-month. Do not overwrite n_tx_qa / recency_qa / gap_sd_qa. |
-| 88 | runway_window | data | queued | `analysis/evaluate/runway_window_qa.py` | Wave A. Last-value vs Hair 3-month mean runway. Q1 photograph only. Never B as Y2/Y3 X. |
+| 87 | days_delta | data | done | `analysis/evaluate/days_delta_qa.py` | f6fc63bd — DROP. ≥18m Δ3 leftover 0.484 / Δ6 0.517. Inverse days-after-Δ3 0.712. q6_keep stays days_lag1 0.684. Off the card. |
+| 88 | runway_window | data | done | `analysis/evaluate/runway_window_qa.py` | f6fc63bd — Last-value KEEP Q1 p50 1.079. Hair 3m mean APPLICATION-ONLY twin ρ 0.946. Y3 leftover 0.608 is B-after-B leak never engine X. |
+| 89 | nsf_count | data | running | `analysis/evaluate/nsf_count_qa.py` | f6fc63bd — Wave D. NSF/overdraft token leftover after days. Dictionary has no NSF token. Do not reconstruct neg-days from B. Do not score vs Y9. |
 | 81 | lit_invoice | explainability | done | `analysis/outputs/lit_invoice.md` | 689100e7 — 12-paper cluster. DSO is not PD; issued volume is. Perez-Salazar CONTRADICT. CN gap. |
-| 82 | top1_pastdue | data | running | `analysis/evaluate/top1_pastdue_qa.py` | 689100e7 — Wave A. Hirshleifer buyer PastDue% leftover after issued_lag1+CN. Do not overwrite delay_qa / issued_qa / credit_note_qa. Do not grow TURNOVER. |
-| 83 | issued_top1 | data | queued | `analysis/evaluate/issued_top1_qa.py` | Wave B. AR issued to last month’s top-1 after firm issued_lag1 on Y7 rows. Not d_cust_lost. Never D-on-Y7. |
-| 84 | y5_net_tc | data | queued | `analysis/evaluate/y5_net_tc_qa.py` | Wave D. Net TC × activity on Y5 neither cell 222/341. Never E as Y5 X. Do not overwrite y5_why. |
+| 82 | top1_pastdue | data | done | `analysis/evaluate/top1_pastdue_qa.py` | 689100e7 — CLOSE. Y7 leftover after issued_lag1+CN 0.576 twin e_ar_overdue ρ 0.858. Delay footnote 0.581 stays. Do not grow TURNOVER. |
+| 83 | issued_top1 | data | done | `analysis/evaluate/issued_top1_qa.py` | 689100e7 — KEEP Y7 leftover after issued_lag1 0.789. Thinning-to-zero 57.7% vs 8.1%. CLOSE TURNOVER add-on. issued_lag1 0.626 stays the card lead. |
+| 84 | y5_net_tc | data | running | `analysis/evaluate/y5_net_tc_qa.py` | 689100e7 — Wave D. Net TC × activity on Y5 neither cell 222/341. Never E as Y5 X. Do not overwrite y5_why. |
 | 58 | c_salary_month | data | done | `analysis/evaluate/salary_month_qa.py` | 572fb928 — KEEP on the 15-col card. Leftover after days rank 0.603. Single 0.671 beats size. |
 
 ## Done enough (do not relaunch the original)

@@ -2,6 +2,7 @@
 
 Find signals in the X Ray treasury trail. Brief working copy: `overnight/NORTH_STAR.md`
 (six questions, trajectory not last-month, hidden 72). Re-read it before new work.
+Morning briefing: `overnight/dashboards/MORNING_REPORT.md`.
 
 Tonight: **analysis + features + SHAP/explainability only.** Do not put a 0–100
 formula here. `product/` is frozen until the team opens goals 2 and 4 again.

@@ -1151,6 +1151,423 @@ def extra_lag_days(tr: pd.DataFrame) -> dict:
     return {"l_days": after_l["rank"], "l_l1": after_ll["rank"], "l3": last3["rank"], "prose": prose}
 
 
+def extra_t3_dsr_eat(tr: pd.DataFrame, book: set[str]) -> dict:
+    print("\n" + "=" * 72)
+    print("EXTRA — T3 leftover of f_ds_r after days+size / a_n_tx; ERP leftover; leftover after days+f_ds_r+a_op_out")
+    print("=" * 72)
+    y = pd.to_numeric(tr[Y3], errors="coerce")
+    lab = y.notna()
+    t3_med = tr.groupby("company_id")["log_in3"].median()
+    cut = t3_med.quantile(2 / 3)
+    t3m = lab & (tr["company_id"].map(t3_med) > cut)
+    dsr_s = leftover_diag(y, tr["f_ds_r"], (tr["c_n_days_with_tx"], tr["log_in3"]), tr["fold"], t3m)
+    dsr_n = leftover_diag(y, tr["f_ds_r"], (tr["c_n_days_with_tx"], tr["a_n_tx"]), tr["fold"], t3m)
+    erp = leftover_diag(y, tr[FLAG], (tr["c_n_days_with_tx"],), tr["fold"], lab & tr["company_id"].isin(book))
+    after_o = leftover_diag(
+        y, tr[FLAG], (tr["c_n_days_with_tx"], tr["f_ds_r"], tr["a_op_out"]), tr["fold"], lab,
+    )
+    dsr_nn = leftover_diag(
+        y, tr[FLAG], (tr["c_n_days_with_tx"],), tr["fold"],
+        lab & pd.to_numeric(tr["f_ds_r"], errors="coerce").notna(),
+    )
+    prose = (
+        f"T3 f_ds_r leftover after days+size {_f(dsr_s['rank'])} after days+a_n_tx {_f(dsr_n['rank'])}. "
+        f"ERP leftover {_f(erp['rank'])}. after days+f_ds_r+a_op_out {_f(after_o['rank'])}. "
+        f"f_ds_r-notna leftover {_f(dsr_nn['rank'])}."
+    )
+    print(prose)
+    return {"dsr_s": dsr_s["rank"], "erp": erp["rank"], "oo": after_o["rank"], "prose": prose}
+
+
+def extra_winsor_long(tr: pd.DataFrame) -> dict:
+    print("\n" + "=" * 72)
+    print("EXTRA — leftover of winsorized a_debt_service; leftover on long-labeled cos; leftover after days+f_ds_r+a_fin_cost+a_op_out")
+    print("=" * 72)
+    y = pd.to_numeric(tr[Y3], errors="coerce")
+    lab = y.notna()
+    x = pd.to_numeric(tr[FLAG], errors="coerce")
+    hi = x.quantile(0.99)
+    win = x.clip(upper=hi)
+    rec = signed_oof_auroc(y, win, tr["fold"], lab)
+    after_w = leftover_diag(y, win, (tr["c_n_days_with_tx"],), tr["fold"], lab)
+    nlab = lab.groupby(tr["company_id"]).transform("sum")
+    long = leftover_diag(y, tr[FLAG], (tr["c_n_days_with_tx"],), tr["fold"], lab & (nlab >= 6))
+    rec_l = signed_oof_auroc(y, tr[FLAG], tr["fold"], lab & (nlab >= 6))
+    after_all = leftover_diag(
+        y, tr[FLAG],
+        (tr["c_n_days_with_tx"], tr["f_ds_r"], tr["a_fin_cost"], tr["a_op_out"]),
+        tr["fold"], lab,
+    )
+    t3_med = tr.groupby("company_id")["log_in3"].median()
+    cut = t3_med.quantile(2 / 3)
+    t3m = lab & (tr["company_id"].map(t3_med) > cut)
+    t3_o = leftover_diag(
+        y, tr[FLAG], (tr["c_n_days_with_tx"], tr["f_ds_r"], tr["a_op_out"]), tr["fold"], t3m,
+    )
+    prose = (
+        f"winsor99 Y3 {_f(_cv(rec))} leftover {_f(after_w['rank'])}. "
+        f"≥6 labeled leftover {_f(long['rank'])} Y3 {_f(_cv(rec_l))} n={long['n']}. "
+        f"after days+f_ds_r+a_fin_cost+a_op_out {_f(after_all['rank'])}. "
+        f"T3 leftover after days+f_ds_r+a_op_out {_f(t3_o['rank'])}."
+    )
+    print(prose)
+    return {"win": after_w["rank"], "long": long["rank"], "all": after_all["rank"], "prose": prose}
+
+
+def extra_fc_ratio(tr: pd.DataFrame) -> dict:
+    print("\n" + "=" * 72)
+    print("EXTRA — leftover of a_debt_service/a_fin_cost; leftover on T3∩high-days; leftover after days+f_ds_r+f_fc_r")
+    print("=" * 72)
+    y = pd.to_numeric(tr[Y3], errors="coerce")
+    lab = y.notna()
+    x = pd.to_numeric(tr[FLAG], errors="coerce")
+    fc = pd.to_numeric(tr["a_fin_cost"], errors="coerce")
+    ratio = (x / fc.replace(0, np.nan)).where(x.notna() & fc.notna())
+    rec = signed_oof_auroc(y, ratio, tr["fold"], lab)
+    after = leftover_diag(y, ratio, (tr["c_n_days_with_tx"],), tr["fold"], lab)
+    t3_med = tr.groupby("company_id")["log_in3"].median()
+    days_med = tr.groupby("company_id")["c_n_days_with_tx"].median()
+    both = leftover_diag(
+        y, tr[FLAG], (tr["c_n_days_with_tx"],), tr["fold"],
+        lab
+        & (tr["company_id"].map(t3_med) > t3_med.quantile(2 / 3))
+        & (tr["company_id"].map(days_med) >= days_med.median()),
+    )
+    after_f = leftover_diag(
+        y, tr[FLAG], (tr["c_n_days_with_tx"], tr["f_ds_r"], tr["f_fc_r"]), tr["fold"], lab,
+    )
+    t3m = lab & (tr["company_id"].map(t3_med) > t3_med.quantile(2 / 3))
+    t3_f = leftover_diag(
+        y, tr[FLAG], (tr["c_n_days_with_tx"], tr["f_ds_r"], tr["f_fc_r"]), tr["fold"], t3m,
+    )
+    prose = (
+        f"a_debt_service/a_fin_cost Y3 {_f(_cv(rec))} leftover {_f(after['rank'])}. "
+        f"T3∩high-days leftover {_f(both['rank'])} n={both['n']}. "
+        f"after days+f_ds_r+f_fc_r {_f(after_f['rank'])}. "
+        f"T3 leftover after days+f_ds_r+f_fc_r {_f(t3_f['rank'])}."
+    )
+    print(prose)
+    return {"ratio": after["rank"], "both": both["rank"], "ff": after_f["rank"], "prose": prose}
+
+
+def extra_t3_full_q4(tr: pd.DataFrame, book: set[str]) -> dict:
+    print("\n" + "=" * 72)
+    print("EXTRA — T3 leftover after days+f_ds_r+a_n_tx+a_op_out; leftover on Q4 days; leftover of T3 ERP")
+    print("=" * 72)
+    y = pd.to_numeric(tr[Y3], errors="coerce")
+    lab = y.notna()
+    t3_med = tr.groupby("company_id")["log_in3"].median()
+    t3m = lab & (tr["company_id"].map(t3_med) > t3_med.quantile(2 / 3))
+    t3_all = leftover_diag(
+        y, tr[FLAG],
+        (tr["c_n_days_with_tx"], tr["f_ds_r"], tr["a_n_tx"], tr["a_op_out"]),
+        tr["fold"], t3m,
+    )
+    days = pd.to_numeric(tr["c_n_days_with_tx"], errors="coerce")
+    q4 = leftover_diag(y, tr[FLAG], (tr["c_n_days_with_tx"],), tr["fold"], lab & (days >= days.quantile(0.75)))
+    rec_q = signed_oof_auroc(y, tr[FLAG], tr["fold"], lab & (days >= days.quantile(0.75)))
+    t3_erp = leftover_diag(
+        y, tr[FLAG], (tr["c_n_days_with_tx"],), tr["fold"], t3m & tr["company_id"].isin(book),
+    )
+    fc = pd.to_numeric(tr["a_fin_cost"], errors="coerce")
+    ever_fc = fc.fillna(0).groupby(tr["company_id"]).transform("max") > 0
+    after_fc = leftover_diag(y, tr[FLAG], (tr["c_n_days_with_tx"],), tr["fold"], lab & ever_fc)
+    prose = (
+        f"T3 leftover after days+f_ds_r+a_n_tx+a_op_out {_f(t3_all['rank'])} fake={t3_all['fake']}. "
+        f"Q4-days leftover {_f(q4['rank'])} Y3 {_f(_cv(rec_q))} n={q4['n']}. "
+        f"T3 ERP leftover {_f(t3_erp['rank'])} n={t3_erp['n']}. "
+        f"ever-fin-cost leftover {_f(after_fc['rank'])}."
+    )
+    print(prose)
+    return {"t3": t3_all["rank"], "q4": q4["rank"], "erp": t3_erp["rank"], "prose": prose}
+
+
+def extra_q4_eat(tr: pd.DataFrame) -> dict:
+    print("\n" + "=" * 72)
+    print("EXTRA — Q4-days leftover after f_ds_r / size; leftover of f_ds_r on Q4-days")
+    print("=" * 72)
+    y = pd.to_numeric(tr[Y3], errors="coerce")
+    lab = y.notna()
+    days = pd.to_numeric(tr["c_n_days_with_tx"], errors="coerce")
+    q4m = lab & (days >= days.quantile(0.75))
+    after_r = leftover_diag(y, tr[FLAG], (tr["c_n_days_with_tx"], tr["f_ds_r"]), tr["fold"], q4m)
+    after_s = leftover_diag(y, tr[FLAG], (tr["c_n_days_with_tx"], tr["log_in3"]), tr["fold"], q4m)
+    after_b = leftover_diag(
+        y, tr[FLAG], (tr["c_n_days_with_tx"], tr["log_in3"], tr["f_ds_r"]), tr["fold"], q4m,
+    )
+    dsr = leftover_diag(y, tr["f_ds_r"], (tr["c_n_days_with_tx"],), tr["fold"], q4m)
+    rec_d = signed_oof_auroc(y, tr["f_ds_r"], tr["fold"], q4m)
+    rec_x = signed_oof_auroc(y, tr[FLAG], tr["fold"], q4m)
+    prose = (
+        f"Q4-days leftover after days+f_ds_r {_f(after_r['rank'])} after days+size {_f(after_s['rank'])} "
+        f"after days+size+f_ds_r {_f(after_b['rank'])}. "
+        f"Q4 f_ds_r leftover {_f(dsr['rank'])} Y3 {_f(_cv(rec_d))}. Q4 a_debt_service Y3 {_f(_cv(rec_x))}."
+    )
+    print(prose)
+    return {"r": after_r["rank"], "s": after_s["rank"], "dsr": dsr["rank"], "prose": prose}
+
+
+def extra_q4_dsr_q3(tr: pd.DataFrame) -> dict:
+    print("\n" + "=" * 72)
+    print("EXTRA — leftover of Q4 f_ds_r after days+size; leftover on Q3 days; leftover of Q4 after days+a_n_tx")
+    print("=" * 72)
+    y = pd.to_numeric(tr[Y3], errors="coerce")
+    lab = y.notna()
+    days = pd.to_numeric(tr["c_n_days_with_tx"], errors="coerce")
+    q4m = lab & (days >= days.quantile(0.75))
+    q3m = lab & (days >= days.quantile(0.50)) & (days < days.quantile(0.75))
+    dsr_s = leftover_diag(y, tr["f_ds_r"], (tr["c_n_days_with_tx"], tr["log_in3"]), tr["fold"], q4m)
+    dsr_n = leftover_diag(y, tr["f_ds_r"], (tr["c_n_days_with_tx"], tr["a_n_tx"]), tr["fold"], q4m)
+    q3 = leftover_diag(y, tr[FLAG], (tr["c_n_days_with_tx"],), tr["fold"], q3m)
+    rec_q3 = signed_oof_auroc(y, tr[FLAG], tr["fold"], q3m)
+    q4_n = leftover_diag(y, tr[FLAG], (tr["c_n_days_with_tx"], tr["a_n_tx"]), tr["fold"], q4m)
+    prose = (
+        f"Q4 f_ds_r leftover after days+size {_f(dsr_s['rank'])} after days+a_n_tx {_f(dsr_n['rank'])}. "
+        f"Q3-days leftover {_f(q3['rank'])} Y3 {_f(_cv(rec_q3))} n={q3['n']}. "
+        f"Q4 leftover after days+a_n_tx {_f(q4_n['rank'])}."
+    )
+    print(prose)
+    return {"dsr_s": dsr_s["rank"], "q3": q3["rank"], "q4n": q4_n["rank"], "prose": prose}
+
+
+def extra_q12_q4stack(tr: pd.DataFrame) -> dict:
+    print("\n" + "=" * 72)
+    print("EXTRA — leftover on Q1/Q2 days; leftover of Q4 after days+f_ds_r+a_n_tx")
+    print("=" * 72)
+    y = pd.to_numeric(tr[Y3], errors="coerce")
+    lab = y.notna()
+    days = pd.to_numeric(tr["c_n_days_with_tx"], errors="coerce")
+    q1m = lab & (days < days.quantile(0.25))
+    q2m = lab & (days >= days.quantile(0.25)) & (days < days.quantile(0.50))
+    q4m = lab & (days >= days.quantile(0.75))
+    q1 = leftover_diag(y, tr[FLAG], (tr["c_n_days_with_tx"],), tr["fold"], q1m)
+    q2 = leftover_diag(y, tr[FLAG], (tr["c_n_days_with_tx"],), tr["fold"], q2m)
+    rec1 = signed_oof_auroc(y, tr[FLAG], tr["fold"], q1m)
+    rec2 = signed_oof_auroc(y, tr[FLAG], tr["fold"], q2m)
+    q4s = leftover_diag(
+        y, tr[FLAG], (tr["c_n_days_with_tx"], tr["f_ds_r"], tr["a_n_tx"]), tr["fold"], q4m,
+    )
+    q4ss = leftover_diag(
+        y, tr[FLAG],
+        (tr["c_n_days_with_tx"], tr["f_ds_r"], tr["log_in3"], tr["a_n_tx"]),
+        tr["fold"], q4m,
+    )
+    prose = (
+        f"Q1-days leftover {_f(q1['rank'])} Y3 {_f(_cv(rec1))} n={q1['n']}. "
+        f"Q2-days leftover {_f(q2['rank'])} Y3 {_f(_cv(rec2))} n={q2['n']}. "
+        f"Q4 leftover after days+f_ds_r+a_n_tx {_f(q4s['rank'])} after days+size+f_ds_r+a_n_tx {_f(q4ss['rank'])}."
+    )
+    print(prose)
+    return {"q1": q1["rank"], "q2": q2["rank"], "q4s": q4s["rank"], "prose": prose}
+
+
+def extra_q4_t3_int(tr: pd.DataFrame) -> dict:
+    print("\n" + "=" * 72)
+    print("EXTRA — leftover on Q4∩T3; leftover of Q4 after days+f_ds_r+a_n_tx+a_op_out")
+    print("=" * 72)
+    y = pd.to_numeric(tr[Y3], errors="coerce")
+    lab = y.notna()
+    days = pd.to_numeric(tr["c_n_days_with_tx"], errors="coerce")
+    t3_med = tr.groupby("company_id")["log_in3"].median()
+    q4m = lab & (days >= days.quantile(0.75))
+    t3m = lab & (tr["company_id"].map(t3_med) > t3_med.quantile(2 / 3))
+    both = leftover_diag(y, tr[FLAG], (tr["c_n_days_with_tx"],), tr["fold"], q4m & t3m)
+    rec = signed_oof_auroc(y, tr[FLAG], tr["fold"], q4m & t3m)
+    both_r = leftover_diag(
+        y, tr[FLAG], (tr["c_n_days_with_tx"], tr["f_ds_r"]), tr["fold"], q4m & t3m,
+    )
+    q4f = leftover_diag(
+        y, tr[FLAG],
+        (tr["c_n_days_with_tx"], tr["f_ds_r"], tr["a_n_tx"], tr["a_op_out"]),
+        tr["fold"], q4m,
+    )
+    dsr_b = leftover_diag(y, tr["f_ds_r"], (tr["c_n_days_with_tx"],), tr["fold"], q4m & t3m)
+    prose = (
+        f"Q4∩T3 leftover {_f(both['rank'])} Y3 {_f(_cv(rec))} n={both['n']} "
+        f"after days+f_ds_r {_f(both_r['rank'])}. "
+        f"Q4 leftover after days+f_ds_r+a_n_tx+a_op_out {_f(q4f['rank'])}. "
+        f"Q4∩T3 f_ds_r leftover {_f(dsr_b['rank'])}."
+    )
+    print(prose)
+    return {"both": both["rank"], "q4f": q4f["rank"], "dsr": dsr_b["rank"], "prose": prose}
+
+
+def extra_q4_fc_ntx(tr: pd.DataFrame) -> dict:
+    print("\n" + "=" * 72)
+    print("EXTRA — leftover of Q4 after days+f_ds_r+a_fin_cost; leftover on Q4 a_n_tx")
+    print("=" * 72)
+    y = pd.to_numeric(tr[Y3], errors="coerce")
+    lab = y.notna()
+    days = pd.to_numeric(tr["c_n_days_with_tx"], errors="coerce")
+    ntx = pd.to_numeric(tr["a_n_tx"], errors="coerce")
+    q4m = lab & (days >= days.quantile(0.75))
+    q4n = lab & (ntx >= ntx.quantile(0.75))
+    after_fc = leftover_diag(
+        y, tr[FLAG], (tr["c_n_days_with_tx"], tr["f_ds_r"], tr["a_fin_cost"]), tr["fold"], q4m,
+    )
+    after_all = leftover_diag(
+        y, tr[FLAG],
+        (tr["c_n_days_with_tx"], tr["f_ds_r"], tr["a_n_tx"], tr["a_op_out"], tr["a_fin_cost"]),
+        tr["fold"], q4m,
+    )
+    ntx_l = leftover_diag(y, tr[FLAG], (tr["c_n_days_with_tx"],), tr["fold"], q4n)
+    rec_n = signed_oof_auroc(y, tr[FLAG], tr["fold"], q4n)
+    ntx_r = leftover_diag(y, tr[FLAG], (tr["c_n_days_with_tx"], tr["f_ds_r"]), tr["fold"], q4n)
+    prose = (
+        f"Q4 leftover after days+f_ds_r+a_fin_cost {_f(after_fc['rank'])} "
+        f"after days+f_ds_r+a_n_tx+a_op_out+a_fin_cost {_f(after_all['rank'])}. "
+        f"Q4 a_n_tx leftover {_f(ntx_l['rank'])} Y3 {_f(_cv(rec_n))} n={ntx_l['n']} "
+        f"after days+f_ds_r {_f(ntx_r['rank'])}."
+    )
+    print(prose)
+    return {"fc": after_fc["rank"], "all": after_all["rank"], "ntx": ntx_l["rank"], "prose": prose}
+
+
+def extra_q4_last3(tr: pd.DataFrame) -> dict:
+    print("\n" + "=" * 72)
+    print("EXTRA — leftover of Q4 last-3; leftover of Q4 after days+f_ds_r+size+a_fin_cost")
+    print("=" * 72)
+    y = pd.to_numeric(tr[Y3], errors="coerce")
+    lab = y.notna()
+    days = pd.to_numeric(tr["c_n_days_with_tx"], errors="coerce")
+    q4m = lab & (days >= days.quantile(0.75))
+    rnk = pd.Series(np.nan, index=tr.index)
+    rnk.loc[lab] = tr.loc[lab].groupby("company_id")["period"].rank(method="first", ascending=False)
+    last3 = leftover_diag(y, tr[FLAG], (tr["c_n_days_with_tx"],), tr["fold"], q4m & (rnk <= 3))
+    rec = signed_oof_auroc(y, tr[FLAG], tr["fold"], q4m & (rnk <= 3))
+    after = leftover_diag(
+        y, tr[FLAG],
+        (tr["c_n_days_with_tx"], tr["f_ds_r"], tr["log_in3"], tr["a_fin_cost"]),
+        tr["fold"], q4m,
+    )
+    last3_r = leftover_diag(
+        y, tr[FLAG], (tr["c_n_days_with_tx"], tr["f_ds_r"]), tr["fold"], q4m & (rnk <= 3),
+    )
+    prose = (
+        f"Q4 last-3 leftover {_f(last3['rank'])} Y3 {_f(_cv(rec))} n={last3['n']} "
+        f"after days+f_ds_r {_f(last3_r['rank'])}. "
+        f"Q4 leftover after days+f_ds_r+size+a_fin_cost {_f(after['rank'])}."
+    )
+    print(prose)
+    return {"l3": last3["rank"], "stack": after["rank"], "prose": prose}
+
+
+def extra_q4_last_full(tr: pd.DataFrame) -> dict:
+    print("\n" + "=" * 72)
+    print("EXTRA — leftover of Q4 last-labeled; leftover of Q4 after days+f_ds_r+size+a_fin_cost+a_n_tx")
+    print("=" * 72)
+    y = pd.to_numeric(tr[Y3], errors="coerce")
+    lab = y.notna()
+    days = pd.to_numeric(tr["c_n_days_with_tx"], errors="coerce")
+    q4m = lab & (days >= days.quantile(0.75))
+    last_lab = tr.loc[lab].groupby("company_id")["period"].transform("max")
+    last_m = pd.Series(False, index=tr.index)
+    last_m.loc[lab] = pd.to_datetime(tr.loc[lab, "period"]) == last_lab
+    last = leftover_diag(y, tr[FLAG], (tr["c_n_days_with_tx"],), tr["fold"], q4m & last_m)
+    rec = signed_oof_auroc(y, tr[FLAG], tr["fold"], q4m & last_m)
+    after = leftover_diag(
+        y, tr[FLAG],
+        (tr["c_n_days_with_tx"], tr["f_ds_r"], tr["log_in3"], tr["a_fin_cost"], tr["a_n_tx"]),
+        tr["fold"], q4m,
+    )
+    dsr = leftover_diag(y, tr["f_ds_r"], (tr["c_n_days_with_tx"], tr["log_in3"], tr["a_n_tx"]), tr["fold"], q4m)
+    prose = (
+        f"Q4 last-labeled leftover {_f(last['rank'])} Y3 {_f(_cv(rec))} n={last['n']}. "
+        f"Q4 leftover after days+f_ds_r+size+a_fin_cost+a_n_tx {_f(after['rank'])}. "
+        f"Q4 f_ds_r leftover after days+size+a_n_tx {_f(dsr['rank'])}."
+    )
+    print(prose)
+    return {"last": last["rank"], "stack": after["rank"], "dsr": dsr["rank"], "prose": prose}
+
+
+def extra_q4_year(tr: pd.DataFrame) -> dict:
+    print("\n" + "=" * 72)
+    print("EXTRA — leftover of Q4 f_ds_r after days+size+a_n_tx+a_fin_cost; leftover of Q4 in 2025")
+    print("=" * 72)
+    y = pd.to_numeric(tr[Y3], errors="coerce")
+    lab = y.notna()
+    days = pd.to_numeric(tr["c_n_days_with_tx"], errors="coerce")
+    q4m = lab & (days >= days.quantile(0.75))
+    yr = pd.to_datetime(tr["period"]).dt.year
+    dsr = leftover_diag(
+        y, tr["f_ds_r"],
+        (tr["c_n_days_with_tx"], tr["log_in3"], tr["a_n_tx"], tr["a_fin_cost"]),
+        tr["fold"], q4m,
+    )
+    y25 = leftover_diag(y, tr[FLAG], (tr["c_n_days_with_tx"],), tr["fold"], q4m & (yr == 2025))
+    y26 = leftover_diag(y, tr[FLAG], (tr["c_n_days_with_tx"],), tr["fold"], q4m & (yr == 2026))
+    rec25 = signed_oof_auroc(y, tr[FLAG], tr["fold"], q4m & (yr == 2025))
+    rec26 = signed_oof_auroc(y, tr[FLAG], tr["fold"], q4m & (yr == 2026))
+    after = leftover_diag(
+        y, tr[FLAG],
+        (tr["c_n_days_with_tx"], tr["f_ds_r"], tr["log_in3"], tr["a_n_tx"], tr["a_fin_cost"], tr["a_op_out"]),
+        tr["fold"], q4m,
+    )
+    prose = (
+        f"Q4 f_ds_r leftover after days+size+a_n_tx+a_fin_cost {_f(dsr['rank'])}. "
+        f"Q4 2025 leftover {_f(y25['rank'])} Y3 {_f(_cv(rec25))} n={y25['n']}. "
+        f"Q4 2026 leftover {_f(y26['rank'])} Y3 {_f(_cv(rec26))} n={y26['n']}. "
+        f"Q4 leftover after days+f_ds_r+size+a_n_tx+a_fin_cost+a_op_out {_f(after['rank'])}."
+    )
+    print(prose)
+    return {"dsr": dsr["rank"], "y25": y25["rank"], "y26": y26["rank"], "prose": prose}
+
+
+def extra_q4_dsr_full(tr: pd.DataFrame) -> dict:
+    print("\n" + "=" * 72)
+    print("EXTRA — leftover of Q4 f_ds_r after full stack; leftover of Q4 ever-ds")
+    print("=" * 72)
+    y = pd.to_numeric(tr[Y3], errors="coerce")
+    lab = y.notna()
+    days = pd.to_numeric(tr["c_n_days_with_tx"], errors="coerce")
+    x = pd.to_numeric(tr[FLAG], errors="coerce")
+    q4m = lab & (days >= days.quantile(0.75))
+    ever = x.fillna(0).groupby(tr["company_id"]).transform("max") > 0
+    dsr = leftover_diag(
+        y, tr["f_ds_r"],
+        (tr["c_n_days_with_tx"], tr["log_in3"], tr["a_n_tx"], tr["a_fin_cost"], tr["a_op_out"]),
+        tr["fold"], q4m,
+    )
+    ev = leftover_diag(y, tr[FLAG], (tr["c_n_days_with_tx"],), tr["fold"], q4m & ever)
+    rec = signed_oof_auroc(y, tr[FLAG], tr["fold"], q4m & ever)
+    ev_r = leftover_diag(y, tr[FLAG], (tr["c_n_days_with_tx"], tr["f_ds_r"]), tr["fold"], q4m & ever)
+    prose = (
+        f"Q4 f_ds_r leftover after days+size+a_n_tx+a_fin_cost+a_op_out {_f(dsr['rank'])}. "
+        f"Q4 ever-ds leftover {_f(ev['rank'])} Y3 {_f(_cv(rec))} n={ev['n']} "
+        f"after days+f_ds_r {_f(ev_r['rank'])}."
+    )
+    print(prose)
+    return {"dsr": dsr["rank"], "ev": ev["rank"], "prose": prose}
+
+
+def extra_t3_dsr_full(tr: pd.DataFrame) -> dict:
+    print("\n" + "=" * 72)
+    print("EXTRA — leftover of T3 f_ds_r after full stack; leftover of T3 after days+f_ds_r+size+a_n_tx+a_op_out")
+    print("=" * 72)
+    y = pd.to_numeric(tr[Y3], errors="coerce")
+    lab = y.notna()
+    t3_med = tr.groupby("company_id")["log_in3"].median()
+    t3m = lab & (tr["company_id"].map(t3_med) > t3_med.quantile(2 / 3))
+    dsr = leftover_diag(
+        y, tr["f_ds_r"],
+        (tr["c_n_days_with_tx"], tr["log_in3"], tr["a_n_tx"], tr["a_fin_cost"], tr["a_op_out"]),
+        tr["fold"], t3m,
+    )
+    after = leftover_diag(
+        y, tr[FLAG],
+        (tr["c_n_days_with_tx"], tr["f_ds_r"], tr["log_in3"], tr["a_n_tx"], tr["a_op_out"]),
+        tr["fold"], t3m,
+    )
+    rec = signed_oof_auroc(y, tr["f_ds_r"], tr["fold"], t3m)
+    prose = (
+        f"T3 f_ds_r leftover after days+size+a_n_tx+a_fin_cost+a_op_out {_f(dsr['rank'])} "
+        f"Y3 {_f(_cv(rec))}. T3 leftover of a_debt_service after days+f_ds_r+size+a_n_tx+a_op_out "
+        f"{_f(after['rank'])}."
+    )
+    print(prose)
+    return {"dsr": dsr["rank"], "after": after["rank"], "prose": prose}
+
+
 def decide(p1, p2, p3) -> dict:
     leftover_lives = bool(np.isfinite(p3["rank"]) and p3["rank"] >= CHANCE)
     is_size = bool(p1["is_size"])
@@ -1330,6 +1747,20 @@ def write_md(ctx: dict) -> None:
         "### leftover of within-company rank / leftover after days+f_ds_r+a_n_tx", "", ctx["xw"]["prose"], "",
         "### leftover of f_ds_r / a_fin_cost after days on T3; leftover of high-days after f_ds_r", "", ctx["xtt"]["prose"], "",
         "### leftover of a_debt_service_lag1 after days; last-3 leftover after days+f_ds_r", "", ctx["xld"]["prose"], "",
+        "### T3 leftover of f_ds_r after days+size; ERP leftover", "", ctx["xtd"]["prose"], "",
+        "### leftover of winsorized / long-labeled / leftover after days+f_ds_r+a_fin_cost+a_op_out", "", ctx["xwn"]["prose"], "",
+        "### leftover of a_debt_service/a_fin_cost; leftover on T3∩high-days", "", ctx["xfr"]["prose"], "",
+        "### T3 leftover after days+f_ds_r+a_n_tx+a_op_out; leftover on Q4 days", "", ctx["xq"]["prose"], "",
+        "### Q4-days leftover after f_ds_r / size; leftover of f_ds_r on Q4-days", "", ctx["xq4"]["prose"], "",
+        "### leftover of Q4 f_ds_r after days+size; leftover on Q3 days", "", ctx["xq3"]["prose"], "",
+        "### leftover on Q1/Q2 days; leftover of Q4 after days+f_ds_r+a_n_tx", "", ctx["xqq"]["prose"], "",
+        "### leftover on Q4∩T3; leftover of Q4 after days+f_ds_r+a_n_tx+a_op_out", "", ctx["xqi"]["prose"], "",
+        "### leftover of Q4 after days+f_ds_r+a_fin_cost; leftover on Q4 a_n_tx", "", ctx["xqf"]["prose"], "",
+        "### leftover of Q4 last-3; leftover of Q4 after days+f_ds_r+size+a_fin_cost", "", ctx["xl3"]["prose"], "",
+        "### leftover of Q4 last-labeled; leftover of Q4 after days+f_ds_r+size+a_fin_cost+a_n_tx", "", ctx["xlf"]["prose"], "",
+        "### leftover of Q4 f_ds_r after days+size+a_n_tx+a_fin_cost; leftover of Q4 in 2025", "", ctx["xyr"]["prose"], "",
+        "### leftover of Q4 f_ds_r after full stack; leftover of Q4 ever-ds", "", ctx["xqf2"]["prose"], "",
+        "### leftover of T3 f_ds_r after full stack", "", ctx["xtf"]["prose"], "",
         "## Night quotes (unchanged)",
         "",
         "| quote | locked |",
@@ -1445,6 +1876,20 @@ def write_wave(ctx: dict) -> None:
         f"- {ctx['xw']['prose']}\n"
         f"- {ctx['xtt']['prose']}\n"
         f"- {ctx['xld']['prose']}\n"
+        f"- {ctx['xtd']['prose']}\n"
+        f"- {ctx['xwn']['prose']}\n"
+        f"- {ctx['xfr']['prose']}\n"
+        f"- {ctx['xq']['prose']}\n"
+        f"- {ctx['xq4']['prose']}\n"
+        f"- {ctx['xq3']['prose']}\n"
+        f"- {ctx['xqq']['prose']}\n"
+        f"- {ctx['xqi']['prose']}\n"
+        f"- {ctx['xqf']['prose']}\n"
+        f"- {ctx['xl3']['prose']}\n"
+        f"- {ctx['xlf']['prose']}\n"
+        f"- {ctx['xyr']['prose']}\n"
+        f"- {ctx['xqf2']['prose']}\n"
+        f"- {ctx['xtf']['prose']}\n"
         f"- {ctx['xb']['prose']}\n\n"
         f"{d['why']}\n\n"
         f"## What failed / next\n\n"
@@ -1502,6 +1947,20 @@ def main() -> None:
     xw = extra_within(tr)
     xtt = extra_t3_twins(tr)
     xld = extra_lag_days(tr)
+    xtd = extra_t3_dsr_eat(tr, book)
+    xwn = extra_winsor_long(tr)
+    xfr = extra_fc_ratio(tr)
+    xq = extra_t3_full_q4(tr, book)
+    xq4 = extra_q4_eat(tr)
+    xq3 = extra_q4_dsr_q3(tr)
+    xqq = extra_q12_q4stack(tr)
+    xqi = extra_q4_t3_int(tr)
+    xqf = extra_q4_fc_ntx(tr)
+    xl3 = extra_q4_last3(tr)
+    xlf = extra_q4_last_full(tr)
+    xyr = extra_q4_year(tr)
+    xqf2 = extra_q4_dsr_full(tr)
+    xtf = extra_t3_dsr_full(tr)
     decision = decide(p1, p2, p3)
     print("\n" + "=" * 72)
     print(f"VERDICT: {decision['role']}")
@@ -1518,7 +1977,7 @@ def main() -> None:
         "xb": xb, "xa": xa, "xt": xt, "xd": xd, "xz": xz, "xy": xy, "xp": xp, "xr": xr,
         "xps": xps, "xe": xe, "xrep": xrep, "xl": xl, "xh": xh,
         "xm": xm, "xrs": xrs, "xt3": xt3, "xpt": xpt, "xte": xte, "xw": xw,
-        "xtt": xtt, "xld": xld,
+        "xtt": xtt, "xld": xld, "xtd": xtd, "xwn": xwn, "xfr": xfr, "xq": xq, "xq4": xq4, "xq3": xq3, "xqq": xqq, "xqi": xqi, "xqf": xqf, "xl3": xl3, "xlf": xlf, "xyr": xyr, "xqf2": xqf2, "xtf": xtf,
         "decision": decision, "failed": failed, "elapsed_s": elapsed, "png": png,
     }
     write_md(ctx)
