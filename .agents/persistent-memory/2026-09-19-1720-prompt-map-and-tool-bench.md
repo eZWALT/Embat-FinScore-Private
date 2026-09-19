@@ -16,7 +16,15 @@
 - Do not shrink `product_context.md` or `tools_catalog.md` to chase TTFT.
 - MAP is an index, not a second copy of the product facts.
 
-## Still unknown
+## Numbers (Helmcode `deepseek-v4-flash`, 2026-09-19T15:22Z, this machine)
 
-- Neon execute ms (no local `DATABASE_URL`).
-- Numbers land in `product/web/src/lib/agent/BENCHMARK.md` after `node scripts/bench-ask.mjs`.
+Full stack is 36,221 chars. Every auto round asked `get_company`, `explain_change`, `get_alerts`.
+
+| | First event | Notes |
+|---|---:|---|
+| Tiny TTFT, median of 3 | 284 ms | Warm |
+| Full prompt, no tools, median of 3 | 353 ms | Catalog cost ~70 ms vs tiny |
+| Full prompt + 10 tools, auto, median of 3 | 446 ms | First auto round 1.62 s (cold) |
+| Same, `tool_choice=required`, 1 shot | 2.96 s | Slower; do not use required in prod |
+
+Neon execute still unmeasured (no local `DATABASE_URL`).
