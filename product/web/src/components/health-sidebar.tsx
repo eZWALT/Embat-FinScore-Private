@@ -6,7 +6,6 @@ import {
   Database,
   Eye,
   LayoutDashboard,
-  MessageSquare,
 } from "lucide-react";
 
 import { EntityCombobox } from "@/components/entity-combobox";
@@ -41,7 +40,6 @@ export function HealthSidebar({
   onCompanyChange,
   view,
   onViewChange,
-  onOpenChat,
   onVigilancia,
 }: {
   data: DashboardData;
@@ -49,7 +47,6 @@ export function HealthSidebar({
   onCompanyChange: (companyId: string) => void;
   view: AppView;
   onViewChange: (view: AppView) => void;
-  onOpenChat?: () => void;
   onVigilancia?: () => void;
 }) {
   const { setOpenMobile } = useSidebar();
@@ -123,18 +120,6 @@ export function HealthSidebar({
                 >
                   <Eye />
                   <span>Vigilancia</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  tooltip="Consultas"
-                  onClick={() => {
-                    onOpenChat?.();
-                    setOpenMobile(false);
-                  }}
-                >
-                  <MessageSquare />
-                  <span>Consultas</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>

@@ -46,10 +46,9 @@ export function AskChat({
       <header className="space-y-3">
         <ProductNav current="/ask" />
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">Ask</h1>
+          <h1 className="text-xl font-semibold tracking-tight">Pregunta</h1>
           <p className="text-sm text-muted-foreground">
-            Questions about a company or group. Scores and alerts from Neon; records if core is
-            mounted.
+            Por qué un índice es el que es, qué ha cambiado y qué hay que revisar.
           </p>
         </div>
         <div className="grid gap-2 sm:grid-cols-2">

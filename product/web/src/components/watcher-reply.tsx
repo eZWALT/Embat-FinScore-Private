@@ -12,9 +12,9 @@ export function WatcherReply({
   asOf: string;
 }) {
   return (
-    <section className="space-y-2" aria-label="Reply in #sentinel">
+    <section className="space-y-2" aria-label="Pregunta por estas fichas">
       <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-        Reply
+        Pregunta
       </p>
       <AgentChat
         key={`${companyId}:${groupId}:${asOf}`}
@@ -22,8 +22,7 @@ export function WatcherReply({
         companyId={companyId || undefined}
         groupId={groupId || undefined}
         asOf={asOf || undefined}
-        placeholder="Ask about these posts"
-        emptyHint="Replies stay under the three month posts. Those posts are not rewritten."
+        placeholder="Pregunta por estas fichas"
       />
     </section>
   );

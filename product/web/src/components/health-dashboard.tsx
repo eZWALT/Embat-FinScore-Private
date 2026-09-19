@@ -9,7 +9,6 @@ import {
   ChartNoAxesCombined,
   Eye,
   Layers,
-  MessageSquare,
   Minus,
   TriangleAlert,
 } from "lucide-react";
@@ -136,7 +135,6 @@ export function HealthDashboard({
         onCompanyChange={selectCompany}
         view={view}
         onViewChange={setView}
-        onOpenChat={() => setChatOpen(true)}
         onVigilancia={goVigilancia}
       />
       <SidebarInset>
@@ -197,10 +195,6 @@ export function HealthDashboard({
               <Button variant="outline" size="sm" onClick={goVigilancia}>
                 <Eye data-icon="inline-start" />
                 Vigilancia
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => setChatOpen(true)}>
-                <MessageSquare data-icon="inline-start" />
-                Preguntar
               </Button>
             </nav>
           </section>

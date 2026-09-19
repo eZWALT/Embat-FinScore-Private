@@ -50,7 +50,7 @@ export function ResumenVigilancia({ companyId }: { companyId: string }) {
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              Las tres fichas del mes (las cinco reglas de vigilancia) aparecen aquí cuando Neon responde.
+              Aún no hay fichas de estos tres meses. Si acabas de cambiar de empresa, espera un momento.
             </p>
           </CardContent>
         </Card>

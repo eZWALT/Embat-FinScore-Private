@@ -41,7 +41,7 @@ export function AgentTrace({ part, index }: { part: ToolPart; index?: number }) 
       ? errorText || toolOutputSummary(name, output)
       : toolOutputSummary(name, output) || toolInputSummary(name, input);
   const ms = toolTimingMs(output);
-  const statusLabel = status === "running" ? "Consultando…" : status === "error" ? "Error" : "Listo";
+  const statusLabel = status === "running" ? "Buscando…" : status === "error" ? "Error" : "Listo";
 
   return (
     <details className="group min-w-0 rounded-lg border bg-muted/30 text-[12px] leading-snug">

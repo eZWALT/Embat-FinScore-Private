@@ -13,13 +13,18 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { formatMonth } from "@/lib/format-month";
 
 const COMPANY_QUESTIONS = [
   "¿Por qué este índice este mes?",
-  "¿Qué cambió en los últimos tres meses y quién actúa?",
+  "¿Qué cambió y quién tiene que actuar?",
+  "¿Qué alertas hay y qué importe hay detrás?",
 ] as const;
 
-const INDEX_QUESTIONS = ["¿Qué empresas necesitan atención este mes?"] as const;
+const INDEX_QUESTIONS = [
+  "¿Qué empresas necesitan atención este mes?",
+  "¿Quién se alejó de su propia normalidad?",
+] as const;
 
 export function HealthScoreChat({
   companyId,
@@ -45,19 +50,18 @@ export function HealthScoreChat({
   }, [defaultOpen, setOpen]);
 
   const suggestions = companyId ? [...COMPANY_QUESTIONS] : [...INDEX_QUESTIONS];
-  const hint = companyId
-    ? `Sobre ${companyId}${groupId ? ` · ${groupId}` : ""}. Índice y alertas de Neon; registros si core está montado.`
-    : "Pregunta por el índice o nombra una empresa (COMP_xxxx).";
+  const when = asOf ? formatMonth(asOf) : null;
+  const description = companyId
+    ? `Por qué este índice${when ? ` en ${when}` : ""}, qué ha cambiado y qué hay que revisar.`
+    : "Qué empresas se han alejado de su normalidad y a quién le toca actuar.";
 
   return (
     <div className="pointer-events-none fixed right-4 bottom-4 z-50 flex flex-col items-end gap-3 sm:right-6 sm:bottom-6">
       {isOpen ? (
         <Card className="pointer-events-auto flex h-[min(82vh,720px)] w-[min(calc(100vw-2rem),36rem)] flex-col shadow-lg">
           <CardHeader className="border-b pb-3">
-            <CardTitle>Consultas</CardTitle>
-            <CardDescription>
-              {companyId ? `${companyId} · con herramientas` : "Índice de salud · con herramientas"}
-            </CardDescription>
+            <CardTitle>Pregunta</CardTitle>
+            <CardDescription>{description}</CardDescription>
             <CardAction>
               <Button
                 type="button"
@@ -78,8 +82,11 @@ export function HealthScoreChat({
               groupId={groupId}
               asOf={asOf}
               layout="sheet"
-              placeholder="Pregunta por esta empresa o el índice"
-              emptyHint={hint}
+              placeholder={
+                companyId
+                  ? "Ej. ¿Por qué bajó el índice este mes?"
+                  : "Ej. ¿Quién necesita atención este mes?"
+              }
               suggestions={suggestions}
             />
           </CardContent>
@@ -92,7 +99,7 @@ export function HealthScoreChat({
         className="pointer-events-auto size-12 rounded-full shadow-lg"
         onClick={() => setOpen(!isOpen)}
         aria-expanded={isOpen}
-        aria-label={isOpen ? "Cerrar chat" : "Abrir consultas"}
+        aria-label={isOpen ? "Cerrar chat" : "Abrir chat"}
       >
         {isOpen ? <X /> : <MessageCircle />}
       </Button>

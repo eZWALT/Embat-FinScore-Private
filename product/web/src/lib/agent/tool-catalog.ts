@@ -7,7 +7,7 @@ export const TOOL_LABELS = {
   get_control_chart: "Control chart",
   compare_with_cluster: "Comparar con pares",
   get_forecast: "Abanico",
-  query_clean_db: "Consultar registros",
+  query_clean_db: "Leer registros",
   plot_series: "Dibujar gráfico",
 } as const;
 

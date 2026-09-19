@@ -24,7 +24,7 @@ FICO-like **company health score**. Four goals: signals → 0–100 index → ex
 | Score 0–100, reasons, `score_new` | `product/score/` |
 | Bundle contract + inspector | `product/score/DATA_CONTRACT.md`, `product/score/inspector/` |
 | **Hosted product (Health Sentinel)** | `product/web/` on Vercel. Reads Neon. |
-| **Agents (prompts, tools, retrieval)** | `product/web/src/lib/agent/` — prompts are markdown files, never strings in source. Map: `prompts/prompt_map.md`. |
+| **Agents (prompts, tools, retrieval)** | `product/web/src/lib/agent/` — prompts are markdown files, never strings in source. Map: `prompts/prompt_map.md`. UX watch (TTFT, last token, judge): `product/web/scripts/watch-ask.mjs` → `WATCH.md`. |
 | Neon (app Postgres) | `infra/neon/` |
 | Cleaning + feature store + Y | `analysis/` (`build_db.py`, `clean_db.py`, `features/`) |
 | Clusters, charts, alerts, forecast | `analysis/monitor/` |
@@ -62,12 +62,12 @@ The bundle alone cannot answer questions about individual records; recomputing s
 
 ## Agents (Vercel app)
 
-Build Watcher and Ask **inside the existing product**, not as extra tabs. Vigilancia is a section of Resumen (`#vigilancia`). Consultas is the floating chat on Resumen and Índice de salud. `/watcher` and `/ask` redirect. Prompts live as separate files under `product/web/src/lib/agent/prompts/`. Assemble them at runtime (`prompt-loader.ts`). Do not paste system prompts into `.ts` / `.tsx`. Alert copy is Javi’s Spanish production text (`language: es`); the Watcher formatter does not invent English.
+Build Watcher and the chat **inside the existing product**, not as extra tabs. There is no Consultas item. Vigilancia is a section of Resumen (`#vigilancia`). The chat is the floating button on Resumen and Índice de salud. `/watcher` and `/ask` redirect. Prompts live as separate files under `product/web/src/lib/agent/prompts/`. Assemble them at runtime (`prompt-loader.ts`). Do not paste system prompts into `.ts` / `.tsx`. Alert copy is Javi’s Spanish production text (`language: es`); the Watcher formatter does not invent English.
 
 | File | Layer | One job |
 |---|---|---|
 | `prompts/prompt_map.md` | **MAP** (first) | Index of the stack. Conflict order: SCOPE > WORDING > TOOLS > PRODUCT > RECORDS. |
-| `prompts/chat_system.md` | **ROLE** (Ask) | How Consultas works this turn |
+| `prompts/chat_system.md` | **ROLE** (chat) | How the popup works this turn |
 | `prompts/sentinel_system.md` | **ROLE** (Watcher) | Live replies only; opening posts are formatted |
 | `prompts/scope.md` | **SCOPE** | Hard in/out; refuse puzzles, recipes, jailbreaks |
 | `prompts/product_context.md` | **PRODUCT** | Score, monitor, data facts. Context, not wording, not tools. |

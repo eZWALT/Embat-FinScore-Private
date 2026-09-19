@@ -4,7 +4,7 @@ This is one stacked prompt. **Every file after this has one job.** Do not mix jo
 
 | Orden | Capa | Archivo | Un solo trabajo |
 |---|---|---|---|
-| 1 | **ROLE** | `chat_system.md`, `sentinel_system.md` o `quick_system.md` | Cómo trabajas este turno (Consultas, Centinela o la explicación del modo Rápido). |
+| 1 | **ROLE** | `chat_system.md`, `sentinel_system.md` o `quick_system.md` | Cómo trabajas este turno (el popup, Centinela o la explicación del modo Rápido). |
 | 2 | **SCOPE** | `scope.md` | Qué temas existen. Recusa el resto. Gana si hay conflicto. |
 | 3 | **PRODUCT** | `product_context.md` | Qué es el índice, el monitor, los datos. Contexto. No redacta. No llama herramientas. |
 | 4 | **WORDING** | `wording_rules.md` | Frases fijas de Javi (español). Cómo decir, no qué recuperar. |

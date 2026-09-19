@@ -166,14 +166,14 @@ export function AgentChat({
           );
         })}
         {busy && messages.at(-1)?.role !== "assistant" ? (
-          <li className="text-xs text-muted-foreground">Consultando…</li>
+          <li className="text-xs text-muted-foreground">Buscando…</li>
         ) : null}
       </ol>
 
       {showSuggestions ? (
         <div className="flex flex-col gap-2">
           <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-            Sugeridas
+            Prueba con
           </p>
           <div className="flex flex-col gap-2 sm:flex-row">
             {suggestions!.map((question) => (

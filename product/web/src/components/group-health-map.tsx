@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useState, useTransition } from "react";
-import { ArrowLeft, Building2, Eye, Layers, MessageSquare } from "lucide-react";
+import { ArrowLeft, Building2, Eye, Layers } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -126,12 +126,6 @@ export function GroupHealthMap({ data }: { data: GroupMapData }) {
                     <Link href={`/?company=${data.company.companyId}#vigilancia`}>
                       <Eye data-icon="inline-start" />
                       Vigilancia
-                    </Link>
-                  </Button>
-                  <Button asChild variant="outline" size="sm">
-                    <Link href={`/?company=${data.company.companyId}&chat=1`}>
-                      <MessageSquare data-icon="inline-start" />
-                      Preguntar
                     </Link>
                   </Button>
                 </>
