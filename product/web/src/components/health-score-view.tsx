@@ -189,8 +189,6 @@ export function HealthScoreView({ data }: { data: DashboardData }) {
         </h1>
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_22rem] xl:items-start">
-        <div className="space-y-4">
       <Card className="overflow-visible">
         <CardHeader className="flex-row items-center justify-between gap-4 space-y-0">
           <CardTitle className="text-base">Empresas</CardTitle>
@@ -356,9 +354,8 @@ export function HealthScoreView({ data }: { data: DashboardData }) {
           )}
         </CardContent>
       </Card>
-        </div>
-        <HealthScoreChat />
-      </div>
+
+      <HealthScoreChat />
     </div>
   );
 }

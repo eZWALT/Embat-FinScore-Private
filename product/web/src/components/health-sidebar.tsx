@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   Activity,
-  BarChart3,
   Building2,
   ChartNoAxesCombined,
   Database,
@@ -12,7 +11,6 @@ import {
   Layers,
   LayoutDashboard,
   MessageSquare,
-  ScanSearch,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 
@@ -50,8 +48,6 @@ const views = [
 
 const overviewAnchors = [
   { label: "Evolución", href: "#evolucion", icon: Activity },
-  { label: "Categorías", href: "#categorias", icon: BarChart3 },
-  { label: "Señales", href: "#senales", icon: ScanSearch },
 ] as const;
 
 const productLinks = [

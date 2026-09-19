@@ -21,5 +21,13 @@ export async function POST(request: Request) {
     messages: await convertToModelMessages(messages),
   });
 
-  return result.toUIMessageStreamResponse();
+  return result.toUIMessageStreamResponse({
+    onError: (error) => {
+      const text = error instanceof Error ? error.message : String(error);
+      if (text.includes("credit card")) {
+        return "AI Gateway pide una tarjeta en el equipo Vercel para desbloquear créditos.";
+      }
+      return text || "No se pudo completar la respuesta.";
+    },
+  });
 }

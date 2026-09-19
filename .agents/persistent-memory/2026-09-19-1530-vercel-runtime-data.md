@@ -11,6 +11,4 @@ Vercel root is `product/web`, so `product/score/sample_bundle` is not on the fil
 
 MCP Vercel token is the personal team (`trailrunningcal` only), not `hack-spain-3d7d523b`, so env vars on the live project could not be listed.
 
-## Still unknown
-
-Whether `DATABASE_URL` is set on the hack-spain Vercel project, and whether it points at staging vs empty `main`.
+Production `DATABASE_URL` was a truncated string (`neondb_owner:…@…`, U+2026). Replaced with the real Neon staging pooled URL as a Secret and redeployed (`hack-spain-5rljztf5k`). Do not paste truncated dashboard URLs into Vercel.
