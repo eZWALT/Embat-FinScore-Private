@@ -168,26 +168,69 @@ body {
   -webkit-text-fill-color: var(--foreground);
 }
 
-@keyframes agent-bar-shimmer {
-  0% {
-    background-position: 120% 0;
+.agent-dot {
+  display: block;
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--muted-foreground);
+  opacity: 0.28;
+}
+
+.agent-dot-1 {
+  animation: agent-dot-a 1.2s linear infinite;
+}
+
+.agent-dot-2 {
+  animation: agent-dot-b 1.2s linear infinite;
+}
+
+.agent-dot-3 {
+  animation: agent-dot-c 1.2s linear infinite;
+}
+
+@keyframes agent-dot-a {
+  0%,
+  32.9% {
+    background: var(--foreground);
+    opacity: 1;
   }
+  33%,
   100% {
-    background-position: -20% 0;
+    background: var(--muted-foreground);
+    opacity: 0.28;
   }
 }
 
-.agent-bar-shimmer {
-  background-image: linear-gradient(
-    90deg,
-    var(--border) 0%,
-    var(--border) 32%,
-    var(--foreground) 50%,
-    var(--border) 68%,
-    var(--border) 100%
-  );
-  background-size: 220% 100%;
-  animation: agent-bar-shimmer 1.4s linear infinite;
+@keyframes agent-dot-b {
+  0%,
+  32.9% {
+    background: var(--muted-foreground);
+    opacity: 0.28;
+  }
+  33%,
+  65.9% {
+    background: var(--foreground);
+    opacity: 1;
+  }
+  66%,
+  100% {
+    background: var(--muted-foreground);
+    opacity: 0.28;
+  }
+}
+
+@keyframes agent-dot-c {
+  0%,
+  65.9% {
+    background: var(--muted-foreground);
+    opacity: 0.28;
+  }
+  66%,
+  100% {
+    background: var(--foreground);
+    opacity: 1;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -198,9 +241,11 @@ body {
     -webkit-text-fill-color: var(--foreground);
   }
 
-  .agent-bar-shimmer {
+  .agent-dot-1,
+  .agent-dot-2,
+  .agent-dot-3 {
     animation: none;
-    background-image: none;
-    background-color: var(--border);
+    background: var(--muted-foreground);
+    opacity: 0.45;
   }
 }

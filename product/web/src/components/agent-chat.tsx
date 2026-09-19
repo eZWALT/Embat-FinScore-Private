@@ -13,7 +13,7 @@ import {
 import { ArrowUp } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-import { AgentBusy, AgentShimmer } from "@/components/agent-busy";
+import { AgentBusy, AgentPulse } from "@/components/agent-busy";
 import { AgentMarkdown } from "@/components/agent-markdown";
 import { AgentPlot } from "@/components/agent-plot";
 import { AgentTrace } from "@/components/agent-trace";
@@ -22,11 +22,6 @@ import { Input } from "@/components/ui/input";
 import { contextBody, plotFromPart, type AgentContext } from "@/lib/agent/chat-parts";
 
 type AgentToolPart = ToolUIPart | DynamicToolUIPart;
-
-function toolStillOpen(part: AgentToolPart) {
-  const state = "state" in part ? String(part.state) : "";
-  return state !== "output-available" && state !== "output-error";
-}
 
 type ChatSegment =
   | { kind: "text"; key: string; text: string }
@@ -163,7 +158,7 @@ export function AgentChat({
                 : segments.length === 0 && streamingMessage ? (
                     <>
                       <AgentBusy />
-                      <AgentShimmer />
+                      <AgentPulse divided={false} />
                     </>
                   )
                 : segments.map((segment) => {
@@ -176,9 +171,8 @@ export function AgentChat({
                         />
                       );
                     }
-                    const toolsBusy =
-                      segment.items.some((item) => toolStillOpen(item.part)) ||
-                      (streamingMessage && lastSegment?.key === segment.key);
+                    const waitingForReply = streamingMessage && lastSegment?.kind !== "text";
+                    const showPulse = waitingForReply && lastSegment?.key === segment.key;
                     return (
                       <div key={segment.key} className="flex min-w-0 flex-col gap-0.5">
                         {segment.items.map((item) => {
@@ -190,7 +184,7 @@ export function AgentChat({
                             </div>
                           );
                         })}
-                        {toolsBusy ? <AgentShimmer /> : null}
+                        {showPulse ? <AgentPulse /> : null}
                       </div>
                     );
                   })}
@@ -201,7 +195,7 @@ export function AgentChat({
           <li className="min-w-0 max-w-full space-y-1.5 overflow-hidden rounded-xl border bg-background px-4 py-3">
             <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Centinela</p>
             <AgentBusy />
-            <AgentShimmer />
+            <AgentPulse divided={false} />
           </li>
         ) : null}
       </ol>

@@ -17,12 +17,20 @@ export function AgentBusy({ className, label = "Cargando" }: { className?: strin
   );
 }
 
-/** Sweep under a tool block. Sits below the row even when the ring is already spinning. */
-export function AgentShimmer({ className }: { className?: string }) {
+/** Three-dot step under the tool block. Goes away when the first reply token arrives. */
+export function AgentPulse({ className, divided = true }: { className?: string; divided?: boolean }) {
   return (
     <span
       aria-hidden="true"
-      className={cn("agent-bar-shimmer mt-1.5 block h-0.5 w-full rounded-full", className)}
-    />
+      className={cn(
+        "flex items-center gap-1.5",
+        divided ? "mt-2 border-t border-border pt-2" : "mt-1.5",
+        className,
+      )}
+    >
+      <span className="agent-dot agent-dot-1" />
+      <span className="agent-dot agent-dot-2" />
+      <span className="agent-dot agent-dot-3" />
+    </span>
   );
 }
