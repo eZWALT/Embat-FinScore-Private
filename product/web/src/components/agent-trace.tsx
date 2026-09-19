@@ -5,6 +5,7 @@ import { ChevronRight, Wrench } from "lucide-react";
 
 import { AgentBusy } from "@/components/agent-busy";
 import { toolInputSummary, toolLabel, toolOutputSummary, toolTimingMs } from "@/lib/agent/tool-catalog";
+import { formatDecimal } from "@/lib/display";
 
 type ToolPart = Extract<UIMessage["parts"][number], { type: string }>;
 
@@ -27,13 +28,23 @@ function preview(value: unknown, max = 1800): string {
 
 function formatSeconds(ms: number): string {
   if (ms < 50) return "<0.1 s";
-  return `${(ms / 1000).toFixed(1)} s`;
+  return `${formatDecimal(ms / 1000, 1)} s`;
 }
 
-export function AgentTrace({ part, index }: { part: ToolPart; index?: number }) {
+export function AgentTrace({
+  part,
+  index,
+  keepBusy = false,
+}: {
+  part: ToolPart;
+  index?: number;
+  /** Stay spinning after the tool finishes, until the first reply token. */
+  keepBusy?: boolean;
+}) {
   if (!isToolUIPart(part)) return null;
   const name = getToolName(part);
   const status = toolState(part);
+  const showSpinner = status === "running" || keepBusy;
   const input = "input" in part ? part.input : undefined;
   const output = "output" in part ? part.output : undefined;
   const errorText = "errorText" in part && typeof part.errorText === "string" ? part.errorText : "";
@@ -54,9 +65,9 @@ export function AgentTrace({ part, index }: { part: ToolPart; index?: number }) 
         <ChevronRight className="size-3 shrink-0 transition-transform group-open:rotate-90" />
         <Wrench className="size-3 shrink-0" aria-hidden="true" />
         <span className="min-w-0 flex-1 truncate font-medium text-foreground">{toolLabel(name)}</span>
-        {status === "running" ? <AgentBusy /> : null}
-        {status === "error" ? <span className="text-destructive">Error</span> : null}
-        {status === "done" && ms != null ? (
+        {showSpinner ? <AgentBusy /> : null}
+        {status === "error" && !keepBusy ? <span className="text-destructive">Error</span> : null}
+        {status === "done" && !keepBusy && ms != null ? (
           <span className="shrink-0 font-mono text-[10px] tabular-nums">{formatSeconds(ms)}</span>
         ) : null}
       </summary>

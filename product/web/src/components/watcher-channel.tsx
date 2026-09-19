@@ -5,8 +5,10 @@ import { useRouter } from "next/navigation";
 import { ProductNav } from "@/components/product-nav";
 import { WatcherPostView } from "@/components/watcher-post-view";
 import { WatcherReply } from "@/components/watcher-reply";
+import { companyLabel, groupLabel, trajectoryLabel } from "@/components/group/labels";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { WatcherPost } from "@/lib/agent/watcher-post";
+import { formatAsOf } from "@/lib/format-month";
 
 export function WatcherChannel({
   asOf,
@@ -39,32 +41,32 @@ export function WatcherChannel({
         <div>
           <h1 className="text-xl font-semibold tracking-tight">#sentinel</h1>
           <p className="text-sm text-muted-foreground">
-            Last three months{asOf ? ` · as-of ${asOf}` : ""}. Same shape every time.
+            Últimos tres meses{asOf ? ` · ${formatAsOf(asOf)}` : ""}. La misma ficha siempre.
           </p>
         </div>
         <div className="grid gap-2 sm:grid-cols-2">
           <Select value={companyId || "none"} onValueChange={(v) => go(v === "none" ? "" : v, groupId)}>
-            <SelectTrigger aria-label="Company">
-              <SelectValue placeholder="Company" />
+            <SelectTrigger aria-label="Empresa">
+              <SelectValue placeholder="Empresa" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="none">No company</SelectItem>
+              <SelectItem value="none">Ninguna empresa</SelectItem>
               {companies.map((c) => (
                 <SelectItem key={c.id} value={c.id}>
-                  {c.id} · {c.score.toFixed(0)} · {c.trajectory}
+                  {companyLabel(c.id)} · {c.score.toFixed(0)} · {trajectoryLabel(c.trajectory)}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
           <Select value={groupId || "none"} onValueChange={(v) => go(companyId, v === "none" ? "" : v)}>
-            <SelectTrigger aria-label="Group">
-              <SelectValue placeholder="Group" />
+            <SelectTrigger aria-label="Grupo">
+              <SelectValue placeholder="Grupo" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="none">No group</SelectItem>
+              <SelectItem value="none">Ningún grupo</SelectItem>
               {groups.map((g) => (
                 <SelectItem key={g.id} value={g.id}>
-                  {g.id} · {g.n} · {g.mean == null ? "—" : `mean ${g.mean.toFixed(0)}`}
+                  {groupLabel(g.id)} · {g.n} · {g.mean == null ? "—" : `media ${g.mean.toFixed(0)}`}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -73,7 +75,7 @@ export function WatcherChannel({
       </header>
 
       {!companyId && !groupId ? (
-        <p className="text-sm text-muted-foreground">Pick a company or a group.</p>
+        <p className="text-sm text-muted-foreground">Elige una empresa o un grupo.</p>
       ) : (
         <ol className="space-y-3">
           {posts.map((post) => (
@@ -87,7 +89,6 @@ export function WatcherChannel({
       {companyId || groupId ? (
         <WatcherReply companyId={companyId} groupId={groupId} asOf={asOf} />
       ) : null}
-
     </div>
   );
 }

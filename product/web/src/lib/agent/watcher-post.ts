@@ -1,5 +1,8 @@
+import { kindLabels } from "@/components/group/labels";
+import { entityLabel, formatMoney, formatSigned, relabelEntities } from "@/lib/display";
 import type {
   Alert,
+  AlertKind,
   CompanyDetail,
   CompanyIndexRow,
   GroupRow,
@@ -48,18 +51,10 @@ const TRAJECTORY: Record<Trajectory, string> = {
 
 const GUARD_PREFIX = { dark: "inactiva · ", fading: "desvaneciéndose · " } as const;
 
-/** Javi's `explain.eur`: 14 k€, 1,2 M€, 164 €. */
-export function fmtEur(value: number | null | undefined): string {
+/** Javi's `explain.eur`: 14 k€, 1,2 M€, 164 €. Other ISO: `14 k AED`. */
+export function fmtEur(value: number | null | undefined, currency: string | null = "EUR"): string {
   if (value == null || Number.isNaN(value)) return "";
-  const abs = Math.abs(value);
-  const sign = value < 0 ? "-" : "";
-  if (abs >= 1e6) return `${sign}${esNum(abs / 1e6, 1)} M€`;
-  if (abs >= 1e3) return `${sign}${Math.round(abs / 1e3)} k€`;
-  return `${sign}${Math.round(abs)} €`;
-}
-
-function esNum(value: number, digits: number): string {
-  return value.toFixed(digits).replace(".", ",");
+  return formatMoney(value, currency);
 }
 
 export function monthAdd(month: string, k: number): string {
@@ -74,9 +69,8 @@ export function lastMonths(asOf: string, n = 3): string[] {
 }
 
 function signed(n: number | null | undefined, digits = 0): string | null {
-  if (n == null || Number.isNaN(n)) return null;
-  const v = Number(n.toFixed(digits));
-  return `${v > 0 ? "+" : ""}${v}`;
+  if (n == null || Number.isNaN(n) || Math.abs(n) < 0.5) return null;
+  return formatSigned(n, digits);
 }
 
 function groupState(delta: number | null): "al alza" | "a la baja" | "estable" {
@@ -86,11 +80,14 @@ function groupState(delta: number | null): "al alza" | "a la baja" | "estable" {
   return "estable";
 }
 
-function firstMoney(reasons: { label: string; eur: number | null; sentence: string }[] | undefined): string | null {
+function firstMoney(
+  reasons: { label: string; eur: number | null; sentence: string }[] | undefined,
+  currency = "EUR",
+): string | null {
   if (!reasons?.length) return null;
   const withEur = reasons.find((r) => r.eur != null);
   if (withEur) {
-    const money = fmtEur(withEur.eur);
+    const money = fmtEur(withEur.eur, currency);
     return money ? `${withEur.label} · ${money}` : withEur.label;
   }
   return reasons[0].label;
@@ -120,22 +117,27 @@ function trajectoryLabel(value: string | undefined): string {
  * `{kind} · {título en español} · {cifra}`
  * Titles and € come from the export (`language: es`). Never invent English.
  */
-export function formatRuleAlert(alert: Alert): string {
+function kindName(kind: Alert["kind"]): string {
+  return kindLabels[kind as AlertKind] ?? kind;
+}
+
+export function formatRuleAlert(alert: Alert, currency = "EUR"): string {
   const ev = alert.evidence;
   const title = alert.title.trim();
-  const money = firstMoney(alert.reasons);
+  const money = firstMoney(alert.reasons, currency);
+  const head = `${kindName(alert.kind)} · ${title}`;
 
   if (alert.kind === "top_customer_quiet") {
     const share = evNum(ev, "share_last_quarter");
     const billed = evNum(ev, "last_quarter_amount");
     const open = evNum(ev, "open_receivable_eur");
-    const parts = [`${alert.kind} · ${title}`];
+    const parts = [head];
     if (share != null && billed != null) {
-      parts.push(`${Math.round(share * 100)} % último trimestre · ${fmtEur(billed)}`);
+      parts.push(`${Math.round(share * 100)} % último trimestre · ${fmtEur(billed, currency)}`);
     } else if (billed != null) {
-      parts.push(fmtEur(billed));
+      parts.push(fmtEur(billed, currency));
     }
-    if (open != null) parts.push(`${fmtEur(open)} abiertos`);
+    if (open != null) parts.push(`${fmtEur(open, currency)} abiertos`);
     return parts.join(" · ");
   }
 
@@ -148,18 +150,21 @@ export function formatRuleAlert(alert: Alert): string {
         : pre != null
           ? `tope 30 (sin tope ${Math.round(pre)})`
           : "60 días sin movimiento bancario";
-    return `${alert.kind} · ${title} · ${cap}`;
+    return `${head} · ${cap}`;
   }
 
   const score = evNum(ev, "score") ?? evNum(ev, "mean_score") ?? evNum(ev, "category_score");
   const base = evNum(ev, "baseline");
   const gap = evNum(ev, "gap_points");
-  const members = typeof ev.members_moving_most === "string" && ev.members_moving_most ? ev.members_moving_most : "";
+  const members =
+    typeof ev.members_moving_most === "string" && ev.members_moving_most
+      ? relabelEntities(ev.members_moving_most)
+      : "";
   const vs =
     score != null && base != null
       ? `${Math.round(score)} frente a ${Math.round(base)}${gap != null ? ` (${signed(gap)} pts)` : ""}`
       : "";
-  const parts = [`${alert.kind} · ${title}`];
+  const parts = [head];
   if (vs) parts.push(vs);
   if (money) parts.push(money);
   if (members) parts.push(members);
@@ -238,7 +243,7 @@ export function buildWatcherPost(input: {
     const c = companySnaps.find((x) => x.id === companyIds[0]) ?? focus;
     const guard = c?.guard ? GUARD_PREFIX[c.guard] : "";
     const d = signed(c?.delta);
-    line1 = `${guard}${c?.id ?? companyIds[0]} · ${Math.round(c?.score ?? 0)}  ${trajectoryLabel(c?.trajectory)}${d ? `  (${d})` : ""}`;
+    line1 = `${guard}${entityLabel(c?.id ?? companyIds[0])} · ${Math.round(c?.score ?? 0)}  ${trajectoryLabel(c?.trajectory)}${d ? `  (${d})` : ""}`;
   } else if (groupIds.length === 1 && companyIds.length === 0) {
     const g = watchedGroups[0];
     const i = asOfMonths.indexOf(month);
@@ -246,7 +251,7 @@ export function buildWatcherPost(input: {
     const mean = i >= 0 ? g?.mean_scores[i] ?? null : null;
     const prior = pi >= 0 ? g?.mean_scores[pi] ?? null : null;
     const delta = mean != null && prior != null ? mean - prior : null;
-    line1 = `${g?.group_id ?? groupIds[0]} · ${Math.round(mean ?? 0)}  ${groupState(delta)}${signed(delta) ? `  (${signed(delta)})` : ""}`;
+    line1 = `${entityLabel(g?.group_id ?? groupIds[0])} · ${Math.round(mean ?? 0)}  ${groupState(delta)}${signed(delta) ? `  (${signed(delta)})` : ""}`;
   } else {
     const scores = companySnaps.map((c) => c.score!).filter((n) => n != null);
     const mean = scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : 0;
@@ -256,6 +261,9 @@ export function buildWatcherPost(input: {
     line1 = `${n} entidades · media ${Math.round(mean)}  ${groupState(dMean)}${signed(dMean) ? `  (${signed(dMean)})` : ""}`;
   }
 
+  const currency =
+    [...memberIds].map((id) => details.get(id)?.currency).find((value): value is string => Boolean(value)) ?? "EUR";
+
   let line2 = "sin movimiento material";
   const topAlert = actWatch[0] ?? opportunities[0];
   if (focus?.guard && focus.pre != null) {
@@ -264,14 +272,14 @@ export function buildWatcherPost(input: {
         ? `tope ${Math.round(focus.score ?? 0)} (sin tope ${Math.round(focus.pre)}) · 60 días sin movimiento bancario`
         : `tope ${Math.round(focus.score ?? 0)} (sin tope ${Math.round(focus.pre)}) · entradas hundidas frente a su histórico`;
   } else if (topAlert) {
-    line2 = clip(formatRuleAlert(topAlert), 120);
+    line2 = clip(formatRuleAlert(topAlert, currency), 120);
   } else if (focus?.rec) {
-    const fact = firstMoney(focus.rec.change_reasons) ?? firstMoney(focus.rec.reasons);
+    const fact = firstMoney(focus.rec.change_reasons, currency) ?? firstMoney(focus.rec.reasons, currency);
     const noInv = /sin pagos de facturas|no invoice/i.test(focus.note ?? "");
     const prefix = noInv ? "sin facturas · " : focus.confidence === "low" ? "confianza baja · " : "";
     line2 = fact
-      ? `${prefix}${focus.id} ${trajectoryLabel(focus.trajectory)} · ${fact}`
-      : `${prefix}${focus.id} ${trajectoryLabel(focus.trajectory)}`;
+      ? `${prefix}${entityLabel(focus.id)} ${trajectoryLabel(focus.trajectory)} · ${fact}`
+      : `${prefix}${entityLabel(focus.id)} ${trajectoryLabel(focus.trajectory)}`;
   }
 
   const bullets: WatcherBullet[] = [];
@@ -282,18 +290,18 @@ export function buildWatcherPost(input: {
     bullets.push({
       severity,
       owner: ownerOf(a),
-      entity: a.entity.id,
-      text: clip(a.action.trim() || formatRuleAlert(a), 180),
+      entity: entityLabel(a.entity.id),
+      text: clip(relabelEntities(a.action.trim() || formatRuleAlert(a, currency)), 180),
     });
   }
   if (bullets.length === 0 && focus) {
-    const fact = firstMoney(focus.rec?.change_reasons) ?? firstMoney(focus.rec?.reasons);
+    const fact = firstMoney(focus.rec?.change_reasons, currency) ?? firstMoney(focus.rec?.reasons, currency);
     const owner: WatcherBullet["owner"] =
       /cobro|cliente|retraso|factur|receivable|customer|collect/i.test(fact ?? "") ? "Cobros" : "Tesorero";
     bullets.push({
       severity: "follow",
       owner,
-      entity: focus.id,
+      entity: entityLabel(focus.id),
       text: fact ?? `${trajectoryLabel(focus.trajectory)} · ${Math.round(focus.score ?? 0)}`,
     });
     const second = companySnaps.find((c) => c.id !== focus.id && (c.trajectory === "deteriorating" || c.trajectory === "dip"));
@@ -301,7 +309,7 @@ export function buildWatcherPost(input: {
       bullets.push({
         severity: "follow",
         owner: "CFO",
-        entity: second.id,
+        entity: entityLabel(second.id),
         text: `${trajectoryLabel(second.trajectory)} · ${Math.round(second.score ?? 0)}`,
       });
     }

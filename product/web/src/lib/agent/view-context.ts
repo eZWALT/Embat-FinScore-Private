@@ -1,3 +1,5 @@
+import { formatSigned } from "@/lib/display";
+
 /** What the Pregunta popup can see: the open screen, not a Neon fact. */
 
 const COMPANY = /^COMP_[0-9]{4}$/;
@@ -130,7 +132,7 @@ export function parseDashboardView(raw: unknown): DashboardView | undefined {
 }
 
 function signed(value: number): string {
-  return `${value > 0 ? "+" : ""}${value.toFixed(1)}`;
+  return formatSigned(value, 1);
 }
 
 /** SESSION layer: what is on screen. Not a new instruction. */

@@ -33,15 +33,20 @@ function defaultSelection(companies: DashboardCompany[], first?: string): string
 export function HealthScoreView({
   data,
   initialCompanyId,
+  initialCompanyIds,
   onSelectionChange,
   onExplain,
 }: {
   data: DashboardData;
   initialCompanyId?: string;
+  initialCompanyIds?: string[];
   onSelectionChange?: (companies: DashboardCompany[]) => void;
   onExplain?: (prompt: string) => void;
 }) {
-  const [picked, setPicked] = useState<string[]>(() => defaultSelection(data.companies, initialCompanyId));
+  const [picked, setPicked] = useState<string[]>(() => {
+    const seeded = (initialCompanyIds ?? []).filter((id) => data.companies.some((company) => company.companyId === id));
+    return seeded.length ? seeded.slice(0, MAX_SERIES) : defaultSelection(data.companies, initialCompanyId);
+  });
   const [query, setQuery] = useState("");
 
   const selected = useMemo(

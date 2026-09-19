@@ -1,3 +1,4 @@
+import { formatDecimal, formatMoney, formatSigned } from "@/lib/display";
 import type {
   AlertKind,
   AlertSeverity,
@@ -6,6 +7,17 @@ import type {
   Owner,
   Trajectory,
 } from "@/lib/data/types";
+
+export {
+  companyLabel,
+  companySearchText,
+  entityLabel,
+  formatDecimal,
+  formatMoney,
+  formatSigned,
+  groupLabel,
+  relabelEntities,
+} from "@/lib/display";
 
 export const trajectoryLabels: Record<Trajectory, string> = {
   improving: "Mejorando",
@@ -68,37 +80,22 @@ export const reasonLabels: Record<string, string> = {
   top_customer: "Cliente principal sin facturar",
 };
 
-const monthFormatter = new Intl.DateTimeFormat("es-ES", { month: "short", year: "2-digit" });
-const monthOnlyFormatter = new Intl.DateTimeFormat("es-ES", { month: "short" });
+export { formatAsOf, formatMonth, formatMonthShort, splitMonth } from "@/lib/format-month";
 
-function monthDate(month: string) {
-  const [year, monthNumber] = month.split("-").map(Number);
-  return new Date(Date.UTC(year, monthNumber - 1, 1));
-}
-
-/** "2026-08" -> "ago ’26" */
-export function formatMonth(month: string) {
-  return monthFormatter.format(monthDate(month)).replace(" ", " ’");
-}
-
-/** "2026-08" -> ["ago", "26"] for two-line column headers. */
-export function splitMonth(month: string): [string, string] {
-  return [monthOnlyFormatter.format(monthDate(month)).replace(".", ""), month.slice(2, 4)];
-}
-
-export function formatEur(value: number, currency: string | null = "EUR") {
-  return new Intl.NumberFormat("es-ES", {
-    style: "currency",
-    currency: currency ?? "EUR",
-    notation: "compact",
-    maximumFractionDigits: 1,
-  }).format(value);
-}
+export const formatEur = formatMoney;
 
 export function formatPoints(value: number, signed = true) {
-  const text = Math.abs(value).toFixed(1).replace(".", ",");
-  if (!signed) return text;
-  return value > 0 ? `+${text}` : value < 0 ? `−${text}` : text;
+  if (!signed) return formatDecimal(Math.abs(value), 1);
+  return formatSigned(value, 1);
+}
+
+export function reasonLabel(item: string, fallback?: string | null) {
+  return reasonLabels[item] ?? fallback ?? item;
+}
+
+export function trajectoryLabel(value: string | null | undefined) {
+  if (!value) return trajectoryLabels.stable;
+  return trajectoryLabels[value as Trajectory] ?? value;
 }
 
 /** 0 = red, 50 = amber, 100 = green. Same lightness and chroma in both themes. */

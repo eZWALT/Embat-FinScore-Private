@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { GroupPlot } from "@/components/group-plot";
 import { HeatmapLegend, ScoreHeatmap } from "@/components/group/score-heatmap";
 import { MemberTable } from "@/components/group/member-table";
-import { formatPoints, scoreColor } from "@/components/group/labels";
+import { companyLabel, formatPoints, groupLabel, scoreColor } from "@/components/group/labels";
 import type { GroupOverview } from "@/lib/data/group-service";
 
 function lastChange(values: (number | null)[]): number | null {
@@ -54,7 +54,9 @@ export function GroupView({
 
   const header = (
     <section id="resumen" className="flex scroll-mt-20 flex-col gap-1">
-      <h1 className="font-mono text-2xl font-semibold tracking-tight">{groupId}</h1>
+      <h1 className="text-2xl font-semibold tracking-tight" title={groupId}>
+        {groupLabel(groupId)}
+      </h1>
       <p className="text-sm text-muted-foreground">
         {overview
           ? `${overview.nCompanies} ${overview.nCompanies === 1 ? "empresa" : "empresas"}${
@@ -126,7 +128,7 @@ export function GroupView({
                 onClick={() => onSelectCompany(overview.minCompanyId!)}
                 className="font-mono text-xs text-muted-foreground underline decoration-muted-foreground/40 underline-offset-2 outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
               >
-                {overview.minCompanyId}
+                {companyLabel(overview.minCompanyId)}
               </button>
             ) : null}
           </CardContent>

@@ -20,6 +20,8 @@ import { AgentTrace } from "@/components/agent-trace";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { contextBody, plotFromPart, type AgentContext } from "@/lib/agent/chat-parts";
+import { streamFollowupChips } from "@/lib/agent/followup-client";
+import { fallbackFollowups } from "@/lib/agent/suggestions";
 
 type AgentToolPart = ToolUIPart | DynamicToolUIPart;
 
@@ -50,6 +52,33 @@ function segmentsInStreamOrder(messageId: string, parts: UIMessage["parts"]): Ch
     }
   });
   return segments;
+}
+
+function ChipRow({
+  items,
+  disabled,
+  onPick,
+}: {
+  items: string[];
+  disabled: boolean;
+  onPick: (question: string) => void;
+}) {
+  if (items.length < 1) return null;
+  return (
+    <div className="grid shrink-0 grid-cols-2 gap-2" aria-label="Siguientes preguntas">
+      {items.slice(0, 2).map((question) => (
+        <button
+          key={question}
+          type="button"
+          disabled={disabled}
+          onClick={() => onPick(question)}
+          className="min-h-14 min-w-0 rounded-xl border bg-muted/50 px-3 py-2.5 text-left text-[13px] leading-snug wrap-break-word hover:bg-muted disabled:opacity-50"
+        >
+          {question}
+        </button>
+      ))}
+    </div>
+  );
 }
 
 export function AgentChat({
@@ -101,8 +130,20 @@ export function AgentChat({
   });
 
   const [input, setInput] = useState("");
+  const [followups, setFollowups] = useState<string[]>([]);
   const busy = status === "submitted" || status === "streaming";
   const lastSeed = useRef<string | null>(null);
+  const followupFor = useRef<string | null>(null);
+  const followupAbort = useRef<AbortController | null>(null);
+
+  function resetFollowups() {
+    followupAbort.current?.abort();
+    followupAbort.current = null;
+    followupFor.current = null;
+    setFollowups([]);
+  }
+
+  useEffect(() => () => followupAbort.current?.abort(), []);
 
   useEffect(() => {
     const text = seedPrompt?.trim();
@@ -110,22 +151,62 @@ export function AgentChat({
     const token = `${seedKey ?? 0}:${text}`;
     if (lastSeed.current === token) return;
     lastSeed.current = token;
+    resetFollowups();
     void sendMessage({ text }, { body: contextBody(ctxRef.current) });
   }, [seedPrompt, seedKey, busy, sendMessage]);
 
   function submit(text: string) {
     const trimmed = text.trim();
     if (!trimmed || busy) return;
+    resetFollowups();
     void sendMessage({ text: trimmed }, { body: contextBody(ctxRef.current) });
     setInput("");
   }
 
-  const showSuggestions = Boolean(suggestions?.length) && messages.length === 0 && !busy;
+  const last = messages.at(-1);
+  const lastAssistant = last?.role === "assistant" ? last : null;
+  const messagesRef = useRef(messages);
+  messagesRef.current = messages;
 
+  useEffect(() => {
+    if (api !== "/api/ask") return;
+    const id = lastAssistant?.id;
+    if (!id || followupFor.current === id) return;
+    followupFor.current = id;
+    followupAbort.current?.abort();
+    const ac = new AbortController();
+    followupAbort.current = ac;
+    const fallback = fallbackFollowups();
+    setFollowups(fallback);
+    void streamFollowupChips({
+      messages: messagesRef.current,
+      context: ctxRef.current,
+      signal: ac.signal,
+      onChip: (chips) => {
+        if (!ac.signal.aborted && chips.length) setFollowups(chips.length === 1 ? [chips[0], fallback[1]] : chips);
+      },
+    })
+      .then((chips) => {
+        if (ac.signal.aborted) return;
+        if (chips.length >= 2) setFollowups(chips.slice(0, 2));
+        else if (chips.length === 1) setFollowups([chips[0], fallback[1]]);
+      })
+      .catch((caught) => {
+        if (caught instanceof DOMException && caught.name === "AbortError") return;
+      });
+  }, [api, lastAssistant?.id]);
+
+  const waitingOnSend = busy && messages.at(-1)?.role !== "assistant";
+  const chips =
+    api !== "/api/ask" || waitingOnSend
+      ? []
+      : lastAssistant
+        ? (followups.length ? followups : fallbackFollowups()).slice(0, 2)
+        : (suggestions ?? []).slice(0, 2);
   const sheet = layout === "sheet";
 
   return (
-    <div className={sheet ? "flex h-full min-h-0 min-w-0 flex-col gap-3" : "flex min-w-0 flex-col gap-3"}>
+    <div className={sheet ? "flex min-h-0 min-w-0 flex-1 flex-col gap-3 overflow-hidden" : "flex min-w-0 flex-col gap-3"}>
       <ol className={sheet ? "min-h-0 min-w-0 flex-1 space-y-3 overflow-y-auto" : "min-w-0 space-y-3"} aria-live="polite">
         {messages.length === 0 && emptyHint ? (
           <li className="text-sm text-muted-foreground">{emptyHint}</li>
@@ -134,6 +215,7 @@ export function AgentChat({
           const segments = segmentsInStreamOrder(message.id, message.parts);
           const lastSegment = segments.at(-1);
           const streamingMessage = busy && message.role === "assistant" && message.id === messages.at(-1)?.id;
+          const waitingForReply = Boolean(streamingMessage && lastSegment?.kind !== "text");
 
           return (
             <li
@@ -145,7 +227,7 @@ export function AgentChat({
               }
             >
               <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-                {message.role === "user" ? "Tú" : "Centinela"}
+                {message.role === "user" ? "Tú" : "Sentinel"}
               </p>
               {message.role === "user"
                 ? segments.map((segment) =>
@@ -171,15 +253,19 @@ export function AgentChat({
                         />
                       );
                     }
-                    const waitingForReply = streamingMessage && lastSegment?.kind !== "text";
                     const showPulse = waitingForReply && lastSegment?.key === segment.key;
                     return (
                       <div key={segment.key} className="flex min-w-0 flex-col gap-0.5">
-                        {segment.items.map((item) => {
+                        {segment.items.map((item, itemIndex) => {
                           const plot = getToolName(item.part) === "plot_series" ? plotFromPart(item.part) : null;
+                          const lastTool = itemIndex === segment.items.length - 1;
                           return (
                             <div key={item.key} className="min-w-0 space-y-1">
-                              <AgentTrace part={item.part} index={item.runIndex} />
+                              <AgentTrace
+                                part={item.part}
+                                index={item.runIndex}
+                                keepBusy={showPulse && lastTool}
+                              />
                               {plot ? <AgentPlot spec={plot} /> : null}
                             </div>
                           );
@@ -193,33 +279,14 @@ export function AgentChat({
         })}
         {busy && messages.at(-1)?.role !== "assistant" ? (
           <li className="min-w-0 max-w-full space-y-1.5 overflow-hidden rounded-xl border bg-background px-4 py-3">
-            <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Centinela</p>
+            <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Sentinel</p>
             <AgentBusy />
             <AgentPulse divided={false} />
           </li>
         ) : null}
       </ol>
 
-      {showSuggestions ? (
-        <div className="flex flex-col gap-2">
-          <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-            Prueba con
-          </p>
-          <div className="flex flex-col gap-2 sm:flex-row">
-            {suggestions!.map((question) => (
-              <button
-                key={question}
-                type="button"
-                disabled={busy}
-                onClick={() => submit(question)}
-                className="rounded-lg border bg-background px-3 py-2 text-left text-sm leading-snug hover:bg-muted disabled:opacity-50"
-              >
-                {question}
-              </button>
-            ))}
-          </div>
-        </div>
-      ) : null}
+      <ChipRow items={chips} disabled={busy} onPick={submit} />
 
       {error ? (
         <p className="text-sm text-destructive" role="alert">
@@ -228,7 +295,7 @@ export function AgentChat({
       ) : null}
 
       <form
-        className="flex items-center gap-2"
+        className="flex shrink-0 items-center gap-2"
         onSubmit={(event) => {
           event.preventDefault();
           submit(input);

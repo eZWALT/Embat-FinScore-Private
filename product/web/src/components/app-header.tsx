@@ -14,7 +14,7 @@ export function AppHeader({ children }: { children?: ReactNode }) {
         <span className="grid size-8 shrink-0 place-items-center rounded-lg border bg-background">
           <Activity className="size-4" aria-hidden="true" />
         </span>
-        <span className="hidden text-sm font-semibold sm:inline">Centinela de salud</span>
+        <span className="hidden text-sm font-semibold sm:inline">Sentinel</span>
       </Link>
       <div className="flex items-center gap-3">
         {children}

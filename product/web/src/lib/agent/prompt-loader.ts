@@ -16,6 +16,7 @@ const FILES = {
   tools: "tools_catalog.md",
   plots: "plots_catalog.md",
   schema: "clean_schema.md",
+  brevity: "brevity.md",
 } as const;
 
 function promptsDir() {
@@ -39,5 +40,7 @@ export async function loadSystemPrompt(role: AgentRole, extra?: string) {
   if (role === "chat" || role === "sentinel") parts.push(await readPrompt(FILES.plots));
   if (role === "chat") parts.push(await readPrompt(FILES.schema));
   if (extra) parts.push(extra);
+  // Last on purpose (needle): length rules after the long stack so they are not forgotten.
+  if (role === "chat") parts.push(await readPrompt(FILES.brevity));
   return parts.join("\n\n---\n\n");
 }

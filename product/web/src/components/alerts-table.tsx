@@ -10,9 +10,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Segmented, type SegmentedOption } from "@/components/segmented";
 import {
+  companyLabel,
   formatEur,
   formatMonth,
   formatPoints,
+  groupLabel,
   kindLabels,
   ownerLabels,
   reasonLabels,
@@ -85,7 +87,7 @@ export function AlertsTable({ scope, onSelectCompany }: { scope: Scope; onSelect
     <Card id="alerts" className="scroll-mt-20">
       <CardHeader className="gap-3">
         <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-          <CardTitle className="text-base">Alerts</CardTitle>
+          <CardTitle className="text-base">Alertas</CardTitle>
           {current?.data ? (
             <Badge variant="outline" className="font-normal text-muted-foreground">
               {from ? `${formatMonth(from)} – ` : ""}
@@ -120,10 +122,10 @@ export function AlertsTable({ scope, onSelectCompany }: { scope: Scope; onSelect
           <p className="text-sm text-muted-foreground">Cargando…</p>
         ) : alerts.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            {isGroup ? "Sin alerts en el grupo ni en sus empresas en este periodo." : "Sin alerts para esta empresa en este periodo."}
+            {isGroup ? "Sin alertas en el grupo ni en sus empresas en este periodo." : "Sin alertas para esta empresa en este periodo."}
           </p>
         ) : visible.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No hay alerts de este nivel.</p>
+          <p className="text-sm text-muted-foreground">No hay alertas de este nivel.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[52rem] border-collapse text-left text-sm">
@@ -190,10 +192,12 @@ function AlertLine({
               onClick={() => onSelectCompany(alert.entityId)}
               className="mt-1 font-mono text-xs underline decoration-muted-foreground/40 underline-offset-2 outline-none hover:decoration-foreground focus-visible:ring-2 focus-visible:ring-ring"
             >
-              {alert.entityId}
+              {companyLabel(alert.entityId)}
             </button>
           ) : (
-            <p className="mt-1 font-mono text-xs text-muted-foreground">{alert.entityType === "group" ? "Grupo" : alert.entityId}</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {alert.entityType === "group" ? groupLabel(alert.entityId) : companyLabel(alert.entityId)}
+            </p>
           )
         ) : null}
         {months > 0 ? (

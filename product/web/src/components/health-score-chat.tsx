@@ -1,7 +1,9 @@
 "use client";
 
-import { MessageCircle, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { ChevronDown, Maximize2, MessageCircle, Minimize2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+
+import { cn } from "cn";
 
 import { AgentChat } from "@/components/agent-chat";
 import { Button } from "@/components/ui/button";
@@ -13,13 +15,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { openingSuggestions } from "@/lib/agent/suggestions";
 import type { DashboardView } from "@/lib/agent/view-context";
-
-const QUESTIONS = [
-  "¿Qué muestra este gráfico?",
-  "¿Qué cambió y quién tiene que actuar?",
-  "¿Hay alguna alerta que revisar?",
-] as const;
 
 export function HealthScoreChat({
   companyId,
@@ -45,6 +42,12 @@ export function HealthScoreChat({
   const [internal, setInternal] = useState(defaultOpen);
   const isOpen = open ?? internal;
   const setOpen = onOpenChange ?? setInternal;
+  const [kept, setKept] = useState(isOpen);
+  const [expanded, setExpanded] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) setKept(true);
+  }, [isOpen]);
 
   useEffect(() => {
     if (defaultOpen) setOpen(true);
@@ -54,26 +57,51 @@ export function HealthScoreChat({
     if (seedPrompt) setOpen(true);
   }, [seedPrompt, setOpen]);
 
+  const warmed = useRef(false);
+  useEffect(() => {
+    if (!isOpen || warmed.current) return;
+    warmed.current = true;
+    void fetch("/api/ask/warmup", { method: "POST", keepalive: true }).catch(() => {});
+  }, [isOpen]);
+
   return (
     <div className="pointer-events-none fixed right-4 bottom-4 z-50 flex flex-col items-end gap-3 sm:right-6 sm:bottom-6">
-      {isOpen ? (
-        <Card className="pointer-events-auto flex h-[min(82vh,720px)] w-[min(calc(100vw-2rem),36rem)] flex-col shadow-lg">
+      {kept ? (
+        <Card
+          className={cn(
+            "pointer-events-auto flex flex-col shadow-lg",
+            expanded
+              ? "h-[min(96vh,calc(100dvh-5.5rem))] w-[min(calc(100vw-2rem),72rem)]"
+              : "h-[min(74vh,620px)] w-[min(calc(100vw-2rem),30rem)]",
+            isOpen ? "flex" : "hidden",
+          )}
+        >
           <CardHeader className="border-b pb-3">
             <CardTitle>Pregunta</CardTitle>
             <CardDescription>Sobre los paneles, las tendencias o un periodo.</CardDescription>
-            <CardAction>
+            <CardAction className="flex items-center gap-0.5">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                onClick={() => setExpanded((value) => !value)}
+                aria-pressed={expanded}
+                aria-label={expanded ? "Reducir chat" : "Ampliar chat"}
+              >
+                {expanded ? <Minimize2 /> : <Maximize2 />}
+              </Button>
               <Button
                 type="button"
                 variant="ghost"
                 size="icon-sm"
                 onClick={() => setOpen(false)}
-                aria-label="Cerrar chat"
+                aria-label="Minimizar chat"
               >
-                <X />
+                <ChevronDown />
               </Button>
             </CardAction>
           </CardHeader>
-          <CardContent className="flex min-h-0 flex-1 flex-col pt-4">
+          <CardContent className="flex min-h-0 flex-1 flex-col overflow-hidden pt-4">
             <AgentChat
               key={`${companyId ?? ""}:${groupId ?? ""}:${asOf ?? ""}`}
               api="/api/ask"
@@ -85,7 +113,7 @@ export function HealthScoreChat({
               seedPrompt={seedPrompt}
               seedKey={seedKey}
               placeholder="Ej. ¿Qué tendencia ves en este gráfico?"
-              suggestions={[...QUESTIONS]}
+              suggestions={openingSuggestions(view)}
             />
           </CardContent>
         </Card>
@@ -97,9 +125,9 @@ export function HealthScoreChat({
         className="pointer-events-auto size-12 rounded-full shadow-lg"
         onClick={() => setOpen(!isOpen)}
         aria-expanded={isOpen}
-        aria-label={isOpen ? "Cerrar chat" : "Abrir chat"}
+        aria-label={isOpen ? "Minimizar chat" : "Abrir chat"}
       >
-        {isOpen ? <X /> : <MessageCircle />}
+        {isOpen ? <Minimize2 /> : <MessageCircle />}
       </Button>
     </div>
   );

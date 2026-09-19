@@ -16,7 +16,14 @@ import { MonitorPlot } from "@/components/monitor-plot";
 import { OfferGuidanceCard } from "@/components/offers/offer-guidance";
 import { QuickAnalysis } from "@/components/quick/quick-analysis";
 import { Segmented, type SegmentedOption } from "@/components/segmented";
-import { confidenceLabels, scoreColor, trajectoryLabels } from "@/components/group/labels";
+import {
+  companyLabel,
+  confidenceLabels,
+  formatPoints,
+  groupLabel,
+  scoreColor,
+  trajectoryLabels,
+} from "@/components/group/labels";
 import { HealthScoreChat } from "@/components/health-score-chat";
 import { ProductCredit } from "@/components/product-credit";
 import { HealthScoreView } from "@/components/health-score-view";
@@ -45,7 +52,7 @@ function Delta({ value }: { value: number | null }) {
   return (
     <span className="inline-flex items-center gap-1 font-mono text-sm tabular-nums">
       <Icon className="size-4" />
-      {value > 0 ? "+" : ""}{value.toFixed(1)} pts
+      {formatPoints(value)} pts
     </span>
   );
 }
@@ -110,6 +117,7 @@ export function HealthDashboard({
   const [mode, setMode] = useState<AnalysisMode>(initialMode);
   const [quickCompanies, setQuickCompanies] = useState<DashboardData["companies"]>([]);
   const [indiceCompanies, setIndiceCompanies] = useState<DashboardCompany[]>([]);
+  const [indiceSeed, setIndiceSeed] = useState<string[] | undefined>();
   const [quickRange, setQuickRange] = useState<MonthRange | null>(null);
   const [seedPrompt, setSeedPrompt] = useState<string | undefined>();
   const [seedKey, setSeedKey] = useState(0);
@@ -150,12 +158,28 @@ export function HealthDashboard({
   function changeMode(next: AnalysisMode) {
     setMode(next);
     setSeedPrompt(undefined);
+    if (next === "quick") {
+      window.history.replaceState(null, "", "/");
+      return;
+    }
+    const fromQuick = quickCompanies[0];
+    const nextCompany = fromQuick?.companyId ?? companyId;
+    if (fromQuick) {
+      setCompanyId(nextCompany);
+      setEntity("company");
+    }
+    if (quickCompanies.length > 1) {
+      setView("health-score");
+      setIndiceSeed(quickCompanies.map((row) => row.companyId));
+    }
     window.history.replaceState(
       null,
       "",
-      next === "quick"
-        ? "/"
-        : `/${queryFor(entity === "group" ? { modo: "profundo", group: groupId } : { modo: "profundo", company: companyId })}`,
+      `/${queryFor(
+        entity === "group" && !fromQuick
+          ? { modo: "profundo", group: groupId }
+          : { modo: "profundo", company: nextCompany },
+      )}`,
     );
   }
 
@@ -255,7 +279,7 @@ export function HealthDashboard({
                       ariaLabel="Empresa analizada"
                       options={data.companies.map((candidate) => ({
                         value: candidate.companyId,
-                        label: candidate.companyId,
+                        label: companyLabel(candidate.companyId),
                         detail: `${candidate.score.toFixed(0)} pts`,
                       }))}
                       value={companyId}
@@ -268,7 +292,7 @@ export function HealthDashboard({
                       ariaLabel="Grupo analizado"
                       options={groupOptions.map((option) => ({
                         value: option.groupId,
-                        label: option.groupId,
+                        label: groupLabel(option.groupId),
                         detail: `${option.n} emp. · media ${option.mean.toFixed(0)}`,
                       }))}
                       value={groupId}
@@ -289,6 +313,7 @@ export function HealthDashboard({
             <HealthScoreView
               data={data}
               initialCompanyId={company.companyId}
+              initialCompanyIds={indiceSeed}
               onSelectionChange={setIndiceCompanies}
               onExplain={explainRange}
             />
@@ -301,9 +326,17 @@ export function HealthDashboard({
             <>
               <section id="resumen" className="flex scroll-mt-20 flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
                 <div className="min-w-0">
-                  <h1 className="font-mono text-2xl font-semibold tracking-tight">{company.companyId}</h1>
+                  <h1 className="text-2xl font-semibold tracking-tight" title={company.companyId}>
+                    {companyLabel(company.companyId)}
+                  </h1>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    {[company.groupId ?? "Sin grupo", company.country, company.erp].filter(Boolean).join(" · ")}
+                    {[
+                      company.groupId ? groupLabel(company.groupId) : "Sin grupo",
+                      company.country,
+                      company.erp,
+                    ]
+                      .filter(Boolean)
+                      .join(" · ")}
                   </p>
                 </div>
                 {company.groupId ? (

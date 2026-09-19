@@ -2,7 +2,7 @@ import { type ReactNode } from "react";
 
 /**
  * Safe chat markdown: paragraphs, bold, italic, inline code, fenced blocks,
- * line breaks, hyphen lists. No raw HTML, no images, https links only.
+ * pipe tables, line breaks, hyphen lists. No raw HTML, no images, https links only.
  */
 export function AgentMarkdown({
   text,
@@ -44,6 +44,37 @@ export function AgentMarkdown({
             </ul>
           );
         }
+        if (block.type === "table") {
+          const [head, ...body] = block.rows;
+          return (
+            <div key={`t-${index}`} className="max-w-full overflow-x-auto">
+              <table className="w-full min-w-0 border-collapse text-left text-[13px]">
+                {head ? (
+                  <thead>
+                    <tr className="border-b">
+                      {head.map((cell, cellIndex) => (
+                        <th key={`th-${cellIndex}`} className="px-2 py-1.5 font-medium">
+                          {renderInline(cell, `th${index}-${cellIndex}`)}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                ) : null}
+                <tbody>
+                  {body.map((row, rowIndex) => (
+                    <tr key={`tr-${rowIndex}`} className="border-b last:border-0">
+                      {row.map((cell, cellIndex) => (
+                        <td key={`td-${cellIndex}`} className="px-2 py-1.5 align-top wrap-break-word">
+                          {renderInline(cell, `td${index}-${rowIndex}-${cellIndex}`)}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          );
+        }
         return (
           <p key={`p-${index}`} className="min-w-0 max-w-full wrap-break-word">
             {renderParagraph(block.text, `p${index}`)}
@@ -54,7 +85,28 @@ export function AgentMarkdown({
   );
 }
 
-type Block = { type: "p"; text: string } | { type: "ul"; items: string[] } | { type: "code"; text: string };
+type Block =
+  | { type: "p"; text: string }
+  | { type: "ul"; items: string[] }
+  | { type: "code"; text: string }
+  | { type: "table"; rows: string[][] };
+
+function looksLikeTableRow(line: string): boolean {
+  const trimmed = line.trim();
+  return ((trimmed.match(/\|/g) ?? []).length >= 2);
+}
+
+function isTableSeparator(line: string): boolean {
+  return /^\s*\|?[\s:|-]+\|[\s:|-]*$/.test(line);
+}
+
+function tableCells(line: string): string[] {
+  return line
+    .trim()
+    .replace(/^\||\|$/g, "")
+    .split("|")
+    .map((cell) => cell.trim());
+}
 
 function splitBlocks(src: string): Block[] {
   const blocks: Block[] = [];
@@ -86,6 +138,16 @@ function splitBlocks(src: string): Block[] {
       continue;
     }
 
+    if (looksLikeTableRow(line)) {
+      const rows: string[][] = [];
+      while (i < lines.length && looksLikeTableRow(lines[i])) {
+        if (!isTableSeparator(lines[i])) rows.push(tableCells(lines[i]));
+        i += 1;
+      }
+      if (rows.length) blocks.push({ type: "table", rows });
+      continue;
+    }
+
     if (line.trim() === "") {
       i += 1;
       continue;
@@ -96,7 +158,8 @@ function splitBlocks(src: string): Block[] {
       i < lines.length &&
       lines[i].trim() !== "" &&
       !lines[i].startsWith("```") &&
-      !/^-\s+/.test(lines[i])
+      !/^-\s+/.test(lines[i]) &&
+      !looksLikeTableRow(lines[i])
     ) {
       para.push(lines[i]);
       i += 1;

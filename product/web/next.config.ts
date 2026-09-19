@@ -4,6 +4,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     "/api/ask": ["./src/lib/agent/prompts/**/*"],
+    "/api/ask/followups": ["./src/lib/agent/prompts/**/*"],
     "/api/explain": ["./src/lib/agent/prompts/**/*"],
     "/api/watcher/reply": ["./src/lib/agent/prompts/**/*"],
   },

@@ -5,7 +5,7 @@ import { ArrowDown, ArrowUp, Check } from "lucide-react";
 import { cn } from "cn";
 
 import { Button } from "@/components/ui/button";
-import { formatPoints, scoreColor } from "@/components/group/labels";
+import { companyLabel, companySearchText, formatPoints, groupLabel, scoreColor } from "@/components/group/labels";
 import type { DashboardCompany } from "@/lib/data/types";
 
 type SortKey = "score" | "delta1m" | "delta3m" | "id";
@@ -14,7 +14,7 @@ const SORTS: { key: SortKey; label: string }[] = [
   { key: "score", label: "Índice" },
   { key: "delta1m", label: "Δ 1 m" },
   { key: "delta3m", label: "Δ 3 m" },
-  { key: "id", label: "Nombre" },
+  { key: "id", label: "Empresa" },
 ];
 
 const PAGE = 100;
@@ -46,7 +46,7 @@ export function QuickList({
   const rows = useMemo(() => {
     const needle = query.trim().toLowerCase();
     const filtered = needle
-      ? companies.filter((company) => `${company.companyId} ${company.groupId ?? ""}`.toLowerCase().includes(needle))
+      ? companies.filter((company) => companySearchText(company).includes(needle))
       : companies.slice();
     const sign = sort.dir === "asc" ? 1 : -1;
     return filtered.sort((a, b) => {
@@ -127,8 +127,12 @@ export function QuickList({
                   {isPicked ? <Check className="size-3" /> : null}
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate font-mono text-[13px]">{company.companyId}</span>
-                  <span className="block truncate text-xs text-muted-foreground">{company.groupId ?? "Sin grupo"}</span>
+                  <span className="block truncate text-[13px]" title={company.companyId}>
+                    {companyLabel(company.companyId)}
+                  </span>
+                  <span className="block truncate text-xs text-muted-foreground">
+                    {company.groupId ? groupLabel(company.groupId) : "Sin grupo"}
+                  </span>
                 </span>
                 <span className="shrink-0 text-right font-mono text-xs tabular-nums text-muted-foreground">
                   {company.delta3m === null ? "—" : formatPoints(company.delta3m)}

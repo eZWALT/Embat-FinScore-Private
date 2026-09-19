@@ -1,6 +1,6 @@
-import { convertToModelMessages, streamText, type UIMessage } from "ai";
+import { convertToModelMessages, smoothStream, streamText, type UIMessage } from "ai";
 
-import { createHelmcodeModel, helmcodeApiKey } from "@/lib/agent/llm";
+import { createHelmcodeModel, helmcodeApiKey, helmcodeTemperature } from "@/lib/agent/llm";
 
 export const maxDuration = 30;
 export const dynamic = "force-dynamic";
@@ -25,9 +25,17 @@ export async function POST(request: Request) {
     model: createHelmcodeModel(),
     system: SYSTEM,
     messages: await convertToModelMessages(messages),
+    temperature: helmcodeTemperature(),
+    experimental_transform: smoothStream({
+      delayInMs: 16,
+      chunking: "word",
+    }),
   });
 
   return result.toUIMessageStreamResponse({
+    headers: {
+      "Content-Encoding": "identity",
+    },
     onError: (error) => {
       const text = error instanceof Error ? error.message : String(error);
       return text || "No se pudo completar la respuesta.";

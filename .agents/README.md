@@ -36,6 +36,12 @@ Add a new dated file after meaningful work. Do not rewrite old ones. If the new 
 | `persistent-memory/2026-09-19-1720-prompt-map-and-tool-bench.md` | Prompt layers + Helmcode time-to-first-tool. |
 | `persistent-memory/2026-09-19-1750-quick-same-chat.md` | Rápido and Profundo share the Pregunta popup. |
 | `persistent-memory/2026-09-19-1758-chat-screen-session.md` | Pregunta SESSION includes the open dashboard (colors, period). |
+| `persistent-memory/2026-09-19-1839-month-as-of-labels.md` | Month labels: `agosto 2026` / `ago 2026`; as-of badges use `formatAsOf` (`hasta agosto 2026`). Not “today”. |
+| `persistent-memory/2026-09-19-1845-ask-native-streaming.md` | Helmcode via `createOpenAI().chat()` (`/v1/chat/completions` SSE). Default `createOpenAI()(id)` is Responses (`/responses`) and does not yield visible text for deepseek-v4-flash. |
+| `persistent-memory/2026-09-19-1910-ask-loaders-followups.md` | Tool ring stays until first reply token; 3-dot pulse under tools; opening chips precomputed; two agentic follow-ups after Ask. Product name in chrome is Sentinel. |
+| `persistent-memory/2026-09-19-2005-ui-spanish-labels.md` | Chrome: Empresa/Grupo labels, Javi money (`14 k€` / `14 k AED`), no raw `kind`/`guard`/`item`, Spanish numbers, Δ in the Índice card. |
+| `persistent-memory/2026-09-19-2025-qa-sample-bundle.md` | Local web without Neon uses `product/score/sample_bundle`. Production still requires `DATABASE_URL`. |
+| `persistent-memory/2026-09-19-2055-followups-visible-push.md` | Pregunta chips: 2-col row above the composer; fallback immediately; product name is Sentinel. |
 
 Plain-language method (not a journal file): `product/score/METHOD.md`.
 

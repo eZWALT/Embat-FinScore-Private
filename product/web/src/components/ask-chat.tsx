@@ -1,19 +1,21 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 import { AgentChat } from "@/components/agent-chat";
+import { companyLabel, groupLabel, trajectoryLabel } from "@/components/group/labels";
 import { ProductNav } from "@/components/product-nav";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const COMPANY_QUESTIONS = [
-  "Why is this company's score what it is this month?",
-  "What changed in the last three months, and who owns the action?",
+  "¿Por qué el índice es el que es este mes?",
+  "¿Qué cambió en los últimos tres meses y quién actúa?",
 ] as const;
 
 const GROUP_QUESTIONS = [
-  "Which companies in this group need attention this month?",
-  "What group alerts should collections or the treasurer review?",
+  "¿Qué empresas del grupo hay que revisar este mes?",
+  "¿Qué alertas del grupo debe ver Cobros o el tesorero?",
 ] as const;
 
 export function AskChat({
@@ -28,6 +30,10 @@ export function AskChat({
   groupId: string;
 }) {
   const router = useRouter();
+
+  useEffect(() => {
+    void fetch("/api/ask/warmup", { method: "POST", keepalive: true }).catch(() => {});
+  }, []);
 
   function go(nextCompany: string, nextGroup: string) {
     const q = new URLSearchParams();
@@ -53,27 +59,27 @@ export function AskChat({
         </div>
         <div className="grid gap-2 sm:grid-cols-2">
           <Select value={companyId || "none"} onValueChange={(v) => go(v === "none" ? "" : v, groupId)}>
-            <SelectTrigger aria-label="Company">
-              <SelectValue placeholder="Company" />
+            <SelectTrigger aria-label="Empresa">
+              <SelectValue placeholder="Empresa" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="none">No company</SelectItem>
+              <SelectItem value="none">Ninguna empresa</SelectItem>
               {companies.map((c) => (
                 <SelectItem key={c.id} value={c.id}>
-                  {c.id} · {c.score.toFixed(0)} · {c.trajectory}
+                  {companyLabel(c.id)} · {c.score.toFixed(0)} · {trajectoryLabel(c.trajectory)}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
           <Select value={groupId || "none"} onValueChange={(v) => go(companyId, v === "none" ? "" : v)}>
-            <SelectTrigger aria-label="Group">
-              <SelectValue placeholder="Group" />
+            <SelectTrigger aria-label="Grupo">
+              <SelectValue placeholder="Grupo" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="none">No group</SelectItem>
+              <SelectItem value="none">Ningún grupo</SelectItem>
               {groups.map((g) => (
                 <SelectItem key={g.id} value={g.id}>
-                  {g.id} · {g.n} · {g.mean == null ? "—" : `mean ${g.mean.toFixed(0)}`}
+                  {groupLabel(g.id)} · {g.n} · {g.mean == null ? "—" : `media ${g.mean.toFixed(0)}`}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -86,11 +92,11 @@ export function AskChat({
         api="/api/ask"
         companyId={companyId || undefined}
         groupId={groupId || undefined}
-        placeholder="Ask about this company or group"
+        placeholder="Pregunta por esta empresa o este grupo"
         emptyHint={
           companyId || groupId
             ? undefined
-            : "Pick a company or a group, or name one in the question."
+            : "Elige una empresa o un grupo, o nómbralos en la pregunta."
         }
         suggestions={suggestions}
       />

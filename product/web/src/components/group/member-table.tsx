@@ -6,6 +6,7 @@ import { ArrowDownRight, ArrowUpRight, Minus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { SeverityBadge } from "@/components/alerts-table";
 import {
+  companyLabel,
   confidenceLabels,
   formatPoints,
   guardLabels,
@@ -28,7 +29,7 @@ function Delta({ value }: { value: number | null }) {
 export function GuardBadge({ guard }: { guard: GroupMemberRow["guard"] }) {
   if (!guard) return null;
   return (
-    <Badge variant={guard === "dark" ? "destructive" : "outline"} title={guard}>
+    <Badge variant={guard === "dark" ? "destructive" : "outline"} title={guardLabels[guard]}>
       {guardLabels[guard]}
     </Badge>
   );
@@ -77,9 +78,10 @@ export function MemberTable({
                       event.stopPropagation();
                       onSelectCompany(member.companyId);
                     }}
-                    className="font-mono text-xs outline-none focus-visible:underline"
+                    className="text-xs outline-none focus-visible:underline"
+                    title={member.companyId}
                   >
-                    {member.companyId}
+                    {companyLabel(member.companyId)}
                   </button>
                 </td>
                 <td className="text-right">

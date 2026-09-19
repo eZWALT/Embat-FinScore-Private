@@ -4,7 +4,7 @@ import { cn } from "cn";
 export function ProductCredit({ className }: { className?: string }) {
   return (
     <p className={cn("text-xs leading-5 text-muted-foreground", className)}>
-      © 2026 Centinela · Walter J.T.V · Javier Boix · Rubén Godoy
+      © 2026 Sentinel · Walter J.T.V · Javier Boix · Rubén Godoy
     </p>
   );
 }

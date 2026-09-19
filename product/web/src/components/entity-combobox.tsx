@@ -47,7 +47,10 @@ export function EntityCombobox({
   const matches = useMemo(() => {
     const needle = query.trim().toLowerCase();
     if (!needle) return options;
-    return options.filter((option) => option.label.toLowerCase().includes(needle));
+    return options.filter(
+      (option) =>
+        option.label.toLowerCase().includes(needle) || option.value.toLowerCase().includes(needle),
+    );
   }, [options, query]);
 
   const shown = matches.slice(0, MAX_RENDERED);
@@ -89,7 +92,7 @@ export function EntityCombobox({
             className,
           )}
         >
-          <span className={cn("truncate", selected ? "font-mono text-[13px]" : "text-muted-foreground")}>
+          <span className={cn("truncate", selected ? "text-[13px]" : "text-muted-foreground")}>
             {selected?.label ?? placeholder}
           </span>
           <span className="flex shrink-0 items-center gap-1.5 text-muted-foreground">
@@ -162,7 +165,7 @@ export function EntityCombobox({
                     ) : (
                       <Check className={cn("size-3.5 shrink-0", !isSelected && "invisible")} aria-hidden="true" />
                     )}
-                    <span className={cn("min-w-0 flex-1 truncate", row.value !== null && "font-mono text-[13px]")}>
+                    <span className={cn("min-w-0 flex-1 truncate", row.value !== null && "text-[13px]")}>
                       {row.label}
                     </span>
                     {row.detail ? (

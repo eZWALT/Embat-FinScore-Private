@@ -4,7 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Centinela de salud · Embat",
+  title: "Health Sentinel · Embat",
   description: "Monitorización explicable de la salud financiera empresarial.",
 };
 

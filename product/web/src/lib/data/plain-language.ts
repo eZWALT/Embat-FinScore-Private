@@ -1,3 +1,4 @@
+import { formatDecimal, formatMoney } from "@/lib/display";
 import type { CategoryId } from "./types";
 
 export const CATEGORY_LABELS: Record<CategoryId, string> = {
@@ -30,6 +31,7 @@ const REASON_LABELS: Record<string, string> = {
 export function topReasonInSpanish(
   guard: "dark" | "fading" | null,
   reason: { item: string; points: number; eur: number | null } | undefined,
+  currency: string | null = "EUR",
 ) {
   if (guard === "dark") {
     return "No hay movimientos bancarios recientes; la puntuación se limita a 30 por seguridad.";
@@ -42,15 +44,8 @@ export function topReasonInSpanish(
   if (!reason) return null;
 
   const label = REASON_LABELS[reason.item] ?? "Esta señal";
-  const impact = Math.abs(reason.points).toFixed(1);
-  const amount = reason.eur
-    ? ` La exposición observada es ${new Intl.NumberFormat("es-ES", {
-        style: "currency",
-        currency: "EUR",
-        notation: "compact",
-        maximumFractionDigits: 1,
-      }).format(reason.eur)}.`
-    : "";
+  const impact = formatDecimal(Math.abs(reason.points), 1);
+  const amount = reason.eur != null ? ` La exposición observada es ${formatMoney(reason.eur, currency)}.` : "";
 
   return `${label} representa la principal dimensión que limita la puntuación (${impact} puntos).${amount}`;
 }

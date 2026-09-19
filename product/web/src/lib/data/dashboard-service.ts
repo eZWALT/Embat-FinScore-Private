@@ -59,7 +59,7 @@ export async function getDashboardData(
         confidenceNote: latest.confidence_note,
         coverage: latest.coverage,
         guard: summary.guard,
-        topReason: topReasonInSpanish(summary.guard, latest.reasons?.[0]),
+        topReason: topReasonInSpanish(summary.guard, latest.reasons?.[0], detail.currency),
         scoreHistory: detail.months.map(({ month, score }) => ({ month, score })),
         categories: CATEGORY_ORDER.map((id) => ({
           id,

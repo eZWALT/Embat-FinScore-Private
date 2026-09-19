@@ -6,7 +6,7 @@ El texto sale del motor de Javi (`language: es`): títulos, acciones, frases de 
 
 ```
 LÍNEA 1   {entidad} · {puntuación}  {estado}  {delta?}
-LÍNEA 2   {kind} · {título} · {cifra}
+LÍNEA 2   {alerta en español} · {título} · {cifra}
 • {severidad}  {Dueño} · {entidad} — {acción con €}
 ```
 
@@ -28,8 +28,8 @@ Grupos reutilizan `score_deterioration` / `score_improvement` con `entity.type =
 
 | Vigilancia | Patrón | Ejemplo |
 |---|---|---|
-| Una empresa | `{COMP} · {score}  {trayectoria}  ({pts vs mes anterior})` | `COMP_0208 · 56  deteriorándose  (−12)` |
-| Un grupo | `{GROUP} · {media}  {al alza\|a la baja\|estable}  ({vs anterior})` | `GROUP_0003 · 66  estable  (+1)` |
+| Una empresa | `{Empresa NNNN} · {score}  {trayectoria}  ({pts vs mes anterior})` | `Empresa 0208 · 56  deteriorándose  (−12)` |
+| Un grupo | `{Grupo NNNN} · {media}  {al alza\|a la baja\|estable}  ({vs anterior})` | `Grupo 0003 · 66  estable  (+1)` |
 | Varias | `{n} entidades · media {m}  {al alza\|a la baja\|estable}` | `2 entidades · media 63  a la baja  (−5)` |
 
 - Puntuación/media: entero, sin decimales.
@@ -43,8 +43,8 @@ Grupos reutilizan `score_deterioration` / `score_improvement` con `entity.type =
 Elige **uno**, en este orden:
 
 1. Tope activo: `tope {score} (sin tope {pre}) · 60 días sin movimiento bancario` / entradas hundidas.
-2. Alerta `act` o `watch` de ese mes: `{kind} · {title} · {cifra}`.
-3. `top_customer_quiet`: exactamente `top_customer_quiet · El cliente principal ha dejado de facturar · {share} % último trimestre · {facturado} · {abierto} abiertos`. Nunca «ingresos en riesgo».
+2. Alerta `act` o `watch` de ese mes: `{etiqueta en español} · {title} · {cifra}`.
+3. Cliente principal: `Cliente principal sin facturar · El cliente principal ha dejado de facturar · {share} % último trimestre · {facturado} · {abierto} abiertos`. Nunca «ingresos en riesgo». Nunca el token `top_customer_quiet`.
 4. Si no, el miembro (o la empresa) que más se movió: primera etiqueta de `change_reasons` o `reasons` + €.
 5. Si no: `sin movimiento material`.
 
@@ -53,7 +53,7 @@ Nunca una segunda frase. Nunca ensayos de «el conjunto se mantiene».
 **Viñetas** (0–4, nunca más)
 
 - Alertas `act` y `watch` de ese mes, luego `opportunity`, luego como máximo **dos** `follow` del miembro que se movió si **no** saltó ninguna alerta.
-- Cada viñeta: `{Dueño} · {COMP o GROUP} — {acción concreta con €}`.
+- Cada viñeta: `{Dueño} · {Empresa NNNN o Grupo NNNN} — {acción concreta con €}`.
 - Dueños: Tesorero / CFO / Cobros. La acción es la de `routing.py` (tú), no una reescritura.
 - Alertas `info`: no se listan. La ficha puede llevar `n_info`; la UI lo muestra como pie, no como viñeta.
 - Sin viñetas es válido. No escribas «Act / watch: ninguna».
@@ -64,13 +64,13 @@ Nunca una segunda frase. Nunca ensayos de «el conjunto se mantiene».
 ```json
 {
   "month": "2026-08",
-  "line1": "COMP_0085 · 59  deteriorándose  (−9)",
-  "line2": "top_customer_quiet · El cliente principal ha dejado de facturar · 64 % último trimestre · 8 k€ · 24 k€ abiertos",
+  "line1": "Empresa 0085 · 59  deteriorándose  (−9)",
+  "line2": "Cliente principal sin facturar · El cliente principal ha dejado de facturar · 64 % último trimestre · 8 k€ · 24 k€ abiertos",
   "bullets": [
     {
       "severity": "watch",
       "owner": "Cobros",
-      "entity": "COMP_0085",
+      "entity": "Empresa 0085",
       "text": "Contacta con el cliente COUNTERPARTY_111075: pregunta si hay un pedido pendiente o si ha cambiado la relación. Revisa los 24 k€ que siguen abiertos con él y empieza el cobro si están vencidos."
     }
   ],

@@ -3,7 +3,7 @@
 import { cn } from "cn";
 
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { formatMonth, scoreColor, splitMonth } from "@/components/group/labels";
+import { companyLabel, formatDecimal, formatMonth, scoreColor, splitMonth } from "@/components/group/labels";
 import type { GroupMemberRow } from "@/lib/data/group-service";
 
 function Cell({
@@ -33,11 +33,11 @@ function Cell({
         />
       </TooltipTrigger>
       <TooltipContent side="top">
-        <span className="font-mono">{label}</span>
+        <span>{label}</span>
         <span className="text-background/70">·</span>
         <span>{formatMonth(month)}</span>
         <span className="text-background/70">·</span>
-        <span className="font-mono tabular-nums">{score === null ? "sin puntuación" : score.toFixed(1)}</span>
+        <span className="font-mono tabular-nums">{score === null ? "sin puntuación" : formatDecimal(score, 1)}</span>
       </TooltipContent>
     </Tooltip>
   );
@@ -56,7 +56,7 @@ export function ScoreHeatmap({
   selectedCompanyId: string | null;
   onSelectCompany: (companyId: string) => void;
 }) {
-  const gridTemplateColumns = `minmax(6.5rem, auto) repeat(${months.length}, minmax(1.5rem, 1fr))`;
+  const gridTemplateColumns = `minmax(7.5rem, auto) repeat(${months.length}, minmax(1.5rem, 1fr))`;
 
   return (
     <div className="overflow-x-auto">
@@ -117,17 +117,18 @@ function MemberRow({
         onClick={onSelect}
         aria-pressed={selected}
         className={cn(
-          "flex h-5 items-center justify-between gap-2 rounded-sm pr-2 pl-1 text-left font-mono text-xs tabular-nums outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring",
+          "flex h-5 items-center justify-between gap-2 rounded-sm pr-2 pl-1 text-left text-xs tabular-nums outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring",
           selected && "bg-muted font-medium",
         )}
+        title={member.companyId}
       >
-        <span>{member.companyId}</span>
+        <span>{companyLabel(member.companyId)}</span>
         <span className="text-muted-foreground">{member.score.toFixed(0)}</span>
       </button>
       {months.map((month, index) => (
         <Cell
           key={month}
-          label={member.companyId}
+          label={companyLabel(member.companyId)}
           month={month}
           score={member.scores[index] ?? null}
           onClick={onSelect}

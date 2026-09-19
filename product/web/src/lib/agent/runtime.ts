@@ -1,12 +1,6 @@
-import {
-  convertToModelMessages,
-  createUIMessageStreamResponse,
-  isStepCount,
-  streamText,
-  toUIMessageStream,
-} from "ai";
+import { convertToModelMessages, isStepCount, smoothStream, streamText } from "ai";
 
-import { createHelmcodeModel, helmcodeApiKey } from "./llm";
+import { createHelmcodeModel, helmcodeApiKey, helmcodeTemperature } from "./llm";
 import { coerceUiMessages, sessionExtra } from "./messages";
 import { loadSystemPrompt, type AgentRole } from "./prompt-loader";
 import { chatTools, quickTools, sentinelTools } from "./tools";
@@ -50,7 +44,11 @@ export async function streamAgentResponse({
     messages: modelMessages,
     tools,
     stopWhen: isStepCount(8),
-    temperature: 0.2,
+    temperature: helmcodeTemperature(),
+    experimental_transform: smoothStream({
+      delayInMs: 16,
+      chunking: "word",
+    }),
     onStepFinish({ toolCalls }) {
       const names = toolCalls.map((call) => call.toolName);
       if (names.length) {
@@ -62,7 +60,14 @@ export async function streamAgentResponse({
     },
   });
 
-  return createUIMessageStreamResponse({
-    stream: toUIMessageStream({ stream: result.stream, tools }),
+  // Exists in ai@7 (deprecated alias). Same SSE as createUIMessageStreamResponse + toUIMessageStream.
+  return result.toUIMessageStreamResponse({
+    headers: {
+      "Content-Encoding": "identity",
+    },
+    onError: (error) => {
+      const text = error instanceof Error ? error.message : String(error);
+      return text || "No se pudo completar la respuesta.";
+    },
   });
 }

@@ -2,6 +2,7 @@ import { Wrench } from "lucide-react";
 
 import { WatcherSpark } from "@/components/agent-plot";
 import { toolLabel } from "@/lib/agent/tool-catalog";
+import { entityLabel } from "@/lib/display";
 import { formatMonth } from "@/lib/format-month";
 import type { WatcherBullet, WatcherPost } from "@/lib/agent/watcher-post";
 
@@ -30,7 +31,7 @@ export function WatcherPostView({ post, flat = false }: { post: WatcherPost; fla
               <span>
                 <span className="font-medium">{b.owner}</span>
                 {" · "}
-                <span className="font-mono text-xs">{b.entity}</span>
+                <span className="text-xs">{entityLabel(b.entity)}</span>
                 {" — "}
                 {b.text}
               </span>

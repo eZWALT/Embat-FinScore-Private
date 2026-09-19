@@ -4,7 +4,7 @@ This is one stacked prompt. **Every file after this has one job.** Do not mix jo
 
 | Orden | Capa | Archivo | Un solo trabajo |
 |---|---|---|---|
-| 1 | **ROLE** | `chat_system.md`, `sentinel_system.md` o `quick_system.md` | Cómo trabajas este turno (el popup, Centinela o la explicación del modo Rápido). |
+| 1 | **ROLE** | `chat_system.md`, `sentinel_system.md` o `quick_system.md` | Cómo trabajas este turno (el popup, Sentinel o la explicación del modo Rápido). |
 | 2 | **SCOPE** | `scope.md` | Qué temas existen. Recusa el resto. Gana si hay conflicto. |
 | 3 | **PRODUCT** | `product_context.md` | Qué es el índice, el monitor, los datos. Contexto. No redacta. No llama herramientas. |
 | 4 | **WORDING** | `wording_rules.md` | Frases fijas de Javi (español). Cómo decir, no qué recuperar. |
@@ -13,6 +13,7 @@ This is one stacked prompt. **Every file after this has one job.** Do not mix jo
 | 6b | **PLOTS** | `plots_catalog.md` | Ocho gráficos del producto/monitor. El servidor rellena los números. |
 | 7 | **RECORDS** | `clean_schema.md` (solo Ask) | Tablas `clean.*` / `core` para facturas y movimientos. |
 | 8 | **SESSION** | extra | `company_id` / `group_id` / `as_of` y **la pantalla abierta**: modo, gráfico, color → empresa, periodo. No es Neon. |
+| 9 | **BREVITY** | `brevity.md` (solo Ask) | Longitud del popup. **Va al final** para que no se pierda en el stack. |
 
 **Si dos capas chocan:** SCOPE > WORDING > TOOLS > PRODUCT > RECORDS. ROLE dice el procedimiento.
 

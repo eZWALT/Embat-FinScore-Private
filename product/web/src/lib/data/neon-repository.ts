@@ -357,6 +357,7 @@ function mapDashboardRow(row: DashboardRow): DashboardCompany {
       row.reason_item
         ? { item: row.reason_item, points: Number(row.reason_points), eur: row.reason_eur }
         : undefined,
+      row.currency,
     ),
     scoreHistory: row.score_history,
     categories: CATEGORY_ORDER.map((id) => ({
