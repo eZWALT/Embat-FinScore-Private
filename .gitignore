@@ -261,3 +261,9 @@ overnight/logs/*
 
 # Local interpreter pointer
 overnight/PYTHON
+
+# Next.js / pnpm local artefacts
+node_modules/
+.next/
+.pnpm-store/
+*.tsbuildinfo
