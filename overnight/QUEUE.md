@@ -105,11 +105,11 @@ Filled by `overnight/LIVE.json` `slots`.
 | 86 | y3_reasons | explainability | done | `analysis/outputs/y3_reasons.md` | f6fc63bd — Siddiqi KEEP-stem reasons. Say SS 0.635 / salary 0.603 / days 0.711 + lag1. Do not say dropped SHAP names. |
 | 87 | days_delta | data | done | `analysis/evaluate/days_delta_qa.py` | f6fc63bd — DROP. ≥18m Δ3 leftover 0.484 / Δ6 0.517. Inverse days-after-Δ3 0.712. q6_keep stays days_lag1 0.684. Off the card. |
 | 88 | runway_window | data | done | `analysis/evaluate/runway_window_qa.py` | f6fc63bd — Last-value KEEP Q1 p50 1.079. Hair 3m mean APPLICATION-ONLY twin ρ 0.946. Y3 leftover 0.608 is B-after-B leak never engine X. |
-| 89 | nsf_count | data | running | `analysis/evaluate/nsf_count_qa.py` | f6fc63bd — Wave D. NSF/overdraft token leftover after days. Dictionary has no NSF token. Do not reconstruct neg-days from B. Do not score vs Y9. |
+| 89 | nsf_count | data | done | `analysis/evaluate/nsf_count_qa.py` | f6fc63bd — HOLE. No NSF token in dictionary / CAT_MAP / store / descriptions. `descubierto` 250 txs is Y9 fee text. Leftover undefined. |
 | 81 | lit_invoice | explainability | done | `analysis/outputs/lit_invoice.md` | 689100e7 — 12-paper cluster. DSO is not PD; issued volume is. Perez-Salazar CONTRADICT. CN gap. |
 | 82 | top1_pastdue | data | done | `analysis/evaluate/top1_pastdue_qa.py` | 689100e7 — CLOSE. Y7 leftover after issued_lag1+CN 0.576 twin e_ar_overdue ρ 0.858. Delay footnote 0.581 stays. Do not grow TURNOVER. |
 | 83 | issued_top1 | data | done | `analysis/evaluate/issued_top1_qa.py` | 689100e7 — KEEP Y7 leftover after issued_lag1 0.789. Thinning-to-zero 57.7% vs 8.1%. CLOSE TURNOVER add-on. issued_lag1 0.626 stays the card lead. |
-| 84 | y5_net_tc | data | running | `analysis/evaluate/y5_net_tc_qa.py` | 689100e7 — Wave D. Net TC × activity on Y5 neither cell 222/341. Never E as Y5 X. Do not overwrite y5_why. |
+| 84 | y5_net_tc | data | done | `analysis/evaluate/y5_net_tc_qa.py` | 689100e7 — CLOSE. Leftover after size+days 0.534 dies. Neither cell 222/341 (65.1%) unchanged. Shock/AP/AR extras die. Y5 stays a 65% leftover. |
 | 58 | c_salary_month | data | done | `analysis/evaluate/salary_month_qa.py` | 572fb928 — KEEP on the 15-col card. Leftover after days rank 0.603. Single 0.671 beats size. |
 
 ## Done enough (do not relaunch the original)

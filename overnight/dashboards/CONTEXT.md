@@ -1,6 +1,6 @@
 # Contextualized night summary — analysis / features / explainability
 
-- **As of:** 2026-09-19 ~09:05 CEST
+- **As of:** 2026-09-19 ~09:15 CEST — night closed; all seats idle
 - **Morning briefing (start here):** `overnight/dashboards/MORNING_REPORT.md` and `overnight/dashboards/morning.html`
 - **Brief:** `overnight/NORTH_STAR.md` (working copy of the X Ray artifact)
 - **Product:** out of scope tonight
@@ -308,14 +308,20 @@ and SHAP so “why” is not a black box. No 0–100. No web.
   **APPLICATION-ONLY** (last-month still ρ **0.946** twin of last-value;
   `run3_prior` 0.873). Last-value KEEP Q1 p50 **1.079**. Y3 leftover of
   `run3` after last-value **0.608** is a B-after-B leak screen, never
-  engine X. Next: NSF token hole (dictionary has none).
+  engine X. NSF/overdraft-as-X is a **dataset hole**: no token in the
+  dictionary, CAT_MAP, store, or word-bound descriptions; `descubierto`
+  (250 txs) is overdraft *fee* text — Y9, not a count. Leftover
+  undefined. Do not reconstruct from B. Do not invent `y_nsf`.
 - **Invoice literature** ([cluster](689100e7-9d3a-41a4-b281-a0e6a8a87d65)):
   12 papers, URLs fetched. **DSO is not PD; issued volume is** — SAME
   as TURNOVER **0.720** and the DSO DROP. Pérez-Salazar is the only
   CONTRADICT (synthetic supplier-HHI = fragility; our Y5 tail is
   protective 2.7% vs 8.6%). CN ratio is a literature gap. Wave A
   top-1 PastDue leftover **CLOSE 0.576**. Issued-to-top-1 leftover
-  **KEEP 0.789** / CLOSE TURNOVER add-on. Next: Y5 net TC × activity.
+  **KEEP 0.789** / CLOSE TURNOVER add-on. Y5 net TC × activity
+  **CLOSE**: leftover after size+days **0.534** dies; neither cell still
+  222/341 (65.1%); shock-month / AP / AR extras die. Y5 stays a 65%
+  leftover. Never E as Y5 X.
   Do not grow TURNOVER.
 - **Supplier HHI** ([leftover QA](ee13dffe-d5f0-4ddc-a0f3-b73a2992a169)):
   **DROP `d_supp_hhi` from the 44.** Twin of `d_supp_top1` (ρ **0.987**).

@@ -146,8 +146,63 @@
         <tr><td>Concentrated suppliers are protective here</td><td>Pérez-Salazar 2026 (simulated data): concentration = fragility.</td><td class="drop">Contradicts</td></tr>
         <tr><td>Outflow volatility is a company trait</td><td>Lundmark 2020: volatile ventures exit; survivors do not calm down.</td><td class="keep">Same</td></tr>
         <tr><td>Credit-line utilisation as early warning</td><td>Norden &amp; Weber: usage rises ~12 months before default.</td><td class="drop">Hole — one month of data</td></tr>
+        <tr><td>Bounced-payment (NSF) counts</td><td>FinRegLab 2025: strongest bank-statement distress flag.</td><td class="drop">Hole — no such token in this dataset</td></tr>
+        <tr><td>Trade-credit shock explains late supplier payment</td><td>Bureau et al. 2024: +10% risk, shock months only.</td><td class="drop">Does not transfer (0.534)</td></tr>
       </tbody>
     </table>
+
+    <h2>Signal cards — names, definitions, correlations</h2>
+    <div class="box">
+      <p><strong>ρ (rho)</strong> is rank correlation between two signals: 1.0 = always move together, 0 = unrelated. Twin gate <strong>|ρ| ≥ 0.80</strong>; size gate <strong>|ρ| ≥ 0.50</strong> against the size proxy. <strong>ICC</strong> is the share of a signal’s variation that sits between companies rather than between months; above ~0.90 it is a stable trait, not monthly news.</p>
+    </div>
+    <h3>Kept — the recovery reading</h3>
+    <table>
+      <thead><tr><th>Plain name</th><th>Code</th><th>Own score</th><th>After clock</th><th>ρ vs clock / size</th><th>Twins</th></tr></thead>
+      <tbody>
+        <tr><td>Days with any bank movement (the clock)</td><td><code>c_n_days_with_tx</code></td><td>0.711</td><td>—</td><td>1.00 / —</td><td>transaction count 0.94, gap irregularity −0.91</td></tr>
+        <tr><td>Social-security payment booked</td><td><code>c_ss_month</code></td><td>0.693</td><td class="keep">0.635</td><td>0.42 / 0.34</td><td>none (payroll 0.62); ICC 0.99</td></tr>
+        <tr><td>Payroll payment booked</td><td><code>c_salary_month</code></td><td>0.671</td><td class="keep">0.603</td><td>0.42 / 0.33</td><td>none (SS 0.62)</td></tr>
+        <tr><td>Company size (baseline only)</td><td><code>log1p(a_in3)</code></td><td>0.617</td><td class="drop">0.521</td><td>0.67 / 1.00</td><td>operating inflows 0.998</td></tr>
+      </tbody>
+    </table>
+    <h3>Kept — the customer-loss reading (card “TURNOVER”, 5 measurements, 0.720)</h3>
+    <table>
+      <thead><tr><th>Plain name</th><th>Code</th><th>Role</th><th>ρ that mattered</th></tr></thead>
+      <tbody>
+        <tr><td>Last month’s invoicing volume</td><td><code>e_ar_issued_lag1</code></td><td class="keep">Card lead · 0.626 alone</td><td>vs size 0.46; vs this month’s issuance 0.81 (so this month stays off)</td></tr>
+        <tr><td>Variability of invoicing</td><td><code>e_ar_issued_lag_cv</code></td><td class="keep">Card · top weight</td><td>vs concentration −0.02, vs size 0.02</td></tr>
+        <tr><td>Credit-note share</td><td><code>e_credit_note_ratio</code></td><td class="keep">Card + footnote 0.597</td><td>vs issuance 0.24; demeaned leftover 0.51 → who uses notes</td></tr>
+        <tr><td>Financing cost, 3 months back</td><td><code>f_fc_r_lag3</code></td><td class="keep">Card</td><td>contemporaneous version dropped (0.449 after clock)</td></tr>
+        <tr><td>Top customer billed this month</td><td><code>e_issued_top1</code></td><td class="warn">Reason shown · leftover 0.789</td><td>vs issued_lag1 0.46, vs concentration 0.20; ICC 0.86</td></tr>
+        <tr><td>How late customers pay</td><td><code>e_delay_coll</code></td><td class="warn">Footnote · 0.581</td><td>vs DSO 0.21; ICC 0.92</td></tr>
+        <tr><td>Days sales outstanding</td><td><code>e_dso_proxy</code></td><td class="drop">Off the card</td><td>0.410 on fast collectors; 0.474 after clock</td></tr>
+      </tbody>
+    </table>
+    <h3>Set aside — the number that decided it</h3>
+    <table>
+      <thead><tr><th>Plain name</th><th>Code</th><th>After clock</th><th>Deciding number</th></tr></thead>
+      <tbody>
+        <tr><td>Transaction count</td><td><code>a_n_tx</code></td><td>0.538</td><td class="drop">ρ vs clock 0.94</td></tr>
+        <tr><td>Gap irregularity</td><td><code>c_gap_sd</code></td><td>0.535</td><td class="drop">ρ vs clock −0.91</td></tr>
+        <tr><td>Change in movement days</td><td>Δ<code>c_n_days_with_tx</code></td><td>0.484 / 0.517</td><td class="drop">level already carries the path</td></tr>
+        <tr><td>Operating inflows</td><td><code>a_op_in</code></td><td>—</td><td class="drop">ρ vs size 0.998</td></tr>
+        <tr><td>Operating outflows</td><td><code>a_op_out</code></td><td>0.586</td><td class="drop">ρ vs size 0.74; twin 3-month outflows 0.91</td></tr>
+        <tr><td>Number of suppliers</td><td><code>d_n_supp</code></td><td>0.587</td><td class="drop">ρ vs size 0.55</td></tr>
+        <tr><td>Number of customers</td><td><code>d_n_cust</code></td><td>0.545</td><td class="drop">twin concentration −0.84</td></tr>
+        <tr><td>Customers lost</td><td><code>d_cust_lost</code></td><td>0.522</td><td class="drop">twin customer count 0.86</td></tr>
+        <tr><td>Own-account transfers</td><td><code>a_transfer</code></td><td>0.579</td><td class="drop">ICC 0.956 — trait</td></tr>
+        <tr><td>Outflow volatility</td><td><code>a_out_vol</code></td><td>demeaned 0.549</td><td class="drop">74% of variance is between companies</td></tr>
+        <tr><td>Customer concentration</td><td><code>d_cust_hhi</code></td><td>0.419</td><td class="drop">twin top-customer share 0.994; only the &gt;0.975 tail works</td></tr>
+        <tr><td>Supplier concentration</td><td><code>d_supp_hhi</code></td><td>0.464</td><td class="drop">twin top-supplier share 0.987</td></tr>
+        <tr><td>Debt-service ratio</td><td><code>f_ds_r</code></td><td>0.528</td><td class="drop">twin euro debt service 0.88</td></tr>
+        <tr><td>Debt service / fees, euros</td><td><code>a_debt_service</code>, <code>a_fin_cost</code></td><td>0.484 / 0.483</td><td class="drop">identical to F-family copies (ρ 1.000)</td></tr>
+        <tr><td>Overdue payables</td><td><code>e_ap_overdue</code></td><td>0.584</td><td class="drop">beats size by only +0.008</td></tr>
+        <tr><td>Top customer’s past-due share</td><td><code>e_top1_pastdue</code></td><td>0.576</td><td class="drop">twin firm-level overdue 0.86</td></tr>
+        <tr><td>Number of accounts / debt types</td><td><code>g_n_accounts</code>, <code>f_n_types</code></td><td>0.428 / 0.534</td><td class="drop">twins 0.88 / 0.994; only ever rise</td></tr>
+        <tr><td>Legacy “volatility”</td><td>—</td><td>—</td><td class="drop">ρ 0.354 vs our balance volatility — the one drifted legacy signal</td></tr>
+      </tbody>
+    </table>
+    <p class="cap">Full cards with every column: MORNING_REPORT.md §6b. Own score = the signal alone; after clock = what remains once days-with-movement is removed; under 0.55 is nothing new.</p>
 
     <h2>What we set aside, grouped</h2>
     <div class="box">
@@ -167,7 +222,7 @@
     </div>
 
     <h2>What this sets up</h2>
-    <p>Two literature agents run until about 10:00. No further model fitting this morning. When the team opens the score and product goals: a <strong>small, monotone scorecard</strong> on the five recovery reasons plus a separate customer-loss reading from last month’s invoicing — not a 118-column tree — with reason codes that are the plain sentences above. Then hidden-test scores, both directions, a trajectory view, and the company-facing web and assistant.</p>
+    <p>The night is closed: every seat finished by 09:15. No further model fitting this morning. When the team opens the score and product goals: a <strong>small, monotone scorecard</strong> on the five recovery reasons plus a separate customer-loss reading from last month’s invoicing — not a 118-column tree — with reason codes that are the plain sentences above. Then hidden-test scores, both directions, a trajectory view, and the company-facing web and assistant.</p>
 
     <footer>
       Full report with glossary: overnight/dashboards/MORNING_REPORT.md · Every audit and number: overnight/dashboards/CONTEXT.md · Brief: overnight/NORTH_STAR.md

@@ -2,7 +2,7 @@
   "deadline": "2026-09-19T08:00:00+02:00",
   "literature_until": "2026-09-19T10:00:00+02:00",
   "max_agents": 3,
-  "status": "cap3_no_kill_plus_2_lit_extras",
+  "status": "night_closed_all_seats_idle",
   "scope": "analysis+features+explainability",
   "north_star": "overnight/NORTH_STAR.md",
   "product": "frozen",
@@ -80,8 +80,8 @@
   "n_accounts": "CLOSE unused leftover. DROP from the 44 as Y3 X. Leftover after days rank 0.428 dies. Single 0.581 vs days 0.711. Twin of g_n_banks ρ 0.880. Rise-only 1561/0. Checking hole 99.1%. Access ≠ ERP. PARK y_n_accounts",
   "util_snap": "PARK as snapshot X. DROP from the 44 as Y3 X. Last-month-only 1.6% (334/21157). Native Y3 n_pos=0. fillna0 leftover 0.711 is fake days leak. Y10 utilisation impossible. Q6 CLOSE. Do not add y10 to FROZEN_ACCEPTED",
   "ap_overdue": "CLOSE unused leftover. KEEP off the 15-col card. Leftover after days rank 0.584 lives but beat-size FAIL +0.008 (Y3 0.625 vs size 0.617). Twin of e_ap_overdue_30 ρ 0.849. Y7 leftover 0.406. Dark 470 NaN. Do not grow TURNOVER. PARK y_ap_overdue",
-  "lit_invoice": "12-paper cluster VERIFIED. DSO is not PD; issued volume is. SAME TURNOVER 0.720 + DSO DROP. Perez-Salazar CONTRADICT. CN gap. Wave A top1_pastdue CLOSE 0.576. Wave B issued_top1 KEEP leftover 0.789 CLOSE TURNOVER add-on. Next: y5_net_tc",
-  "lit_cashflow": "11-paper cluster VERIFIED. Last-value runway SAME Farrell 2016. Quiet-stressed NEW vs default PD. Leftover-after-days unpublished referee. Wave B days_delta DROP 0.484/0.517. Wave A Hair 3m mean APPLICATION-ONLY twin of last-value ρ 0.946. Next: nsf_count hole",
+  "lit_invoice": "12-paper cluster VERIFIED. DSO is not PD; issued volume is. SAME TURNOVER 0.720 + DSO DROP. Perez-Salazar CONTRADICT. CN gap. Wave A top1_pastdue CLOSE 0.576. Wave B issued_top1 KEEP leftover 0.789 CLOSE TURNOVER add-on. Wave D y5_net_tc CLOSE leftover 0.534; Y5 stays a 65% leftover. Seat closed",
+  "lit_cashflow": "11-paper cluster VERIFIED. Last-value runway SAME Farrell 2016. Quiet-stressed NEW vs default PD. Leftover-after-days unpublished referee. Wave B days_delta DROP 0.484/0.517. Wave A Hair 3m mean APPLICATION-ONLY twin of last-value ρ 0.946. Wave D NSF is a dataset HOLE (no token; descubierto is Y9 fee text). Seat closed",
   "y3_reasons": "Siddiqi KEEP-stem reasons only. Say: no SS leftover 0.635, no salary 0.603, fewer days 0.711, days_lag1 0.684, ss_lag1 leftover 0.631. All signs minus. Do not say a_n_tx / a_op_in / a_transfer / e_dso / f_ds_r / a_out_vol / b_*. Dark and T1: days+SS not salary. 355/402 recover on long books",
   "op_out": "CLOSE unused leftover. DROP from the 44 as Y3 X. Rank leftover after days 0.586 lives but OLS 0.675 is a fake days clone. SIZE ρ 0.741. Twin a_out3 0.907 / a_out6 0.860. Demean leftover 0.525 dies. after days+CV 0.518 dies. Q6 lag1 leftover 0.561 not added to q6_keep. PARK y_op_out. Outflow CV leftover 0.734 PARK later owner",
   "fin_cost": "CLOSE unused leftover. DROP from the 44 as Y3 X. Honest leftover after days 0.483 dies. OLS 0.683 fake days leak. Twin f_fin_cost ρ 1.000. beat_size +0.018 FAIL. KEEP f_fc_r_lag3 on TURNOVER. Q6 lag1 0.469 CLOSE. Do not put amount or high-fee dummy on the card",
@@ -97,8 +97,8 @@
     "3": {"task": "idle — leftover deadline 08:00 passed", "agent": "553c6ea4-a745-42a3-962a-2299b600d939", "state": "idle"}
   },
   "literature_slots": {
-    "L1": {"task": "NSF token hole + cash-flow ground", "agent": "f6fc63bd-3cca-43b9-9560-d57ce46a4b8f", "state": "running", "until": "10:00"},
-    "L2": {"task": "Y5 net TC leftover QA", "agent": "689100e7-9d3a-41a4-b281-a0e6a8a87d65", "state": "running", "until": "10:00"}
+    "L1": {"task": "done — NSF hole + cash-flow ground", "agent": "f6fc63bd-3cca-43b9-9560-d57ce46a4b8f", "state": "idle", "until": "10:00"},
+    "L2": {"task": "done — Y5 net TC CLOSE", "agent": "689100e7-9d3a-41a4-b281-a0e6a8a87d65", "state": "idle", "until": "10:00"}
   },
   "do_not_kill": true,
   "queue": "overnight/QUEUE.md"

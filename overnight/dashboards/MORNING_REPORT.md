@@ -121,8 +121,80 @@ Two long-lived agents spent the morning reading 23 papers (URLs fetched, no inve
 | Outflow volatility is a company trait, not a month signal | Lundmark et al. 2020: volatile new ventures exit; survivors do not become less volatile. | **Same** |
 | Credit-note share as a signal | No paper measures it against default. | **Gap** |
 | Credit-line utilisation as an early warning | Norden & Weber: usage rises ~12 months before default. | **Hole in our data** — we only have one month of utilisation |
+| Bounced-payment (NSF / overdraft) counts as a signal | FinRegLab 2025: the strongest bank-statement distress flag. | **Hole in our data** — no such token exists in the dictionary or the transactions; the only overdraft text is fee wording, which is already our fee-pressure outcome |
+| Net trade credit × activity shock explains late supplier payment | Bureau et al. 2024 (Banque de France): +10% default risk, only in shock months. | **Does not transfer** — nothing left after size and activity (0.534); late supplier payment stays 65% unexplained |
 
 ---
+
+## 6b. Signal cards — names, definitions, and the correlations behind each verdict
+
+For the reader who wants the variable names and the numbers that decided each case. Two symbols recur:
+
+- **ρ (rho)** is Spearman rank correlation between two signals across all company-months: 1.0 means they always move together, 0 means unrelated. Our twin gate is **|ρ| ≥ 0.80**; our size gate is **|ρ| ≥ 0.50** against the size proxy.
+- **ICC** is the share of a signal's variation that sits *between* companies rather than *between months of the same company*. ICC above ~0.90 means the signal is a stable company trait, not monthly news — useful for "who is this company", useless for "what changed".
+
+"Own score" is the signal's ranking score on its own. "After clock" is what is left once the activity clock (`c_n_days_with_tx`, 0.711) is removed. Size proxy is `log1p(a_in3)`, three months of operating inflows.
+
+### Kept — the recovery reading (outcome: `y3_recover_cash_6m`)
+
+| Plain name | Code | Definition | Own score | After clock | ρ vs clock | ρ vs size | Twins (|ρ| ≥ 0.80) | Verdict |
+|------------|------|------------|----------:|------------:|-----------:|----------:|---------------------|---------|
+| Days with any bank movement | `c_n_days_with_tx` | count of distinct booking dates in the month | **0.711** | — (this is the clock) | 1.00 | — | `a_n_tx` 0.94, `c_gap_sd` −0.91 | **KEEP** — the bar |
+| Social-security payment booked | `c_ss_month` | 1 if any transaction category = social_security | 0.693 | **0.635** | 0.42 | 0.34 | none (salary 0.62) | **KEEP** — ICC 0.99: "who pays SS" is a stable identity, yet the month flag still adds 0.635 after the clock |
+| Payroll payment booked | `c_salary_month` | 1 if any transaction category = salary | 0.671 | **0.603** | 0.42 | 0.33 | none (SS 0.62) | **KEEP** — dies on the smallest third and on dark companies; say SS there |
+| Same three, one month earlier | `*_lag1` | value at t−1 | 0.684 / 0.631 / 0.606 | after `days_lag1` | | | | **KEEP** as the one-month lead |
+| Company size (baseline only) | `log1p(a_in3)` | log of operating inflows over 3 months | 0.617 | 0.521 | 0.67 | 1.00 | `a_op_in`, `a_in6`, `a_in12` | **Bar only** — not on the card; its leftover after the clock dies |
+
+### Kept — the customer-loss reading (outcome: `y7_top1_lost`, card "TURNOVER", 5 measurements, 0.720)
+
+| Plain name | Code | Definition | Role | ρ that mattered |
+|------------|------|------------|------|-----------------|
+| Last month's invoicing volume | `e_ar_issued_lag1` | sum of invoices issued to customers at t−1 | Card lead; alone 0.626 | vs size 0.46 (passes); vs this month's issuance 0.81 (so this month's issuance is a twin and stays off) |
+| Variability of invoicing | `e_ar_issued_lag_cv` | coefficient of variation of lagged issuance | Card; top SHAP on the card | vs customer concentration −0.02, vs size 0.02 — the cleanest measurement we have |
+| Credit-note share, t and t−1 | `e_credit_note_ratio` | credit notes ÷ (invoices + credit notes) issued | Card + footnote (leftover after issuance 0.597) | vs issuance 0.24 (not a twin); ICC high, demeaned leftover 0.51 → describes who uses credit notes |
+| Financing cost, 3 months back | `f_fc_r_lag3` | bank fees + interest ÷ inflows at t−3 | Card | contemporaneous version dropped (leftover after clock 0.449) |
+| Top customer billed this month | `e_issued_top1` | invoices this month to last quarter's largest customer | **Reason shown, not on card** — leftover after `issued_lag1` **0.789** | vs `issued_lag1` 0.46, vs this month's issuance 0.62, vs customer concentration 0.20; ICC 0.86 |
+| How late customers pay | `e_delay_coll` | amount-weighted days past due on invoices paid in last 3 months | Footnote (leftover after DSO 0.581) | vs DSO 0.21 (not a twin); ICC 0.92 → who-pays-late style |
+| Days sales outstanding | `e_dso_proxy` | open receivables ÷ this month's issuance | **OFF the card** | own 0.410 on the fastest-collecting fifth; leftover after clock 0.474; vs delay 0.21, vs DPO 0.46 |
+
+### The health photograph (question 1)
+
+| Plain name | Code | Definition | Numbers |
+|------------|------|------------|---------|
+| Months of cash runway | `b_runway` | end-of-month reconstructed cash ÷ mean monthly outflow (3 months), clipped −6…24 | median **1.079 months**; last month vs snapshot ρ **0.966**; today vs 3 months ahead ρ **0.85**; vs a 3-month mean of itself ρ **0.946** (same picture) |
+| Reconstructed cash | `b_liq` | balance walked backwards from the 2026-09 still | walk is an identity (median residual 9×10⁻¹² €); never used as an input to the recovery reading because the outcome is built from it |
+
+### Set aside — with the correlation that decided it
+
+| Plain name | Code | Own score | After clock | The deciding number | Group |
+|------------|------|----------:|------------:|---------------------|-------|
+| Transaction count | `a_n_tx` | — | 0.538 | ρ vs clock **0.94**; ρ vs size 0.66 | twin of clock |
+| Irregularity of booking gaps | `c_gap_sd` | 0.686 | 0.535 | ρ vs clock **−0.91**, vs `a_n_tx` −0.87 | twin of clock |
+| Days since last movement | `c_recency_days` | 0.659 | 0.607 | ρ vs clock −0.62; leftover under 0.55 once combined | quiet twin of clock |
+| Change in movement days, 3 / 6 months | Δ`c_n_days_with_tx` | 0.557 | 0.484 / 0.517 | ρ vs clock 0.14 — not a twin, just nothing left: the level already carries the path | clock already ate it |
+| Operating inflows this month | `a_op_in` | — | — | ρ vs size **0.998** | size in disguise |
+| Operating outflows | `a_op_out` | — | 0.586 | ρ vs size **0.74**; twins `a_out3` 0.91, `a_out6` 0.86; demeaned leftover 0.525 | size in disguise |
+| Number of suppliers | `d_n_supp` | — | 0.587 | ρ vs size **0.55** (fails the 0.50 gate) | size in disguise |
+| Number of customers | `d_n_cust` | 0.653 | 0.545 | twins: top-customer share −0.81, concentration −0.84 | twin of concentration |
+| Customers lost this quarter | `d_cust_lost` | 0.581 | 0.522 | twin `d_n_cust` **0.86** | twin of customer count |
+| Own-account transfers | `a_transfer` | 0.566 | 0.579 | ICC **0.956** — stable trait | trait, not news |
+| Outflow volatility | `a_out_vol` | 0.722 | demeaned 0.549 | 74% of its variance is between companies (η² 0.741) | trait, not news |
+| Uncategorised share | `a_uncat_share` | 0.542 | 0.573 | ICC **0.985**; fails beat-size | bookkeeping style |
+| Pending-invoice share | `e_pending_amt_share` | — | 0.443 | ICC 0.971; ρ vs size 0.04 | trait, not news |
+| Customer concentration | `d_cust_hhi` | 0.605 (Y4) | 0.419 (Y3) | twin `d_cust_top1` **0.994**; the 0.605 is entirely the >0.975 one-buyer tail (body 0.445) | keep the tail as a footnote only |
+| Supplier concentration | `d_supp_hhi` | — | 0.464 | twin `d_supp_top1` **0.987**; vs customer concentration 0.16 (different object) | twin; protective tail footnote |
+| Debt-service ratio | `f_ds_r` | 0.620 | 0.528 | twin of euro debt service **0.88**; vs financing-cost ratio 0.21 | nothing after clock |
+| Debt service, euros | `a_debt_service` | 0.613 | 0.484 | identical to `f_debt_service` (ρ **1.000**); vs size 0.32 | twin; fails beat-size |
+| Bank fees + interest, euros | `a_fin_cost` | 0.634 | 0.483 | identical to `f_fin_cost` (ρ **1.000**); ρ vs clock 0.53 | nothing after clock; fee pressure is an outcome |
+| Overdue payables | `e_ap_overdue` | 0.625 | 0.584 | beats size by only +0.008; twin `e_ap_overdue_30` 0.85 | fails beat-size |
+| Top customer's past-due share | `e_top1_pastdue` | 0.612 (Y7) | 0.576 after issuance+CN | twin firm-level overdue **0.86**; vs delay 0.28 | twin |
+| Number of bank accounts | `g_n_accounts` | 0.581 | 0.428 | twin `g_n_banks` 0.88; only ever rises (1,561 ups, 0 downs) | connection artefact |
+| Number of debt product types | `f_n_types` | 0.578 | 0.534 | twin `f_n_facilities` **0.994**; rise-only | connection artefact |
+| Share of transactions with a named counterparty | `d_tx_cp_share` | 0.611 (Y5) | 0.537 (Y3) | twin of missing-counterparty share **−0.947**; one group owns 86% of the Y5 signal | keep the Y5 quote, not as an input |
+| Days payables outstanding | `e_dpo_proxy` | — | 0.653 (a >24-month tail; body 0.432) | vs DSO 0.46; vs size −0.03 | tail artefact |
+| Inflow/outflow ratio | `a_io_ratio` | 0.565 | 0.527 | twin `a_net_margin` **0.989** | twin |
+| Legacy "volatility" (Javier) | — | 0.626 | — | vs our balance volatility ρ **0.354** — the one drifted definition among the 14 legacy signals | reconciled, not used |
+| Credit-line utilisation | `f_util_snapshot` | undefined | — | exists for 1.6% of company-months (last month only) | snapshot; cannot use |
 
 ## 7. What we tested and set aside, and why that is the point
 
@@ -152,7 +224,7 @@ The night also parked several *models*: a per-group version of the recovery mode
 
 ## 9. What this sets up
 
-**Still this morning.** Two literature agents keep running until about 10:00 (Y5 late-payment leftover; confirming the dataset has no NSF/overdraft token). No further model fitting.
+**The night is closed.** All leftover and literature seats finished by 09:15. The last two audits confirmed a data hole (no bounced-payment token) and that trade-credit shocks do not explain late supplier payment here. No further model fitting.
 
 **When the team opens the score and product goals:**
 - The 0–100 should be a **small, monotone scorecard** on the five recovery reasons (social security, payroll, movement days, and their one-month lags) plus a separate customer-loss reading from last month's invoicing. Not a 118-column tree. Not an average of legacy ratios.
