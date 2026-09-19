@@ -16,14 +16,15 @@ type Tab = "top" | "bottom" | "search";
 const MAX_PICKED = 8;
 
 const OPTIONS: { id: Tab; label: string; hint: string; icon: LucideIcon }[] = [
+  { id: "search", label: "Buscar", hint: "Por nombre o grupo", icon: Search },
   { id: "top", label: "Mejores 5", hint: "Mayor media del índice, con más peso a los meses recientes", icon: TrendingUp },
   { id: "bottom", label: "Peores 5", hint: "Menor media del índice, con más peso a los meses recientes", icon: TrendingDown },
-  { id: "search", label: "Buscar", hint: "Por nombre o grupo", icon: Search },
 ];
 
 /**
- * Quick mode body. One screen: the three options stay where they are and only ease upwards once you
- * choose; the chart (and, for search, the list) open underneath. Period explain uses the shared Pregunta popup.
+ * Quick mode body. One screen: Buscar leads (wide, left) with Mejores 5 / Peores 5 as smaller cards beside it. They
+ * stay where they are and only ease upwards once you choose; the chart (and, for search, the list) open underneath.
+ * Period explain uses the shared Pregunta popup.
  */
 export function QuickAnalysis({
   data,
@@ -96,7 +97,7 @@ export function QuickAnalysis({
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 pb-24 sm:px-6">
+    <div className="mx-auto flex w-full max-w-[96rem] flex-1 flex-col px-4 pb-16 sm:px-6 lg:px-10">
       {/* Eases the options up from the middle of the empty space once something is chosen. */}
       <div
         aria-hidden="true"
@@ -117,24 +118,36 @@ export function QuickAnalysis({
         </div>
       </div>
 
-      <div role="group" aria-label="Qué quieres ver" className="grid gap-3 sm:grid-cols-3">
+      <div role="group" aria-label="Qué quieres ver" className="grid gap-3 sm:grid-cols-[minmax(0,2.4fr)_minmax(0,1fr)_minmax(0,1fr)]">
         {OPTIONS.map((option) => {
           const active = tab === option.id;
           const isSearch = option.id === "search";
           const shell = cn(
             "group flex flex-col items-center justify-center rounded-xl border text-center outline-none transition-[padding,gap,background-color,border-color,color,box-shadow] duration-300 ease-out motion-reduce:transition-none",
-            idle ? "gap-3 px-4 py-6" : "gap-1.5 px-3 py-3",
+            isSearch
+              ? idle
+                ? "gap-4 px-6 py-10"
+                : "gap-1.5 px-4 py-3"
+              : idle
+                ? "gap-2 px-4 py-6"
+                : "gap-1 px-3 py-3",
             active
               ? "border-foreground bg-foreground text-background shadow-sm"
-              : "bg-card hover:border-foreground/40 hover:bg-muted/50",
+              : isSearch
+                ? "border-foreground/30 bg-card shadow-sm hover:border-foreground/60"
+                : "bg-card hover:border-foreground/40 hover:bg-muted/50",
           );
           const body = (
             <>
               <option.icon
-                className={cn("size-5 shrink-0 transition-colors", active ? "" : "text-muted-foreground group-hover:text-foreground")}
+                className={cn(
+                  "shrink-0 transition-[color,width,height]",
+                  isSearch && idle ? "size-7" : "size-5",
+                  active ? "" : "text-muted-foreground group-hover:text-foreground",
+                )}
                 aria-hidden="true"
               />
-              <span className="text-base font-medium">{option.label}</span>
+              <span className={cn("font-medium", isSearch ? "text-lg" : "text-sm")}>{option.label}</span>
               {isSearch ? (
                 <input
                   ref={searchRef}
@@ -148,7 +161,8 @@ export function QuickAnalysis({
                   aria-label="Buscar empresa por nombre o grupo"
                   autoComplete="off"
                   className={cn(
-                    "h-8 w-full rounded-md border bg-background px-2.5 text-center text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
+                    "w-full rounded-md border bg-background px-3 text-center text-foreground outline-none transition-[height,font-size,colors] placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
+                    idle ? "h-12 max-w-xl text-base" : "h-9 text-sm",
                     active && "border-transparent",
                   )}
                 />

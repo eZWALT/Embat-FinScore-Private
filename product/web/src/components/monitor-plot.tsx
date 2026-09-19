@@ -95,7 +95,7 @@ export function MonitorPlot({
   companies: DashboardCompany[];
 }) {
   const [view, setView] = useState<PlotView>("score");
-  const [showForecast, setShowForecast] = useState(false);
+  const [showForecast, setShowForecast] = useState(true);
   const [loaded, setLoaded] = useState<{ companyId: string; monitor: CompanyMonitor } | null>(null);
   const [failure, setFailure] = useState<{ companyId: string; message: string } | null>(null);
 
