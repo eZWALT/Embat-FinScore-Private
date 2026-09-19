@@ -1,30 +1,12 @@
-import { HealthDashboard } from "@/components/health-dashboard";
-import { getDashboardData } from "@/lib/data/dashboard-service";
+import type { Metadata } from "next";
 
-export const dynamic = "force-dynamic";
+import { VideoLandingHero } from "@/components/landing/video-hero";
 
-type SearchParams = Promise<Record<string, string | string[] | undefined>>;
+export const metadata: Metadata = {
+  title: "Sentinel",
+  description: "Vigilancia de la salud financiera. Un índice 0–100, razones en euros y alertas para tesorería.",
+};
 
-function first(value: string | string[] | undefined) {
-  return Array.isArray(value) ? value[0] : value;
-}
-
-export default async function Home({ searchParams }: { searchParams: SearchParams }) {
-  const params = await searchParams;
-  const data = await getDashboardData();
-  const openChat = first(params.chat) === "1";
-  const company = first(params.company);
-  const group = first(params.group);
-  // Quick is the landing view; a link that names a company or a group, the chat or the deep mode opens deep.
-  const deep = first(params.modo) === "profundo" || Boolean(company) || Boolean(group) || openChat;
-
-  return (
-    <HealthDashboard
-      data={data}
-      openChat={openChat}
-      initialCompanyId={company}
-      initialGroupId={group}
-      initialMode={deep ? "deep" : "quick"}
-    />
-  );
+export default function Home() {
+  return <VideoLandingHero />;
 }
