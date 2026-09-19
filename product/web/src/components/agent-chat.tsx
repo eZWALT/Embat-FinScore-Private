@@ -81,7 +81,7 @@ function ChipRow({
           type="button"
           disabled={disabled}
           onClick={() => onPick(question)}
-          className="min-h-14 min-w-0 rounded-xl border bg-muted/50 px-3 py-2.5 text-left text-[13px] leading-snug wrap-break-word hover:bg-muted disabled:opacity-50"
+          className="min-h-14 min-w-0 rounded-xl border bg-muted/50 px-3 py-2.5 text-left text-[13px] leading-snug wrap-break-word line-clamp-3 hover:bg-muted disabled:opacity-50"
         >
           {question}
         </button>

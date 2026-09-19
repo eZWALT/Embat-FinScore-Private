@@ -614,10 +614,14 @@ const plot_series = tool({
   },
 });
 
-/** Distinct calls allowed per tool in one Pregunta turn. Two companies = two reads, not four. */
+/**
+ * Distinct entities allowed per tool in one Pregunta turn.
+ * One company = one get_company (history is in the payload), not one per month.
+ * A period chart can name up to four companies.
+ */
 export const TOOL_CALL_CAP: Record<string, number> = {
   list_companies: 1,
-  get_company: 2,
+  get_company: 4,
   explain_change: 2,
   get_group: 2,
   get_alerts: 2,
@@ -627,6 +631,32 @@ export const TOOL_CALL_CAP: Record<string, number> = {
   query_clean_db: 2,
   plot_series: 1,
 };
+
+const ENTITY_TOOLS = new Set([
+  "get_company",
+  "explain_change",
+  "get_alerts",
+  "get_control_chart",
+  "compare_with_cluster",
+  "get_forecast",
+  "get_group",
+]);
+
+function toolEntityId(input: unknown): string {
+  if (input == null || typeof input !== "object") return "";
+  const row = input as Record<string, unknown>;
+  for (const key of ["company_id", "entity_id", "group_id"]) {
+    if (typeof row[key] === "string" && row[key].trim()) return String(row[key]).trim();
+  }
+  return "";
+}
+
+/** Same company + same tool, any month, is one retrieval. */
+export function toolCallKey(name: string, input: unknown): string {
+  const entity = toolEntityId(input);
+  if (ENTITY_TOOLS.has(name)) return `${name}:${entity || "_"}`;
+  return `${name}:${inputKey(input)}`;
+}
 
 function inputKey(input: unknown): string {
   if (input == null || typeof input !== "object") return JSON.stringify(input ?? null);
@@ -676,9 +706,19 @@ function withMemoize<T extends Record<string, { execute?: (...args: never[]) => 
         {
           ...definition,
           execute: ((input: never, options: never) => {
-            const key = `${name}:${inputKey(input)}`;
+            const key = toolCallKey(name, input);
             const hit = cache.get(key);
             if (hit) return hit;
+            const used = [...cache.keys()].filter((entry) => entry.startsWith(`${name}:`)).length;
+            if (used >= (TOOL_CALL_CAP[name] ?? 2)) {
+              const denied = Promise.resolve({
+                error: "cap",
+                tool: name,
+                message: "Ya tienes este dato. Responde con lo recuperado.",
+              });
+              cache.set(`${name}:cap:${used}`, denied);
+              return denied;
+            }
             const pending = Promise.resolve(execute(input, options));
             cache.set(key, pending);
             return pending;

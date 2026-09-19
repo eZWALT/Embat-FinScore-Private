@@ -1,0 +1,12 @@
+{
+  "startedAt": "2026-09-19T23:55:00.000Z",
+  "startedAtLocal": "2026-09-20T01:55:00+02:00",
+  "minHours": 4,
+  "maxHours": 7,
+  "branch": "agent/overnight-optimize",
+  "mainSha": "0c7771b",
+  "mainUrl": "https://hack-spain.vercel.app",
+  "tick": 0,
+  "bestScore": null,
+  "notes": "Fill startedAt on first bench. Do not merge to main tonight."
+}
