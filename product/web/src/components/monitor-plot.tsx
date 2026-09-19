@@ -1,11 +1,15 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { MousePointerClick, X } from "lucide-react";
 
 import { cn } from "cn";
 
+import { Button } from "@/components/ui/button";
+import { buildPrompt } from "@/components/quick/quick-explain";
 import { PlotCard, PlotChart, SignalLegend, controlRows, type PlotRow } from "@/components/plot-parts";
 import { Segmented, type SegmentedOption } from "@/components/segmented";
+import type { MonthRange } from "@/components/use-range-drag";
 import type { MonthContribution } from "@/lib/data/contributions";
 import type { DashboardCompany } from "@/lib/data/types";
 import type { CompanyMonitor, ControlSeries } from "@/lib/data/monitor-service";
@@ -118,9 +122,12 @@ function scoreRows(company: DashboardCompany, monitor: CompanyMonitor | null, sh
 export function MonitorPlot({
   company,
   companies,
+  onExplain,
 }: {
   company: DashboardCompany;
   companies: DashboardCompany[];
+  /** Dragging across the months asks for that period to be explained; gets the question. */
+  onExplain?: (prompt: string) => void;
 }) {
   const [view, setView] = useState<PlotView>("score");
   const [showForecast, setShowForecast] = useState(true);
@@ -131,6 +138,28 @@ export function MonitorPlot({
     companyId: string;
     byMonth: Record<string, MonthContribution>;
   } | null>(null);
+
+  // A period belongs to the company and view it was drawn on.
+  const [drawn, setDrawn] = useState<{ key: string; range: MonthRange } | null>(null);
+  const selectionKey = `${company.companyId}|${view}`;
+  const range = drawn?.key === selectionKey ? drawn.range : null;
+
+  function selectRange(next: MonthRange | null) {
+    if (!next) {
+      setDrawn(null);
+      return;
+    }
+    // The forecast months have no score to explain: keep the period to what has happened.
+    const last = company.scoreHistory.at(-1)?.month;
+    const to = last && next.to > last ? last : next.to;
+    if (next.from >= to) {
+      setDrawn(null);
+      return;
+    }
+    const scored = { from: next.from, to };
+    setDrawn({ key: selectionKey, range: scored });
+    onExplain?.(buildPrompt([company], scored));
+  }
 
   const contributions = contributed?.companyId === company.companyId ? contributed.byMonth : null;
   const monitor = loaded?.companyId === company.companyId ? loaded.monitor : null;
@@ -232,6 +261,19 @@ export function MonitorPlot({
       }
       notice={notice}
     >
+      <div className="flex h-8 items-center justify-end">
+        {range ? (
+          <Button type="button" variant="ghost" size="sm" onClick={() => selectRange(null)}>
+            <X data-icon="inline-start" />
+            Quitar selección
+          </Button>
+        ) : !empty && onExplain ? (
+          <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <MousePointerClick className="size-3.5" aria-hidden="true" />
+            Arrastra sobre el gráfico para explicar un periodo
+          </p>
+        ) : null}
+      </div>
       <PlotChart
         rows={rows}
         control={isControl}
@@ -242,6 +284,8 @@ export function MonitorPlot({
         loading={loading}
         hidden={empty}
         contributions={contributions}
+        range={range}
+        onRangeChange={onExplain ? selectRange : undefined}
       />
       {isControl && series ? <SignalLegend persistent={view !== "peers"} /> : null}
     </PlotCard>

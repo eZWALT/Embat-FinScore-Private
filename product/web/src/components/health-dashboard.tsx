@@ -400,7 +400,7 @@ export function HealthDashboard({
               </section>
 
               <div className="mt-4 space-y-4">
-                <MonitorPlot company={company} companies={data.companies} />
+                <MonitorPlot company={company} companies={data.companies} onExplain={explainRange} />
                 <OfferGuidanceCard company={company} />
                 <AlertsTable scope={{ company: company.companyId }} />
               </div>

@@ -1,11 +1,12 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useMemo, type ReactNode } from "react";
 import {
   Area,
   CartesianGrid,
   ComposedChart,
   Line,
+  ReferenceArea,
   ReferenceLine,
   XAxis,
   YAxis,
@@ -21,6 +22,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import { type MonthRange, useRangeDrag } from "@/components/use-range-drag";
 import { formatDecimal, formatSigned } from "@/lib/display";
 import { formatMonth } from "@/lib/format-month";
 import type { MonthContribution } from "@/lib/data/contributions";
@@ -167,6 +169,8 @@ export function PlotChart({
   loading = false,
   hidden = false,
   contributions = null,
+  range = null,
+  onRangeChange,
 }: {
   rows: PlotRow[];
   control: boolean;
@@ -182,7 +186,14 @@ export function PlotChart({
   hidden?: boolean;
   /** Per-month category contributions, by month. Adds them to the tooltip of a score plot. */
   contributions?: Record<string, MonthContribution> | null;
+  /** With `onRangeChange`, dragging across the months selects a period; `range` is the one to keep shaded. */
+  range?: MonthRange | null;
+  onRangeChange?: (range: MonthRange | null) => void;
 }) {
+  const months = useMemo(() => rows.map((row) => String(row.month)), [rows]);
+  const { shaded, handlers } = useRangeDrag(months, range, onRangeChange ?? (() => {}));
+  const selectable = onRangeChange !== undefined;
+
   const config = {
     value: { label: valueLabel, color: "var(--chart-1)" },
     center: { label: centerLabel, color: "var(--muted-foreground)" },
@@ -191,11 +202,14 @@ export function PlotChart({
   } satisfies ChartConfig;
 
   return (
-    <div className={cn("h-[300px] w-full transition-opacity", loading && "opacity-50")} aria-busy={loading}>
+    <div
+      className={cn("h-[300px] w-full transition-opacity", loading && "opacity-50", selectable && "cursor-crosshair touch-none select-none")}
+      aria-busy={loading}
+    >
       <ClientOnly fallback={<div className="h-full w-full" />}>
         {hidden ? null : (
           <ChartContainer config={config} className="h-full w-full aspect-auto">
-            <ComposedChart data={rows} margin={{ top: 12, right: 8, left: -12, bottom: 0 }}>
+            <ComposedChart data={rows} margin={{ top: 12, right: 8, left: -12, bottom: 0 }} {...(selectable ? handlers : {})}>
               <CartesianGrid vertical={false} strokeDasharray="3 3" />
               <XAxis dataKey="month" tickFormatter={(month: string) => formatMonth(month)} tickLine={false} axisLine={false} minTickGap={28} />
               <YAxis
@@ -218,6 +232,17 @@ export function PlotChart({
                   )
                 }
               />
+              {selectable && shaded ? (
+                <ReferenceArea
+                  x1={shaded[0]}
+                  x2={shaded[1]}
+                  fill="var(--foreground)"
+                  fillOpacity={0.08}
+                  stroke="var(--foreground)"
+                  strokeOpacity={0.35}
+                  strokeDasharray="4 3"
+                />
+              ) : null}
               <Area
                 dataKey="band"
                 type="monotone"

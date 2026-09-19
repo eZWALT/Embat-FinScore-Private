@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo } from "react";
 import {
   CartesianGrid,
   Line,
@@ -13,6 +13,7 @@ import {
 
 import { ClientOnly } from "@/components/client-only";
 import { buildChartRows, SERIES_COLORS } from "@/components/quick/series";
+import { type MonthRange, useRangeDrag } from "@/components/use-range-drag";
 import {
   type ChartConfig,
   ChartContainer,
@@ -22,10 +23,7 @@ import {
 import { formatMonth } from "@/lib/format-month";
 import type { DashboardCompany } from "@/lib/data/types";
 
-export interface MonthRange {
-  from: string;
-  to: string;
-}
+export type { MonthRange };
 
 /** Score lines for the chosen companies. Press and drag across months to select a period. */
 export function QuickChart({
@@ -46,75 +44,14 @@ export function QuickChart({
     return next;
   }, [companies]);
 
-  type Drag = { anchor: string; head: string } | null;
-  const [drag, setDragState] = useState<Drag>(null);
-  const dragRef = useRef<Drag>(null);
-  // The ref lets the mouse handlers see the latest drag before React has re-rendered.
-  function setDrag(next: Drag) {
-    dragRef.current = next;
-    setDragState(next);
-  }
-
-  function monthAt(state: { activeTooltipIndex?: number | string | null; activeLabel?: string | number | null }) {
-    const index = Number(state.activeTooltipIndex);
-    if (Number.isInteger(index) && rows[index]) return String(rows[index].month);
-    return state.activeLabel != null ? String(state.activeLabel) : null;
-  }
-
-  function finish() {
-    const current = dragRef.current;
-    if (!current) return;
-    setDrag(null);
-    if (current.anchor === current.head) {
-      onRangeChange(null);
-      return;
-    }
-    const [from, to] = [current.anchor, current.head].sort();
-    onRangeChange({ from, to });
-  }
-
-  // Releasing the button outside the plot area must still end the selection.
-  useEffect(() => {
-    if (!drag) return;
-    window.addEventListener("mouseup", finish);
-    return () => window.removeEventListener("mouseup", finish);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [drag === null]);
-
-  const shaded = drag
-    ? ([drag.anchor, drag.head].sort() as [string, string])
-    : range
-      ? ([range.from, range.to] as [string, string])
-      : null;
+  const months = useMemo(() => rows.map((row) => String(row.month)), [rows]);
+  const { shaded, handlers } = useRangeDrag(months, range, onRangeChange);
 
   return (
     <div className="h-[min(52vh,440px)] w-full cursor-crosshair touch-none select-none" aria-label="Gráfico de puntuación. Arrastra para seleccionar un periodo.">
       <ClientOnly fallback={<div className="h-full w-full" />}>
         <ChartContainer config={config} className="aspect-auto h-full w-full">
-          <LineChart
-            data={rows}
-            margin={{ top: 12, right: 16, left: -12, bottom: 0 }}
-            onMouseDown={(state) => {
-              const month = monthAt(state);
-              if (month) setDrag({ anchor: month, head: month });
-            }}
-            onMouseMove={(state) => {
-              if (!dragRef.current) return;
-              const month = monthAt(state);
-              if (month && month !== dragRef.current.head) setDrag({ ...dragRef.current, head: month });
-            }}
-            onMouseUp={finish}
-            onTouchStart={(state) => {
-              const month = monthAt(state);
-              if (month) setDrag({ anchor: month, head: month });
-            }}
-            onTouchMove={(state) => {
-              if (!dragRef.current) return;
-              const month = monthAt(state);
-              if (month && month !== dragRef.current.head) setDrag({ ...dragRef.current, head: month });
-            }}
-            onTouchEnd={finish}
-          >
+          <LineChart data={rows} margin={{ top: 12, right: 16, left: -12, bottom: 0 }} {...handlers}>
             <CartesianGrid vertical={false} strokeDasharray="3 3" />
             <XAxis
               dataKey="month"
