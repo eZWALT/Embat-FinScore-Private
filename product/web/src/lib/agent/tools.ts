@@ -13,6 +13,7 @@ import type {
   ScoreRepository,
 } from "@/lib/data/types";
 
+import { searchExa } from "./exa";
 import { neonQuery, coreIsMounted } from "./neon-sql";
 import { buildCatalogPlot, PLOT_KINDS } from "./plot-catalog";
 import { checkSql, toCoreSql, UnsafeQuery } from "./sql-guard";
@@ -597,6 +598,18 @@ const query_clean_db = tool({
   },
 });
 
+const search_web = tool({
+  description:
+    "Exa web search. Thinking mode only. Call LAST, after at least one product tool. One call. Macro / sector / country context — never scores, invoices, or alerts.",
+  inputSchema: z.object({
+    query: z
+      .string()
+      .min(1)
+      .describe("Natural-language query. Include country, sector, and month when known."),
+  }),
+  execute: async ({ query }) => searchExa(query),
+});
+
 const plot_series = tool({
   description:
     "Draw one catalog chart. The server fills every number from the score run. kind: score_history | score_compare | categories | control_own | control_cluster | control_group | forecast_fan | group_members. Do not pass series or typed values.",
@@ -626,6 +639,7 @@ export const TOOL_CALL_CAP: Record<string, number> = {
   get_forecast: 2,
   query_clean_db: 2,
   plot_series: 1,
+  search_web: 1,
 };
 
 function inputKey(input: unknown): string {
@@ -651,6 +665,20 @@ export function countToolCallsByName(steps: { toolCalls?: { toolName: string }[]
 export function activeToolsUnderCap(names: string[], steps: { toolCalls?: { toolName: string }[] }[]): string[] {
   const counts = countToolCallsByName(steps);
   return names.filter((name) => (counts.get(name) ?? 0) < (TOOL_CALL_CAP[name] ?? 2));
+}
+
+/** Exa stays hidden until a Neon/product tool has run this turn. */
+export function activeToolsForStep(
+  names: string[],
+  steps: { toolCalls?: { toolName: string }[] }[],
+  options?: { thinking?: boolean },
+): string[] {
+  const active = activeToolsUnderCap(names, steps);
+  if (!options?.thinking || !names.includes("search_web")) return active;
+  const productUsed = steps.some((step) =>
+    (step.toolCalls ?? []).some((call) => call.toolName !== "search_web"),
+  );
+  return productUsed ? active : active.filter((name) => name !== "search_web");
 }
 
 export function totalToolCalls(steps: { toolCalls?: { toolName: string }[] }[]): number {
@@ -704,21 +732,20 @@ function timeAll<T extends Record<string, { execute?: (...args: never[]) => unkn
   ) as T;
 }
 
-export function chatTools() {
-  return withMemoize(
-    timeAll({
-      list_companies,
-      get_company,
-      explain_change,
-      get_group,
-      get_alerts,
-      get_control_chart,
-      compare_with_cluster,
-      get_forecast,
-      query_clean_db,
-      plot_series,
-    }),
-  );
+export function chatTools(options?: { thinking?: boolean }) {
+  const product = {
+    list_companies,
+    get_company,
+    explain_change,
+    get_group,
+    get_alerts,
+    get_control_chart,
+    compare_with_cluster,
+    get_forecast,
+    query_clean_db,
+    plot_series,
+  };
+  return withMemoize(timeAll(options?.thinking ? { ...product, search_web } : product));
 }
 
 /** Explicación rápida: solo lo necesario para decir qué movió la puntuación. */

@@ -6,6 +6,7 @@ import {
   ChartBarIcon,
   ChartPieIcon,
   CircleStackIcon,
+  GlobeAltIcon,
   PresentationChartLineIcon,
   ScaleIcon,
   SignalIcon,
@@ -26,6 +27,7 @@ export const TOOL_LABELS = {
   get_forecast: "Abanico",
   query_clean_db: "Leer registros",
   plot_series: "Gráfico",
+  search_web: "Exa",
 } as const;
 
 export type ToolName = keyof typeof TOOL_LABELS;
@@ -41,6 +43,7 @@ export const TOOL_ICONS: Record<ToolName, ToolIcon> = {
   get_forecast: ChartPieIcon,
   query_clean_db: CircleStackIcon,
   plot_series: PresentationChartLineIcon,
+  search_web: GlobeAltIcon,
 };
 
 export function toolLabel(name: string): string {
@@ -56,6 +59,9 @@ export function toolInputSummary(name: string, input: unknown): string {
   const row = input as Record<string, unknown>;
   if (name === "query_clean_db" && typeof row.sql === "string") {
     return row.sql.replace(/\s+/g, " ").trim().slice(0, 160);
+  }
+  if (name === "search_web" && typeof row.query === "string") {
+    return row.query.replace(/\s+/g, " ").trim().slice(0, 160);
   }
   const bits = Object.entries(row)
     .filter(([, value]) => value != null && value !== "")
@@ -101,6 +107,8 @@ export function toolOutputSummary(name: string, output: unknown): string {
       return `${row.rows ?? 0} filas`;
     case "plot_series":
       return typeof row.title === "string" ? row.title : typeof row.kind === "string" ? row.kind : `${row.points ?? 0} puntos`;
+    case "search_web":
+      return Array.isArray(row.results) ? `${row.results.length} fuentes` : "";
     default:
       return "";
   }

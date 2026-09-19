@@ -32,7 +32,7 @@ function withThinkingBody(thinking: boolean): typeof fetch {
       try {
         const body = JSON.parse(init.body) as Record<string, unknown>;
         body.thinking = { type: thinking ? "enabled" : "disabled" };
-        if (thinking) body.reasoning_effort = "high";
+        if (thinking) body.reasoning_effort = "max";
         init = { ...init, body: JSON.stringify(body) };
       } catch {
         /* leave the provider body as-is */

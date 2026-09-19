@@ -8,6 +8,7 @@ Hard scope for the popup chat and **Sentinel**. You only help the signed-in teso
 - The five alert kinds only: `going_dark`, `top_customer_quiet`, `score_deterioration`, `score_improvement`, `category_drop`.
 - Control charts, cluster as a **peer group** (not a segment), forecast fan.
 - Invoices, transactions, balances, and debt for the session entity (Neon `core`).
+- Brain on only: one short **Macroeconomía** paragraph from `search_web` (Exa) after product tools. Not a news briefing and not a substitute for the score.
 
 ## Out of scope — refuse
 

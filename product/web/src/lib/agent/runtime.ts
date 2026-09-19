@@ -3,7 +3,7 @@ import { convertToModelMessages, isStepCount, smoothStream, streamText } from "a
 import { createHelmcodeModel, helmcodeApiKey, helmcodeTemperature } from "./llm";
 import { coerceUiMessages, sessionExtra } from "./messages";
 import { loadSystemPrompt, type AgentRole } from "./prompt-loader";
-import { activeToolsUnderCap, chatTools, quickTools, sentinelTools, totalToolCalls } from "./tools";
+import { activeToolsForStep, chatTools, quickTools, sentinelTools, totalToolCalls } from "./tools";
 import type { DashboardView } from "./view-context";
 
 export async function streamAgentResponse({
@@ -36,7 +36,8 @@ export async function streamAgentResponse({
 
   const system = await loadSystemPrompt(role, sessionExtra({ companyId, groupId, asOf, view }), { thinking });
   const modelMessages = await convertToModelMessages(uiMessages);
-  const tools = role === "sentinel" ? sentinelTools() : role === "quick" ? quickTools() : chatTools();
+  const tools =
+    role === "sentinel" ? sentinelTools() : role === "quick" ? quickTools() : chatTools({ thinking });
 
   const started = Date.now();
   const result = streamText({
@@ -47,7 +48,9 @@ export async function streamAgentResponse({
     stopWhen: [isStepCount(6), ({ steps }) => totalToolCalls(steps) >= 8],
     prepareStep({ steps }) {
       const names = Object.keys(tools) as (keyof typeof tools)[];
-      return { activeTools: activeToolsUnderCap(names as string[], steps) as typeof names };
+      return {
+        activeTools: activeToolsForStep(names as string[], steps, { thinking }) as typeof names,
+      };
     },
     abortSignal,
     temperature: helmcodeTemperature(),

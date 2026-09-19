@@ -14,9 +14,9 @@ Esto es un prompt apilado. **Cada archivo que sigue tiene un solo trabajo.** No 
 | 7 | **RECORDS** | `clean_schema.md` (solo Ask) | Tablas `clean.*` / `core` para facturas y movimientos. |
 | 8 | **SESSION** | extra | `company_id` / `group_id` / `as_of` y **la pantalla abierta**: modo, gráfico, color → empresa, periodo. No es Neon. |
 | 9 | **BREVITY** | `brevity.md` (solo Ask, cerebro apagado) | Longitud del popup. **Va al final** para que no se pierda en el stack. |
-| 9b | **THINKING** | `thinking.md` (solo Ask, cerebro encendido) | Sustituye BREVITY: sin tope de longitud; no pide más texto del necesario. DeepSeek thinking en la API. |
+| 9b | **THINKING** | `thinking.md` (solo Ask, cerebro encendido) | Sustituye BREVITY. `reasoning_effort=max`. Una `search_web` (Exa) al final, nunca al principio. |
 
-**Si dos capas chocan:** SCOPE > WORDING > TOOLS > PRODUCT > RECORDS. ROLE dice el procedimiento.
+**Si dos capas chocan:** SCOPE > WORDING > TOOLS > PRODUCT > RECORDS. ROLE dice el procedimiento. Excepción: con el cerebro encendido, un párrafo **Macroeconomía** de `search_web` está dentro (no es «noticias» como tema).
 
 **No es:**
 
