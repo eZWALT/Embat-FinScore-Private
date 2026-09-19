@@ -1,13 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import {
   ArrowDownRight,
   ArrowUpRight,
-  Building2,
   CalendarDays,
+  ChartNoAxesCombined,
+  Eye,
+  Layers,
+  MessageSquare,
   Minus,
-  ShieldCheck,
+  TriangleAlert,
 } from "lucide-react";
 import {
   Bar,
@@ -21,8 +25,10 @@ import {
 } from "recharts";
 
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ClientOnly } from "@/components/client-only";
+import { confidenceLabels, scoreColor, trajectoryLabels } from "@/components/group/labels";
 import { HealthScoreChat } from "@/components/health-score-chat";
 import { HealthScoreView } from "@/components/health-score-view";
 import { HealthSidebar, type AppView } from "@/components/health-sidebar";
@@ -36,7 +42,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { formatMonth } from "@/lib/format-month";
-import type { DashboardData, Trajectory } from "@/lib/data/types";
+import type { DashboardData } from "@/lib/data/types";
 
 const scoreChartConfig = {
   score: { label: "Índice de salud", color: "var(--chart-1)" },
@@ -46,18 +52,8 @@ const categoryChartConfig = {
   score: { label: "Puntuación", color: "var(--chart-2)" },
 } satisfies ChartConfig;
 
-const trajectoryLabels: Record<Trajectory, string> = {
-  improving: "Mejorando",
-  stable: "Estable",
-  dip: "Caída puntual",
-  deteriorating: "Deteriorándose",
-  "insufficient history": "Historial insuficiente",
-};
-
-const confidenceLabels = { high: "Alta", medium: "Media", low: "Baja" } as const;
-
 function Delta({ value }: { value: number | null }) {
-  if (value === null) return <Minus className="size-4" />;
+  if (value === null) return <span className="text-sm text-muted-foreground">—</span>;
   const Icon = value > 0 ? ArrowUpRight : value < 0 ? ArrowDownRight : Minus;
   return (
     <span className="inline-flex items-center gap-1 font-mono text-sm tabular-nums">
@@ -67,9 +63,25 @@ function Delta({ value }: { value: number | null }) {
   );
 }
 
-export function HealthDashboard({ data, openChat = false }: { data: DashboardData; openChat?: boolean }) {
+function queryFor(params: Record<string, string | null>) {
+  const query = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) if (value) query.set(key, value);
+  return query.size ? `?${query}` : "";
+}
+
+export function HealthDashboard({
+  data,
+  openChat = false,
+  initialCompanyId,
+}: {
+  data: DashboardData;
+  openChat?: boolean;
+  initialCompanyId?: string;
+}) {
   const defaultCompany =
-    data.companies.find((company) => company.trajectory === "improving") ?? data.companies[0];
+    data.companies.find((company) => company.companyId === initialCompanyId) ??
+    data.companies.find((company) => company.trajectory === "improving") ??
+    data.companies[0];
   const [companyId, setCompanyId] = useState(defaultCompany.companyId);
   const [view, setView] = useState<AppView>("overview");
   const [chatOpen, setChatOpen] = useState(openChat);
@@ -83,6 +95,12 @@ export function HealthDashboard({ data, openChat = false }: { data: DashboardDat
   useEffect(() => {
     if (window.location.hash === "#vigilancia") setView("overview");
   }, []);
+
+  // The company lives in the URL so a shared link or a link out of Grupos keeps it, without refetching.
+  function selectCompany(next: string) {
+    setCompanyId(next);
+    window.history.replaceState(null, "", `/${queryFor({ company: next })}`);
+  }
 
   function goVigilancia() {
     setView("overview");
@@ -101,7 +119,7 @@ export function HealthDashboard({ data, openChat = false }: { data: DashboardDat
       <HealthSidebar
         data={data}
         companyId={companyId}
-        onCompanyChange={setCompanyId}
+        onCompanyChange={selectCompany}
         view={view}
         onViewChange={setView}
         onOpenChat={() => setChatOpen(true)}
@@ -136,33 +154,52 @@ export function HealthDashboard({ data, openChat = false }: { data: DashboardDat
           }
         >
           {view === "health-score" ? (
-            <HealthScoreView data={data} />
+            <HealthScoreView data={data} initialCompanyId={company.companyId} />
           ) : (
             <>
-          <section id="resumen" className="scroll-mt-20">
-          <div className="max-w-2xl">
-            <div className="mb-3 flex items-center gap-2 text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
-              <ShieldCheck className="size-3.5" />
-              Monitor de salud financiera
+          <section id="resumen" className="flex scroll-mt-20 flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+            <div className="min-w-0">
+              <h1 className="font-mono text-2xl font-semibold tracking-tight">{company.companyId}</h1>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {[company.groupId ?? "Sin grupo", company.country, company.erp].filter(Boolean).join(" · ")}
+              </p>
             </div>
-            <h1 className="text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
-              Entiende qué cambia antes de que se convierta en un problema.
-            </h1>
-            <p className="mt-3 text-sm leading-6 text-muted-foreground sm:text-base">
-              Puntuación explicable de 0 a 100 calculada a partir de la tesorería, la deuda y el comportamiento de pagos.
-            </p>
-          </div>
-        </section>
+            <nav aria-label="Ir a otras vistas de esta empresa" className="flex flex-wrap gap-2">
+              {company.groupId ? (
+                <Button asChild variant="outline" size="sm">
+                  <Link href={`/grupos${queryFor({ group: company.groupId, company: company.companyId })}`}>
+                    <Layers data-icon="inline-start" />
+                    Ver grupo
+                  </Link>
+                </Button>
+              ) : null}
+              <Button variant="outline" size="sm" onClick={() => setView("health-score")}>
+                <ChartNoAxesCombined data-icon="inline-start" />
+                Comparar
+              </Button>
+              <Button variant="outline" size="sm" onClick={goVigilancia}>
+                <Eye data-icon="inline-start" />
+                Vigilancia
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => setChatOpen(true)}>
+                <MessageSquare data-icon="inline-start" />
+                Preguntar
+              </Button>
+            </nav>
+          </section>
 
-        <Separator className="my-8" />
-
-        <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <section className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-xs font-medium text-muted-foreground">Índice de salud</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-baseline gap-2">
+                <span
+                  className="size-2.5 self-center rounded-full"
+                  style={{ background: scoreColor(company.score) }}
+                  aria-hidden="true"
+                />
                 <span className="font-mono text-4xl font-medium tracking-tight tabular-nums">{company.score.toFixed(0)}</span>
                 <span className="text-sm text-muted-foreground">/ 100</span>
               </div>
@@ -193,6 +230,20 @@ export function HealthDashboard({ data, openChat = false }: { data: DashboardDat
               <span className="font-mono text-xs text-muted-foreground">{Math.round(company.coverage * 100)}% cobertura</span>
             </CardContent>
           </Card>
+        </section>
+
+        <section
+          id="senales"
+          aria-label="Principal señal a revisar"
+          className="mt-4 flex scroll-mt-20 items-start gap-3 rounded-xl border bg-card px-4 py-3"
+        >
+          <TriangleAlert className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+          <div className="min-w-0">
+            <p className="text-xs font-medium text-muted-foreground">Principal señal a revisar</p>
+            <p className="mt-1 text-sm leading-6">
+              {company.topReason ?? "No hay una señal dominante para este periodo."}
+            </p>
+          </div>
         </section>
 
         <section className="mt-4 grid gap-4 xl:grid-cols-[1.6fr_1fr]">
@@ -257,32 +308,6 @@ export function HealthDashboard({ data, openChat = false }: { data: DashboardDat
                 </BarChart>
               </ChartContainer>
               </ClientOnly>
-            </CardContent>
-          </Card>
-        </section>
-
-        <section id="senales" className="mt-4 grid scroll-mt-20 gap-4 lg:grid-cols-[1.6fr_1fr]">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm">Principal señal a revisar</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm leading-6 text-muted-foreground">
-                {company.topReason ?? "No hay una señal dominante para este periodo."}
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="flex min-h-28 items-center gap-4 pt-6">
-              <div className="grid size-10 shrink-0 place-items-center rounded-lg bg-muted">
-                <Building2 className="size-4" />
-              </div>
-              <div className="min-w-0">
-                <p className="font-mono text-sm font-medium">{company.companyId}</p>
-                <p className="mt-1 truncate text-xs text-muted-foreground">
-                  {company.groupId ?? "Sin grupo"} · {company.country ?? "País no disponible"} · {company.erp ?? "Sin ERP"}
-                </p>
-              </div>
             </CardContent>
           </Card>
         </section>

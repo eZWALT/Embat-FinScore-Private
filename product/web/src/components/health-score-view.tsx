@@ -38,14 +38,13 @@ const SERIES_COLORS = [
   "oklch(0.5 0.16 340)",
 ] as const;
 
-function defaultSelection(companies: DashboardCompany[]): string[] {
+function defaultSelection(companies: DashboardCompany[], first?: string): string[] {
   const picks: string[] = [];
+  if (first && companies.some((company) => company.companyId === first)) picks.push(first);
   const improving = companies.find((company) => company.trajectory === "improving");
   const deteriorating = companies.find((company) => company.trajectory === "deteriorating");
-  if (improving) picks.push(improving.companyId);
-  if (deteriorating && deteriorating.companyId !== improving?.companyId) {
-    picks.push(deteriorating.companyId);
-  }
+  if (improving && !picks.includes(improving.companyId)) picks.push(improving.companyId);
+  if (deteriorating && !picks.includes(deteriorating.companyId)) picks.push(deteriorating.companyId);
   for (const company of companies) {
     if (picks.length >= 3) break;
     if (!picks.includes(company.companyId)) picks.push(company.companyId);
@@ -95,8 +94,16 @@ function yDomainForSelection(
 
 const PAGE_SIZE = 50;
 
-export function HealthScoreView({ data }: { data: DashboardData }) {
-  const [selectedIds, setSelectedIds] = useState<string[]>(() => defaultSelection(data.companies));
+export function HealthScoreView({
+  data,
+  initialCompanyId,
+}: {
+  data: DashboardData;
+  initialCompanyId?: string;
+}) {
+  const [selectedIds, setSelectedIds] = useState<string[]>(() =>
+    defaultSelection(data.companies, initialCompanyId),
+  );
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);

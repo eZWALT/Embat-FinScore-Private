@@ -47,7 +47,7 @@ export function MemberTable({
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead className="text-left text-xs text-muted-foreground">
-          <tr className="[&>th]:pb-2 [&>th]:font-medium">
+          <tr className="[&>th]:pr-3 [&>th]:pb-2 [&>th]:font-medium [&>th]:whitespace-nowrap">
             <th>Empresa</th>
             <th className="text-right">Puntuación</th>
             <th className="text-right">Δ 3m</th>

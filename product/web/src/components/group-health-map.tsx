@@ -3,16 +3,17 @@
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useState, useTransition } from "react";
-import { ArrowLeft, Layers } from "lucide-react";
+import { ArrowLeft, Building2, Eye, Layers, MessageSquare } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { EntityCombobox } from "@/components/entity-combobox";
 import { Separator } from "@/components/ui/separator";
 import { ProductNav } from "@/components/product-nav";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { AlertList } from "@/components/group/alert-list";
 import { CompanyPanel } from "@/components/group/company-panel";
-import { GroupSelector } from "@/components/group/group-selector";
 import { formatMonth } from "@/components/group/labels";
 import { MemberTable } from "@/components/group/member-table";
 import { HeatmapLegend, ScoreHeatmap } from "@/components/group/score-heatmap";
@@ -96,7 +97,47 @@ export function GroupHealthMap({ data }: { data: GroupMapData }) {
               ordenadas de menor a mayor puntuación; las columnas, los meses con dato.
             </p>
           </div>
-          <GroupSelector options={data.groupOptions} value={data.group.groupId} onChange={selectGroup} />
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div className="w-full sm:w-80">
+              <p className="mb-1.5 text-xs font-medium text-muted-foreground">Grupo analizado</p>
+              <EntityCombobox
+                ariaLabel="Grupo analizado"
+                options={data.groupOptions.map((option) => ({
+                  value: option.groupId,
+                  label: option.groupId,
+                  detail: `${option.nCompanies} emp. · ${option.meanScore === null ? "sin media" : `media ${option.meanScore.toFixed(0)}`}`,
+                }))}
+                value={data.group.groupId}
+                onChange={(next) => next && selectGroup(next)}
+                placeholder="Elige un grupo"
+                searchPlaceholder="Buscar grupo (p. ej. 0142)"
+              />
+            </div>
+            <nav aria-label="Ir a otras vistas de este grupo" className="flex flex-wrap gap-2">
+              {data.company ? (
+                <>
+                  <Button asChild variant="outline" size="sm">
+                    <Link href={`/?company=${data.company.companyId}`}>
+                      <Building2 data-icon="inline-start" />
+                      Ver {data.company.companyId}
+                    </Link>
+                  </Button>
+                  <Button asChild variant="outline" size="sm">
+                    <Link href={`/?company=${data.company.companyId}#vigilancia`}>
+                      <Eye data-icon="inline-start" />
+                      Vigilancia
+                    </Link>
+                  </Button>
+                  <Button asChild variant="outline" size="sm">
+                    <Link href={`/?company=${data.company.companyId}&chat=1`}>
+                      <MessageSquare data-icon="inline-start" />
+                      Preguntar
+                    </Link>
+                  </Button>
+                </>
+              ) : null}
+            </nav>
+          </div>
         </section>
 
         <section className="mt-6 grid gap-4 sm:grid-cols-3">
@@ -158,7 +199,7 @@ export function GroupHealthMap({ data }: { data: GroupMapData }) {
           </CardContent>
         </Card>
 
-        <section className={`mt-4 grid gap-4 xl:grid-cols-[1.15fr_1fr] transition-opacity ${isPending ? "opacity-70" : ""}`}>
+        <section className={`mt-4 grid gap-4 2xl:grid-cols-[1.15fr_1fr] transition-opacity ${isPending ? "opacity-70" : ""}`}>
           <Card>
             <CardHeader className="gap-1">
               <CardTitle className="text-base">Empresas del grupo</CardTitle>

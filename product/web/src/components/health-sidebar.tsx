@@ -9,13 +9,7 @@ import {
   MessageSquare,
 } from "lucide-react";
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { EntityCombobox } from "@/components/entity-combobox";
 import {
   Sidebar,
   SidebarContent,
@@ -75,27 +69,23 @@ export function HealthSidebar({
 
         {view === "overview" ? (
           <div className="group-data-[collapsible=icon]:hidden">
-            <label className="mb-1.5 block px-1 text-[11px] font-medium text-sidebar-foreground/60" htmlFor="sidebar-company">
-              Empresa analizada
-            </label>
-            <Select
+            <p className="mb-1.5 px-1 text-[11px] font-medium text-sidebar-foreground/60">Empresa analizada</p>
+            <EntityCombobox
+              ariaLabel="Empresa analizada"
+              options={data.companies.map((company) => ({
+                value: company.companyId,
+                label: company.companyId,
+                detail: `${company.score.toFixed(0)} pts`,
+              }))}
               value={companyId}
-              onValueChange={(value) => {
+              onChange={(value) => {
+                if (!value) return;
                 onCompanyChange(value);
                 setOpenMobile(false);
               }}
-            >
-              <SelectTrigger id="sidebar-company" className="w-full bg-background">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {data.companies.map((company) => (
-                  <SelectItem key={company.companyId} value={company.companyId}>
-                    {company.companyId} · {company.score.toFixed(0)} pts
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              placeholder="Elige una empresa"
+              searchPlaceholder="Buscar empresa (p. ej. 0462)"
+            />
           </div>
         ) : null}
       </SidebarHeader>

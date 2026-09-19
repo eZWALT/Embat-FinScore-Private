@@ -1,3 +1,4 @@
+import { MONITORING_DISCLAIMER } from "./plain-language";
 import { createScoreRepository } from "./repository";
 import type {
   Alert,
@@ -164,9 +165,15 @@ export async function getGroupMapData(
     meanScore: group.latest_mean_score,
   }));
 
+  // A company alone (from a link out of another screen) opens on its own group.
+  const companyGroupId =
+    !groupId && companyId && COMPANY_ID.test(companyId)
+      ? companies.find((row) => row.company_id === companyId)?.group_id
+      : undefined;
+  const wantedGroupId = groupId ?? companyGroupId ?? undefined;
   const requestedGroup =
-    groupId && GROUP_ID.test(groupId)
-      ? sortedGroups.find((group) => group.group_id === groupId)
+    wantedGroupId && GROUP_ID.test(wantedGroupId)
+      ? sortedGroups.find((group) => group.group_id === wantedGroupId)
       : undefined;
   const group = requestedGroup ?? sortedGroups[0];
 
@@ -227,7 +234,7 @@ export async function getGroupMapData(
   return {
     asOfMonth: manifest.as_of_month,
     isSample: manifest.is_sample,
-    disclaimer: manifest.disclaimer,
+    disclaimer: MONITORING_DISCLAIMER,
     months: manifest.months,
     groupOptions,
     group: {

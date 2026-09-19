@@ -13,5 +13,11 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
   const params = await searchParams;
   const data = await getDashboardData();
 
-  return <HealthDashboard data={data} openChat={first(params.chat) === "1"} />;
+  return (
+    <HealthDashboard
+      data={data}
+      openChat={first(params.chat) === "1"}
+      initialCompanyId={first(params.company)}
+    />
+  );
 }

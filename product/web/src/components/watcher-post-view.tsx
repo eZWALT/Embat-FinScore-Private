@@ -1,27 +1,30 @@
 import { Wrench } from "lucide-react";
 
 import { WatcherSpark } from "@/components/agent-plot";
+import { formatMonth } from "@/lib/format-month";
 import type { WatcherBullet, WatcherPost } from "@/lib/agent/watcher-post";
 
-const SEVERITY: Record<WatcherBullet["severity"], string> = {
-  act: "ACTUAR",
-  watch: "VIGILAR",
-  opportunity: "OPORTUNIDAD",
-  follow: "SEGUIR",
+const SEVERITY: Record<WatcherBullet["severity"], { label: string; className: string }> = {
+  act: { label: "ACTUAR", className: "bg-destructive/10 text-destructive" },
+  watch: { label: "VIGILAR", className: "bg-amber-500/15 text-amber-700 dark:text-amber-400" },
+  opportunity: { label: "OPORTUNIDAD", className: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400" },
+  follow: { label: "SEGUIR", className: "bg-muted text-muted-foreground" },
 };
 
 export function WatcherPostView({ post }: { post: WatcherPost }) {
   return (
     <article className="space-y-2 rounded-xl border bg-background px-4 py-3">
-      <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">{post.month}</p>
+      <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">{formatMonth(post.month)}</p>
       <p className="text-sm font-semibold leading-snug">{post.line1}</p>
       <p className="text-sm leading-snug text-muted-foreground">{post.line2}</p>
       {post.bullets.length > 0 ? (
         <ul className="space-y-1.5 pt-1">
           {post.bullets.map((b, i) => (
-            <li key={`${b.entity}-${i}`} className="flex gap-2 text-sm leading-snug">
-              <span className="mt-0.5 shrink-0 font-mono text-[10px] font-semibold text-muted-foreground">
-                {SEVERITY[b.severity]}
+            <li key={`${b.entity}-${i}`} className="flex items-start gap-2 text-sm leading-snug">
+              <span
+                className={`mt-px shrink-0 rounded px-1.5 py-0.5 font-mono text-[10px] leading-none font-semibold ${SEVERITY[b.severity].className}`}
+              >
+                {SEVERITY[b.severity].label}
               </span>
               <span>
                 <span className="font-medium">{b.owner}</span>
