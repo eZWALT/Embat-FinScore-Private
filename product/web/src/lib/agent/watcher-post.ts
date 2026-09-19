@@ -84,16 +84,68 @@ function ownerOf(alert: Alert): WatcherBullet["owner"] {
   return OWNER[alert.owner] ?? "CFO";
 }
 
-function alertText(alert: Alert): string {
-  if (alert.kind === "top_customer_quiet") {
-    const open = alert.evidence.open_receivable_eur;
-    const money = typeof open === "number" ? fmtEur(open) : "";
-    return money
-      ? `top customer stopped billing, review exposure and collections · ${money} open`
-      : "top customer stopped billing, review exposure and collections";
-  }
+function evNum(evidence: Alert["evidence"], key: string): number | null {
+  const value = evidence[key];
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+function clip(text: string, max: number): string {
+  if (text.length <= max) return text;
+  return `${text.slice(0, max - 1).trimEnd()}…`;
+}
+
+/** One line per Javi monitor rule. Same string for line 2 and for bullets. */
+export function formatRuleAlert(alert: Alert): string {
+  const ev = alert.evidence;
   const money = firstMoney(alert.reasons);
-  return money ? `${alert.title} · ${money}` : alert.action || alert.title;
+
+  if (alert.kind === "top_customer_quiet") {
+    const open = evNum(ev, "open_receivable_eur");
+    const billed = evNum(ev, "last_quarter_amount");
+    const share = evNum(ev, "share_last_quarter");
+    const parts = ["top_customer_quiet · top customer stopped billing, review exposure and collections"];
+    if (share != null && billed != null) parts.push(`${Math.round(share * 100)}% last quarter · ${fmtEur(billed)}`);
+    else if (billed != null) parts.push(fmtEur(billed));
+    if (open != null) parts.push(`${fmtEur(open)} open`);
+    return parts.join(" · ");
+  }
+
+  if (alert.kind === "going_dark") {
+    const pre = evNum(ev, "score_pre_cap");
+    const score = evNum(ev, "score");
+    const cap =
+      pre != null && score != null
+        ? `capped ${Math.round(score)} (uncapped ${Math.round(pre)}) · `
+        : pre != null
+          ? `capped 30 (uncapped ${Math.round(pre)}) · `
+          : "";
+    return `going_dark · ${cap}no bank booking 60d`;
+  }
+
+  if (alert.kind === "category_drop") {
+    const cat = typeof ev.category === "string" ? ev.category : "category";
+    const score = evNum(ev, "category_score");
+    const base = evNum(ev, "baseline");
+    const gap = evNum(ev, "gap_points");
+    const head =
+      score != null && base != null
+        ? `${cat} ${Math.round(score)} vs usual ${Math.round(base)}${gap != null ? ` (${signed(gap)})` : ""}`
+        : cat;
+    return money ? `category_drop · ${head} · ${money}` : `category_drop · ${head}`;
+  }
+
+  const score = evNum(ev, "score") ?? evNum(ev, "mean_score");
+  const base = evNum(ev, "baseline");
+  const gap = evNum(ev, "gap_points");
+  const members = typeof ev.members_moving_most === "string" && ev.members_moving_most ? ev.members_moving_most : "";
+  const head =
+    score != null && base != null
+      ? `${Math.round(score)} vs usual ${Math.round(base)}${gap != null ? ` (${signed(gap)} pts)` : ""}`
+      : money || alert.action || alert.title;
+  const bits = [`${alert.kind} · ${head}`];
+  if (money && head !== money) bits.push(money);
+  if (members) bits.push(members);
+  return bits.join(" · ");
 }
 
 function monthOf(detail: CompanyDetail, month: string): MonthRecord | undefined {
@@ -193,7 +245,7 @@ export function buildWatcherPost(input: {
       focus.guard === "dark" ? "no bank booking 60d" : "inflows faded vs own history"
     }`;
   } else if (topAlert) {
-    line2 = alertText(topAlert);
+    line2 = clip(formatRuleAlert(topAlert), 120);
   } else if (focus?.rec) {
     const fact = firstMoney(focus.rec.change_reasons) ?? firstMoney(focus.rec.reasons);
     const noInv = /no invoice/i.test(focus.note ?? "");
@@ -212,7 +264,7 @@ export function buildWatcherPost(input: {
       severity,
       owner: ownerOf(a),
       entity: a.entity.id,
-      text: alertText(a),
+      text: formatRuleAlert(a),
     });
   }
   if (bullets.length === 0 && focus) {
