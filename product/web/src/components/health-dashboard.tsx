@@ -22,7 +22,9 @@ import {
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { HealthSidebar } from "@/components/health-sidebar";
+import { ClientOnly } from "@/components/client-only";
+import { HealthScoreView } from "@/components/health-score-view";
+import { HealthSidebar, type AppView } from "@/components/health-sidebar";
 import {
   ChartConfig,
   ChartContainer,
@@ -31,6 +33,7 @@ import {
 } from "@/components/ui/chart";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { formatMonth } from "@/lib/format-month";
 import type { DashboardData, Trajectory } from "@/lib/data/types";
 
 const scoreChartConfig = {
@@ -51,18 +54,6 @@ const trajectoryLabels: Record<Trajectory, string> = {
 
 const confidenceLabels = { high: "Alta", medium: "Media", low: "Baja" } as const;
 
-const monthFormatter = new Intl.DateTimeFormat("es-ES", {
-  month: "short",
-  year: "2-digit",
-});
-
-function formatMonth(month: string) {
-  const [year, monthNumber] = month.split("-").map(Number);
-  return monthFormatter
-    .format(new Date(Date.UTC(year, monthNumber - 1, 1)))
-    .replace(" ", " ’");
-}
-
 function Delta({ value }: { value: number | null }) {
   if (value === null) return <Minus className="size-4" />;
   const Icon = value > 0 ? ArrowUpRight : value < 0 ? ArrowDownRight : Minus;
@@ -78,6 +69,7 @@ export function HealthDashboard({ data }: { data: DashboardData }) {
   const defaultCompany =
     data.companies.find((company) => company.trajectory === "improving") ?? data.companies[0];
   const [companyId, setCompanyId] = useState(defaultCompany.companyId);
+  const [view, setView] = useState<AppView>("overview");
   const company =
     data.companies.find((candidate) => candidate.companyId === companyId) ?? defaultCompany;
 
@@ -88,15 +80,27 @@ export function HealthDashboard({ data }: { data: DashboardData }) {
 
   return (
     <SidebarProvider>
-      <HealthSidebar data={data} companyId={companyId} onCompanyChange={setCompanyId} />
+      <HealthSidebar
+        data={data}
+        companyId={companyId}
+        onCompanyChange={setCompanyId}
+        view={view}
+        onViewChange={setView}
+      />
       <SidebarInset>
         <header className="sticky top-0 z-10 flex h-14 items-center justify-between border-b bg-background/95 px-4 backdrop-blur sm:px-6">
           <div className="flex min-w-0 items-center gap-3">
             <SidebarTrigger />
             <Separator orientation="vertical" className="h-4" />
             <div className="min-w-0">
-              <p className="truncate font-mono text-sm font-medium">{company.companyId}</p>
-              <p className="truncate text-xs text-muted-foreground">{company.groupId ?? "Sin grupo"}</p>
+              <p className="truncate font-mono text-sm font-medium">
+                {view === "health-score" ? "Health Score" : company.companyId}
+              </p>
+              <p className="truncate text-xs text-muted-foreground">
+                {view === "health-score"
+                  ? `${data.companies.length} empresas`
+                  : (company.groupId ?? "Sin grupo")}
+              </p>
             </div>
           </div>
           <Badge variant="outline" className="font-mono text-[11px] font-normal text-muted-foreground">
@@ -104,7 +108,17 @@ export function HealthDashboard({ data }: { data: DashboardData }) {
           </Badge>
         </header>
 
-        <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
+        <main
+          className={
+            view === "health-score"
+              ? "w-full px-4 py-6 sm:px-6 lg:px-8 lg:py-8"
+              : "mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10"
+          }
+        >
+          {view === "health-score" ? (
+            <HealthScoreView data={data} />
+          ) : (
+            <>
           <section id="resumen" className="scroll-mt-20">
           <div className="max-w-2xl">
             <div className="mb-3 flex items-center gap-2 text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
@@ -174,6 +188,7 @@ export function HealthDashboard({ data }: { data: DashboardData }) {
               <p className="text-sm text-muted-foreground">La dirección y persistencia importan tanto como el nivel actual.</p>
             </CardHeader>
             <CardContent>
+              <ClientOnly fallback={<div className="h-[300px] w-full" />}>
               <ChartContainer config={scoreChartConfig} className="h-[300px] w-full aspect-auto">
                 <LineChart data={scoreHistory} margin={{ top: 12, right: 8, left: -20, bottom: 0 }}>
                   <CartesianGrid vertical={false} strokeDasharray="3 3" />
@@ -194,6 +209,7 @@ export function HealthDashboard({ data }: { data: DashboardData }) {
                   />
                 </LineChart>
               </ChartContainer>
+              </ClientOnly>
             </CardContent>
           </Card>
 
@@ -203,6 +219,7 @@ export function HealthDashboard({ data }: { data: DashboardData }) {
               <p className="text-sm text-muted-foreground">Qué dimensiones sostienen o limitan el resultado actual.</p>
             </CardHeader>
             <CardContent>
+              <ClientOnly fallback={<div className="h-[300px] w-full" />}>
               <ChartContainer config={categoryChartConfig} className="h-[300px] w-full aspect-auto">
                 <BarChart data={company.categories} layout="vertical" margin={{ top: 4, right: 8, left: 8, bottom: 0 }}>
                   <CartesianGrid horizontal={false} strokeDasharray="3 3" />
@@ -219,6 +236,7 @@ export function HealthDashboard({ data }: { data: DashboardData }) {
                   <Bar dataKey="score" fill="var(--color-score)" radius={[0, 5, 5, 0]} barSize={18} />
                 </BarChart>
               </ChartContainer>
+              </ClientOnly>
             </CardContent>
           </Card>
         </section>
@@ -252,6 +270,8 @@ export function HealthDashboard({ data }: { data: DashboardData }) {
         <p className="mt-8 max-w-4xl text-xs leading-5 text-muted-foreground">
           {data.disclaimer}
         </p>
+            </>
+          )}
         </main>
       </SidebarInset>
     </SidebarProvider>

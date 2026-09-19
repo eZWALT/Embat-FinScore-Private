@@ -1,4 +1,4 @@
-import { LocalBundleRepository } from "./local-bundle-repository";
+import { createScoreRepository } from "./repository";
 import type {
   Alert,
   AlertSeverity,
@@ -142,7 +142,7 @@ function resolveAlerts(ids: string[], byId: Map<string, Alert>): GroupAlertView[
 export async function getGroupMapData(
   groupId?: string,
   companyId?: string,
-  repository: ScoreRepository = new LocalBundleRepository(),
+  repository: ScoreRepository = createScoreRepository(),
 ): Promise<GroupMapData> {
   const [manifest, companies, groups, feed] = await Promise.all([
     repository.getManifest(),

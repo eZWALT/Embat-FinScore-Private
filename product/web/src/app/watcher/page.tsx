@@ -1,0 +1,55 @@
+import type { Metadata } from "next";
+import { redirect } from "next/navigation";
+
+import { WatcherChannel } from "@/components/watcher-channel";
+import { getWatcherFeed } from "@/lib/agent/watcher-service";
+import { createScoreRepository } from "@/lib/data/repository";
+
+export const metadata: Metadata = {
+  title: "Watcher · Health Sentinel",
+  description: "Last three months on a watch set, one fixed format.",
+};
+
+export const dynamic = "force-dynamic";
+
+type SearchParams = Promise<Record<string, string | string[] | undefined>>;
+
+function first(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+export default async function WatcherPage({ searchParams }: { searchParams: SearchParams }) {
+  const params = await searchParams;
+  const companyId = first(params.company) ?? "";
+  const groupId = first(params.group) ?? "";
+
+  const repo = createScoreRepository();
+  const [companies, groups] = await Promise.all([repo.listCompanies(), repo.listGroups()]);
+
+  if (!companyId && !groupId && groups.length) {
+    const pick = [...groups].sort(
+      (a, b) => b.n_companies - a.n_companies || a.group_id.localeCompare(b.group_id),
+    )[0];
+    redirect(`/watcher?group=${encodeURIComponent(pick.group_id)}`);
+  }
+
+  const feed = await getWatcherFeed(companyId ? [companyId] : [], groupId ? [groupId] : []);
+
+  return (
+    <WatcherChannel
+      asOf={feed.asOf}
+      disclaimer={feed.disclaimer}
+      posts={feed.posts}
+      companyId={companyId}
+      groupId={groupId}
+      companies={companies
+        .slice()
+        .sort((a, b) => a.score - b.score)
+        .map((c) => ({ id: c.company_id, score: c.score, trajectory: c.trajectory }))}
+      groups={groups
+        .slice()
+        .sort((a, b) => (a.latest_mean_score ?? 99) - (b.latest_mean_score ?? 99))
+        .map((g) => ({ id: g.group_id, n: g.n_companies, mean: g.latest_mean_score }))}
+    />
+  );
+}
