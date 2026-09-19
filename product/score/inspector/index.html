@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bundle inspector</title>
+<style>
+:root { --ink:#171717; --muted:#6b6b6b; --line:#e4e4e4; --bg:#fff; --soft:#f6f6f6; --bad:#b42318; --warn:#b54708; --good:#067647; --accent:#1d4ed8; }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--ink); background:var(--bg); font:14px/1.45 ui-sans-serif, -apple-system, "Segoe UI", sans-serif; }
+header { border-bottom:1px solid var(--line); padding:10px 20px; display:flex; gap:20px; align-items:baseline; flex-wrap:wrap; position:sticky; top:0; background:var(--bg); z-index:5; }
+header h1 { font-size:15px; margin:0; }
+nav button { border:0; background:none; font:inherit; padding:4px 10px; cursor:pointer; color:var(--muted); border-radius:6px; }
+nav button.on { background:var(--ink); color:#fff; }
+main { padding:16px 20px 60px; max-width:1300px; margin:0 auto; }
+h2 { font-size:16px; margin:26px 0 8px; } h3 { font-size:14px; margin:18px 0 6px; }
+.muted { color:var(--muted); } .small { font-size:12px; }
+table { border-collapse:collapse; width:100%; } th, td { text-align:left; padding:4px 8px; border-bottom:1px solid var(--line); vertical-align:top; }
+th { font-size:12px; color:var(--muted); font-weight:500; } td.n, th.n { text-align:right; font-variant-numeric:tabular-nums; }
+.grid { display:grid; grid-template-columns:300px 1fr; gap:20px; } @media (max-width:900px){ .grid{grid-template-columns:1fr;} }
+.list { max-height:78vh; overflow:auto; border:1px solid var(--line); border-radius:8px; }
+.list button { display:flex; justify-content:space-between; width:100%; border:0; border-bottom:1px solid var(--line); background:none; padding:6px 10px; font:inherit; cursor:pointer; text-align:left; }
+.list button.on { background:var(--soft); } .list button:hover { background:var(--soft); }
+input, select { font:inherit; padding:4px 6px; border:1px solid var(--line); border-radius:6px; }
+.row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin:8px 0; }
+.card { border:1px solid var(--line); border-radius:8px; padding:10px 12px; margin:8px 0; }
+.pill { display:inline-block; border-radius:999px; padding:1px 8px; font-size:12px; background:var(--soft); margin-right:4px; }
+.pill.act, .bad { color:var(--bad); } .pill.watch, .warn { color:var(--warn); } .pill.info { color:var(--muted); } .good { color:var(--good); }
+.ok { color:var(--good); font-weight:600; } .fail { color:var(--bad); font-weight:600; }
+.tiles { display:flex; gap:10px; flex-wrap:wrap; } .tile { border:1px solid var(--line); border-radius:8px; padding:8px 14px; min-width:110px; } .tile b { display:block; font-size:20px; }
+svg.chart { width:100%; height:auto; max-width:760px; display:block; } svg text { font-size:10px; fill:#6b6b6b; } svg .grid { stroke:#eee; }
+.series { stroke:#171717; stroke-width:1.5; fill:none; } .series.alt { stroke:#999; stroke-dasharray:4 3; } .center { stroke:#6b6b6b; stroke-dasharray:4 3; fill:none; } .ewma { stroke:#1d4ed8; stroke-width:1.5; fill:none; }
+.band { fill:#1d4ed8; opacity:.08; } .fan80 { fill:#1d4ed8; opacity:.10; } .fan50 { fill:#1d4ed8; opacity:.20; }
+.pt { fill:#171717; } .pt.sig { fill:#b54708; } .pt.per.low { fill:#b42318; } .pt.per.high { fill:#067647; } .mark { stroke:#b42318; stroke-width:1; opacity:.5; } .sel { stroke:#1d4ed8; stroke-width:1; }
+.bars { display:flex; align-items:flex-end; gap:3px; height:80px; } .bars div { background:#171717; opacity:.75; flex:1; min-width:4px; } .bars-l { display:flex; gap:3px; font-size:10px; color:var(--muted); } .bars-l span { flex:1; text-align:center; }
+code, .mono { font-family:ui-monospace, Consolas, monospace; font-size:12px; } details summary { cursor:pointer; color:var(--muted); }
+.eq { background:var(--soft); border-radius:6px; padding:6px 10px; margin:6px 0; font-family:ui-monospace, Consolas, monospace; font-size:12px; }
+a { color:var(--accent); cursor:pointer; text-decoration:none; } a:hover { text-decoration:underline; }
+ul.plain { margin:4px 0; padding-left:18px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Bundle inspector</h1>
+  <nav id="nav"></nav>
+  <span class="muted small" id="asof"></span>
+</header>
+<main id="main"><p class="muted">Loading…</p></main>
+<script>
+"use strict";
+/* ---------- helpers ---------- */
+const NS = "http://www.w3.org/2000/svg";
+function h(tag, attrs, ...kids) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (k === "class") e.className = v; else if (k.startsWith("on")) e.addEventListener(k.slice(2), v); else if (v !== null && v !== undefined && v !== false) e.setAttribute(k, v === true ? "" : v);
+  }
+  for (const c of kids.flat(Infinity)) if (c !== null && c !== undefined && c !== false) e.append(c.nodeType ? c : document.createTextNode(String(c)));
+  return e;
+}
+function sv(tag, attrs, ...kids) { const e = document.createElementNS(NS, tag); for (const [k, v] of Object.entries(attrs || {})) e.setAttribute(k, v); kids.flat(Infinity).forEach(c => c && e.append(c.nodeType ? c : document.createTextNode(String(c)))); return e; }
+const fmt = (x, d = 1) => x === null || x === undefined || !Number.isFinite(x) ? "–" : x.toFixed(d);
+const sgn = (x, d = 1) => x === null || x === undefined ? "–" : (x > 0 ? "+" : "") + x.toFixed(d);
+const eur = x => { if (x === null || x === undefined) return ""; const a = Math.abs(x), s = x < 0 ? "-" : ""; return a >= 1e6 ? `${s}€${(a / 1e6).toFixed(1)}M` : a >= 1e3 ? `${s}€${(a / 1e3).toFixed(0)}k` : `${s}€${a.toFixed(0)}`; };
+const bundleCache = new Map();
+function get(path) { if (!bundleCache.has(path)) bundleCache.set(path, fetch("/bundle/" + path).then(r => { if (!r.ok) throw new Error(path + ": " + r.status); return r.json(); })); return bundleCache.get(path); }
+async function sha256(path) { const b = await (await fetch("/bundle/" + path)).arrayBuffer(); const d = await crypto.subtle.digest("SHA-256", b); return [...new Uint8Array(d)].map(x => x.toString(16).padStart(2, "0")).join(""); }
+const S = {};   // manifest, companies, alerts, groups, clusters
+const UI = { tab: "overview", company: null, month: null, chart: 0, group: null, audit: null };
+
+/* ---------- charts ---------- */
+const W = 720, PAD = { l: 34, r: 10, t: 10, b: 22 };
+function ext(arrs, clamp) {
+  let lo = Infinity, hi = -Infinity;
+  for (const a of arrs) for (const v of a) if (v !== null && v !== undefined && Number.isFinite(v)) { lo = Math.min(lo, v); hi = Math.max(hi, v); }
+  if (!Number.isFinite(lo)) return clamp || [0, 100];
+  const p = Math.max((hi - lo) * .1, 2); lo -= p; hi += p;
+  return clamp ? [Math.max(lo, clamp[0]), Math.min(hi, clamp[1])] : [lo, hi];
+}
+function pathOf(xs, ys, sy) { let d = "", pen = false; ys.forEach((v, i) => { if (v === null || v === undefined || !Number.isFinite(v)) { pen = false; return; } d += (pen ? "L" : "M") + xs[i].toFixed(1) + "," + sy(v).toFixed(1); pen = true; }); return d; }
+function bandOf(xs, lo, hi, sy) {
+  const idx = xs.map((_, i) => i).filter(i => lo[i] != null && hi[i] != null); if (idx.length < 2) return "";
+  return idx.map((i, k) => (k ? "L" : "M") + xs[i].toFixed(1) + "," + sy(hi[i]).toFixed(1)).join("") + [...idx].reverse().map(i => "L" + xs[i].toFixed(1) + "," + sy(lo[i]).toFixed(1)).join("") + "Z";
+}
+/** spec: {months, series:[{values, cls}], center, lo, hi, ewma, points:[{i,cls,title,r}], marks:[i], selected, clamp, height, onPick, fan:{lo80,hi80,lo50,hi50,med}} */
+function chart(spec) {
+  const n = spec.months.length, height = spec.height || 210;
+  const [y0, y1] = ext([...spec.series.map(s => s.values), spec.lo || [], spec.hi || [], spec.ewma || [], spec.center || [], spec.fan ? spec.fan.lo80 : [], spec.fan ? spec.fan.hi80 : []], spec.clamp);
+  const x = i => PAD.l + (n <= 1 ? 0 : i / (n - 1) * (W - PAD.l - PAD.r));
+  const sy = v => PAD.t + (1 - (v - y0) / (y1 - y0 || 1)) * (height - PAD.t - PAD.b);
+  const xs = spec.months.map((_, i) => x(i));
+  const g = sv("svg", { viewBox: `0 0 ${W} ${height}`, class: "chart" });
+  [y0, (y0 + y1) / 2, y1].map(Math.round).forEach(t => { g.append(sv("line", { x1: PAD.l, x2: W - PAD.r, y1: sy(t), y2: sy(t), class: "grid" }), sv("text", { x: PAD.l - 5, y: sy(t) + 3, "text-anchor": "end" }, t)); });
+  [0, Math.floor((n - 1) / 2), n - 1].forEach((i, k) => g.append(sv("text", { x: x(i), y: height - 6, "text-anchor": k === 0 ? "start" : k === 2 ? "end" : "middle" }, spec.months[i])));
+  if (spec.lo && spec.hi) g.append(sv("path", { d: bandOf(xs, spec.lo, spec.hi, sy), class: "band" }));
+  if (spec.fan) { g.append(sv("path", { d: bandOf(xs, spec.fan.lo80, spec.fan.hi80, sy), class: "fan80" }), sv("path", { d: bandOf(xs, spec.fan.lo50, spec.fan.hi50, sy), class: "fan50" }), sv("path", { d: pathOf(xs, spec.fan.med, sy), class: "ewma" })); }
+  if (spec.center) g.append(sv("path", { d: pathOf(xs, spec.center, sy), class: "center" }));
+  if (spec.ewma) g.append(sv("path", { d: pathOf(xs, spec.ewma, sy), class: "ewma" }));
+  for (const s of spec.series) g.append(sv("path", { d: pathOf(xs, s.values, sy), class: "series " + (s.cls || "") }));
+  (spec.marks || []).forEach(i => g.append(sv("line", { x1: xs[i], x2: xs[i], y1: PAD.t, y2: height - PAD.b, class: "mark" })));
+  if (spec.selected != null && xs[spec.selected] != null) g.append(sv("line", { x1: xs[spec.selected], x2: xs[spec.selected], y1: PAD.t, y2: height - PAD.b, class: "sel" }));
+  (spec.points || []).forEach(p => { const c = sv("circle", { cx: xs[p.i], cy: sy(p.v), r: p.r || 3, class: "pt " + (p.cls || "") }); c.append(sv("title", {}, p.title || "")); g.append(c); });
+  if (spec.onPick) { g.style.cursor = "pointer"; g.addEventListener("click", e => { const r = g.getBoundingClientRect(); const px = (e.clientX - r.left) / r.width * W; let best = 0; xs.forEach((xx, i) => { if (Math.abs(xx - px) < Math.abs(xs[best] - px)) best = i; }); spec.onPick(best); }); }
+  return g;
+}
+function bars(counts, labels) {
+  const m = Math.max(...counts, 1);
+  return h("div", {}, h("div", { class: "bars" }, counts.map((c, i) => h("div", { style: `height:${c / m * 100}%`, title: `${labels[i]}: ${c}` }))), h("div", { class: "bars-l" }, labels.map(l => h("span", {}, l))));
+}
+
+/* ---------- audit (mirrors product/score/export.py validate_bundle, in the browser) ---------- */
+async function runAudit(progress) {
+  const bad = [], ok = [], man = S.manifest;
+  const check = (name, cond, detail) => (cond ? ok : bad).push(name + (detail ? " — " + detail : ""));
+  check("schema major 1", man.schema_version.startsWith("1."), man.schema_version);
+  const ids = S.companies.companies.map(c => c.company_id);
+  check("company count matches manifest", ids.length === man.counts.companies, `${ids.length} vs ${man.counts.companies}`);
+  const alertById = new Map(S.alerts.alerts.map(a => [a.alert_id, a]));
+  check("alert_id unique", alertById.size === S.alerts.alerts.length);
+  for (const a of S.alerts.alerts) {
+    if (!["act", "watch", "info"].includes(a.severity) || !a.owner || !a.action) bad.push(`${a.alert_id}: severity/owner/action`);
+    if (a.reasons.length > 4) bad.push(`${a.alert_id}: more than 4 reasons`);
+    if (a.kind === "top_customer_quiet" && /revenue at risk/i.test(a.summary + a.action)) bad.push(`${a.alert_id}: forbidden wording`);
+    if (a.month < S.alerts.from_month || a.month > man.as_of_month) bad.push(`${a.alert_id}: month outside window`);
+  }
+  check("alert fields (severity, owner, action, ≤4 reasons, wording, window)", !bad.some(b => b.includes(": ")), "");
+  const known = new Set(man.spec.items.map(i => i.id));
+  let rows = 0, linked = 0, files = 0, i = 0, worstSum = 0, worstAttr = 0, nSum = 0, nAttr = 0;
+  const conc = 12, queue = [...ids];
+  async function worker() {
+    while (queue.length) {
+      const id = queue.shift(); const d = await get(`companies/${id}.json`); files++;
+      progress && (i++ % 50 === 0) && progress(files, ids.length);
+      for (const aid of d.alert_ids || []) { linked++; const a = alertById.get(aid); if (!a || a.entity.id !== id) bad.push(`${id}: alert ${aid} not in feed`); }
+      for (const c of d.control || []) { const n = c.months.length; if (["values", "center", "lower", "upper", "signal", "persistent"].some(k => c[k].length !== n)) bad.push(`${id}: chart ${c.comparison}/${c.metric} lengths`); }
+      if (d.forecast) for (const p of d.forecast.points) { const v = [p.lo80, p.lo50, p.median, p.hi50, p.hi80]; if (v.some(x => x === null) || v.some((x, k) => k && x < v[k - 1]) || v[0] < 0 || v[4] > 100) bad.push(`${id}: fan ${p.month}`); }
+      let prev = null;
+      for (const r of d.months) {
+        rows++;
+        if (!(r.score >= 0 && r.score <= 100)) bad.push(`${id} ${r.month}: score ${r.score}`);
+        if (!man.spec.trajectory.states.includes(r.trajectory)) bad.push(`${id} ${r.month}: trajectory`);
+        if (r.items) {
+          if (![...Object.keys(r.items), ...r.reasons.concat(r.change_reasons).map(x => x.item)].every(k => k === "guard" || k === "top_customer" || known.has(k))) bad.push(`${id} ${r.month}: unknown item`);
+          const tot = Object.values(r.items).reduce((s, v) => s + v.contribution, 0) + (r.guard_adjustment || 0);
+          worstSum = Math.max(worstSum, Math.abs(tot - r.score)); nSum++;
+          if (Math.abs(tot - r.score) > 0.15) bad.push(`${id} ${r.month}: contributions ${tot.toFixed(2)} ≠ score ${r.score}`);
+          if (prev && prev.items && Object.keys(prev.items).join() === Object.keys(r.items).join()) {
+            const dsum = Object.values(r.items).reduce((s, v) => s + (v.delta || 0), 0) + (r.change_guard || 0); const chg = r.score - prev.score;
+            worstAttr = Math.max(worstAttr, Math.abs(dsum - chg)); nAttr++;
+            if (Math.abs(dsum - chg) > 0.3) bad.push(`${id} ${r.month}: attribution ${dsum.toFixed(2)} ≠ change ${chg.toFixed(2)}`);
+          }
+        }
+        prev = r;
+      }
+    }
+  }
+  await Promise.all(Array.from({ length: conc }, worker));
+  check("company files read", files === ids.length, files);
+  check("company-months match manifest", rows === man.counts.company_months, `${rows} vs ${man.counts.company_months}`);
+  const nCo = S.alerts.alerts.filter(a => a.entity.type === "company").length;
+  if (!man.is_sample) check("company alert links both ways", linked === nCo, `${linked} links, ${nCo} company alerts`);
+  check(`Σ contributions + guard = score (${nSum} months, worst gap ${worstSum.toFixed(3)})`, worstSum <= 0.15);
+  check(`Σ item deltas + guard = score change (${nAttr} months with unchanged item set, worst gap ${worstAttr.toFixed(3)})`, worstAttr <= 0.3);
+  for (const [name, m] of Object.entries(man.files)) { if (name === "manifest.json" || !m.sha256 || name.endsWith("_dir")) continue; const hsh = await sha256(name); check(`sha256 ${name}`, hsh === m.sha256); }
+  return { ok, bad };
+}
+
+/* ---------- tabs ---------- */
+const TABS = [["overview", "Overview"], ["companies", "Companies"], ["alerts", "Alerts"], ["groups", "Groups"], ["method", "Method"]];
+function renderNav() { const nav = $("#nav"); nav.replaceChildren(...TABS.map(([k, l]) => h("button", { class: UI.tab === k ? "on" : "", onclick: () => { UI.tab = k; render(); } }, l))); }
+const $ = s => document.querySelector(s);
+function render() { renderNav(); const m = $("#main"); m.replaceChildren(); ({ overview, companies, alerts, groups, method }[UI.tab])(m); }
+function goCompany(id, month, chartIdx) { UI.tab = "companies"; UI.company = id; UI.month = month || null; UI.chart = chartIdx || 0; render(); }
+
+/* ---------- overview ---------- */
+function overview(m) {
+  const man = S.manifest, cs = S.companies.companies;
+  m.append(h("h2", {}, "What this bundle is"),
+    h("p", {}, `Schema ${man.schema_version}, scorecard ${man.scorecard_version}, generated ${man.generated_at}. ${man.counts.companies} companies, ${man.counts.groups} groups, ${man.counts.company_months} company-months, months ${man.months[0]}..${man.as_of_month}${man.is_sample ? " (SAMPLE)" : ""}. Items and reasons exist only from ${man.detail_from_month} (${man.detail_months} months).`),
+    h("p", { class: "muted" }, man.disclaimer));
+  const c = (f, v) => cs.filter(x => x[f] === v).length;
+  const sc = cs.map(x => x.score), bins = Array(10).fill(0); sc.forEach(v => bins[Math.min(9, Math.floor(v / 10))]++);
+  m.append(h("h2", {}, `Latest month (${man.as_of_month}) at a glance`),
+    h("div", { class: "tiles" }, [["improving", "trajectory"], ["stable", "trajectory"], ["dip", "trajectory"], ["deteriorating", "trajectory"], ["insufficient history", "trajectory"]].map(([v, f]) => h("div", { class: "tile" }, h("b", {}, c(f, v)), v)),
+      ["high", "medium", "low"].map(v => h("div", { class: "tile" }, h("b", {}, c("confidence", v)), v + " confidence")),
+      ["dark", "fading"].map(v => h("div", { class: "tile" }, h("b", {}, c("guard", v)), "guard: " + v))),
+    h("h3", {}, "Score distribution (latest score per company)"), bars(bins, bins.map((_, i) => `${i * 10}`)));
+  const ak = {}, months = [...new Set(S.alerts.alerts.map(a => a.month))].sort();
+  for (const a of S.alerts.alerts) { ak[a.kind] = ak[a.kind] || {}; ak[a.kind][a.month] = (ak[a.kind][a.month] || 0) + 1; }
+  m.append(h("h3", {}, "Alerts by kind and month"), h("table", {}, h("thead", {}, h("tr", {}, h("th", {}, "kind"), months.map(x => h("th", { class: "n" }, x.slice(2))), h("th", { class: "n" }, "total"))),
+    h("tbody", {}, Object.entries(ak).map(([k, v]) => h("tr", {}, h("td", {}, k), months.map(x => h("td", { class: "n" }, v[x] || "")), h("td", { class: "n" }, Object.values(v).reduce((a, b) => a + b, 0)))))));
+  const st = S.alerts.stats;
+  m.append(h("h3", {}, "Measured statistics shipped with the alerts (train companies)"), h("table", {}, h("tbody", {},
+    ...[["score-fall alerts followed by an accepted outcome within 6 months", st.false_alarm_rate === null ? "–" : fmt((1 - st.false_alarm_rate) * 100, 0) + "%"], ["same for an alert on a random month (chance)", st.false_alarm_rate_at_chance === null ? "–" : fmt((1 - st.false_alarm_rate_at_chance) * 100, 0) + "%"],
+      ["median lead time (months, where followed)", st.median_lead_time_months], ["top-customer-quiet: share of flagged months that lose the customer", fmt(st.top_customer_precision * 100, 0) + "%"], ["top-customer base rate", fmt(st.top_customer_base_rate * 100, 0) + "%"], ["alerts per company-year", st.alerts_per_company_year]]
+      .map(([a, b]) => h("tr", {}, h("td", {}, a), h("td", { class: "n" }, b))))), h("p", { class: "muted small" }, st.note));
+  m.append(h("h3", {}, "Behaviour clusters"), h("table", {}, h("thead", {}, h("tr", {}, ["id", "label", "companies", "description"].map(x => h("th", {}, x)))), h("tbody", {}, S.clusters.clusters.map(k => h("tr", {}, h("td", {}, k.cluster_id), h("td", {}, k.label), h("td", { class: "n" }, k.n_companies), h("td", { class: "small" }, k.description))))), h("p", { class: "muted small" }, S.clusters.quality.note));
+  const box = h("div", {}), btn = h("button", { onclick: async () => { btn.disabled = true; box.replaceChildren(h("p", {}, "Auditing every company file…")); try { const r = await runAudit((a, b) => box.firstChild && (box.firstChild.textContent = `Auditing… ${a}/${b}`)); UI.audit = r; showAudit(box, r); } catch (e) { box.replaceChildren(h("p", { class: "fail" }, String(e))); } btn.disabled = false; } }, "Run full audit");
+  m.append(h("h2", {}, "Audit: is the bundle internally consistent?"), h("p", { class: "muted" }, "Reads every company file in this page and re-checks the arithmetic: contributions sum to the score, item deltas sum to the change, charts and fans are well formed, alerts link both ways, sha256 of the files."), btn, box);
+  if (UI.audit) showAudit(box, UI.audit);
+}
+function showAudit(box, r) { box.replaceChildren(...[h("p", {}, h("span", { class: r.bad.length ? "fail" : "ok" }, r.bad.length ? `${r.bad.length} problems` : "All checks pass"), ` · ${r.ok.length} checks passed`), r.bad.length ? h("ul", { class: "plain" }, r.bad.slice(0, 40).map(x => h("li", { class: "fail" }, x))) : null, h("details", {}, h("summary", {}, "Checks that passed"), h("ul", { class: "plain" }, r.ok.map(x => h("li", { class: "good" }, x))))].filter(Boolean)); }
+
+/* ---------- companies ---------- */
+function companies(m) {
+  const list = h("div", { class: "list" }), detail = h("div", {}), q = h("input", { placeholder: "search COMP_… or group", oninput: draw });
+  const sort = h("select", { onchange: draw }, ["score ↑", "score ↓", "3-month change ↑", "alerts ↓", "id"].map(x => h("option", {}, x)));
+  const only = h("select", { onchange: draw }, ["all", "with alerts", "guard set", "no invoices (medium/low conf.)"].map(x => h("option", {}, x)));
+  function draw() {
+    const needle = q.value.trim().toLowerCase(); let rows = S.companies.companies.filter(c => (!needle || c.company_id.toLowerCase().includes(needle) || (c.group_id || "").toLowerCase().includes(needle)));
+    if (only.value === "with alerts") rows = rows.filter(c => c.n_alerts > 0); if (only.value === "guard set") rows = rows.filter(c => c.guard); if (only.value.startsWith("no invoices")) rows = rows.filter(c => c.confidence !== "high");
+    const cmp = { "score ↑": (a, b) => a.score - b.score, "score ↓": (a, b) => b.score - a.score, "3-month change ↑": (a, b) => (a.delta_3m ?? 0) - (b.delta_3m ?? 0), "alerts ↓": (a, b) => b.n_alerts - a.n_alerts, id: (a, b) => a.company_id.localeCompare(b.company_id) }[sort.value];
+    rows = [...rows].sort(cmp);
+    list.replaceChildren(...rows.slice(0, 400).map(c => h("button", { class: UI.company === c.company_id ? "on" : "", onclick: () => { UI.company = c.company_id; UI.month = null; UI.chart = 0; draw(); } }, h("span", {}, c.company_id, c.guard ? " ⚠" : ""), h("span", { class: "muted" }, `${fmt(c.score, 0)}  ${c.n_alerts ? "● " + c.n_alerts : ""}`))));
+    if (rows.length > 400) list.append(h("p", { class: "muted small", style: "padding:6px 10px" }, `showing 400 of ${rows.length}, narrow the search`));
+    if (UI.company) companyDetail(detail, UI.company);
+  }
+  m.append(h("h2", {}, "Companies"), h("div", { class: "grid" }, h("div", {}, h("div", { class: "row" }, q, sort, only), list), detail)); draw();
+}
+async function companyDetail(box, id) {
+  box.replaceChildren(h("p", { class: "muted" }, "Loading " + id + "…"));
+  let d; try { d = await get(`companies/${id}.json`); } catch (e) { box.replaceChildren(h("p", { class: "fail" }, String(e))); return; }
+  if (UI.company !== id) return;
+  const idx = S.companies.companies.find(c => c.company_id === id), spec = S.manifest.spec, months = d.months.map(r => r.month);
+  let mi = UI.month ? months.indexOf(UI.month) : months.length - 1; if (mi < 0) mi = months.length - 1;
+  const rec = d.months[mi], prev = mi > 0 ? d.months[mi - 1] : null;
+  const alerts = (d.alert_ids || []).map(x => S.alerts.alerts.find(a => a.alert_id === x)).filter(Boolean);
+  const alertMonths = new Set(alerts.map(a => a.month));
+  const out = [];
+  out.push(h("h2", {}, id), h("p", {}, `Group `, d.group_id ? h("a", { onclick: () => { UI.tab = "groups"; UI.group = d.group_id; render(); } }, d.group_id) : "–", ` · ${d.erp || "erp –"} · ${d.currency || "currency –"} · first bank month ${d.first_month} · cluster `, d.cluster ? `${d.cluster.cluster_id} (${S.clusters.clusters.find(k => k.cluster_id === d.cluster.cluster_id)?.label})` : "none (trail < 6 months)"));
+  out.push(h("h3", {}, "Score over time (click a month to inspect it; red lines = alerts)"),
+    chart({ months, series: [{ values: d.months.map(r => r.score) }, { values: d.months.map(r => r.score_pre_cap), cls: "alt" }], marks: months.map((mo, i) => alertMonths.has(mo) ? i : -1).filter(i => i >= 0), selected: mi, clamp: [0, 100], onPick: i => { UI.month = months[i]; companyDetail(box, id); } }),
+    h("p", { class: "muted small" }, "Solid = score after the guard cap; dashed = score before the cap (they differ only when a guard is set)."));
+  out.push(h("h3", {}, `Month ${rec.month}`), h("div", { class: "tiles" }, h("div", { class: "tile" }, h("b", {}, fmt(rec.score)), "score"), h("div", { class: "tile" }, h("b", {}, rec.trajectory), `slope3 ${sgn(rec.slope3)} · slope6 ${sgn(rec.slope6)} pts/mo`),
+    h("div", { class: "tile" }, h("b", {}, rec.confidence), `coverage ${fmt(rec.coverage * 100, 0)}% · trail ${rec.trail_months} mo`), h("div", { class: "tile" }, h("b", {}, rec.guard || "none"), rec.guard ? `pre-cap ${fmt(rec.score_pre_cap)}` : "guard")));
+  if (rec.confidence_note) out.push(h("p", { class: "muted small" }, "Confidence note: " + rec.confidence_note));
+  out.push(h("h3", {}, "Categories"), h("table", {}, h("thead", {}, h("tr", {}, ["category", "score 0-100", "nominal weight", "effective weight", "contribution (pts)"].map((x, i) => h("th", { class: i ? "n" : "" }, x)))),
+    h("tbody", {}, Object.entries(rec.categories).map(([k, v]) => h("tr", {}, h("td", {}, spec.categories[k].label), h("td", { class: "n" }, fmt(v.score)), h("td", { class: "n" }, spec.categories[k].nominal_weight), h("td", { class: "n" }, spec.categories[k].effective_weight), h("td", { class: "n" }, fmt(v.contribution, 2)))))));
+  if (rec.items) {
+    const its = Object.entries(rec.items), sum = its.reduce((s, [, v]) => s + v.contribution, 0), tot = sum + (rec.guard_adjustment || 0), gap = tot - rec.score;
+    const dsum = its.reduce((s, [, v]) => s + (v.delta || 0), 0) + (rec.change_guard || 0), chg = prev ? rec.score - prev.score : null;
+    const sameSet = prev && prev.items && Object.keys(prev.items).join() === its.map(x => x[0]).join();
+    out.push(h("h3", {}, "Items: how the score is made"),
+      h("table", {}, h("thead", {}, h("tr", {}, ["item", "category", "value", "points 0-100", "contribution", "Δ vs last month"].map((x, i) => h("th", { class: i > 1 ? "n" : "" }, x)))),
+        h("tbody", {}, its.map(([k, v]) => { const it = spec.items.find(i => i.id === k); return h("tr", { title: it.why }, h("td", {}, it.label, it.higher_is_better ? "" : " ↓better"), h("td", { class: "small" }, spec.categories[it.category].label), h("td", { class: "n" }, `${fmt(v.value, 3)} ${it.unit}`), h("td", { class: "n" }, fmt(v.points)), h("td", { class: "n" }, fmt(v.contribution, 2)), h("td", { class: "n" }, sgn(v.delta, 2))); }))),
+      h("div", { class: "eq" }, `Σ contribution ${fmt(sum, 2)} + guard adjustment ${fmt(rec.guard_adjustment, 2)} = ${fmt(tot, 2)}  vs score ${fmt(rec.score, 2)}   → gap ${fmt(gap, 3)}  `, h("span", { class: Math.abs(gap) <= .15 ? "ok" : "fail" }, Math.abs(gap) <= .15 ? "✓" : "✗")),
+      prev ? h("div", { class: "eq" }, `Σ delta ${fmt(dsum - (rec.change_guard || 0), 2)} + guard effect ${fmt(rec.change_guard || 0, 2)} = ${fmt(dsum, 2)}  vs score change ${fmt(chg, 2)}  `, sameSet ? h("span", { class: Math.abs(dsum - chg) <= .3 ? "ok" : "fail" }, Math.abs(dsum - chg) <= .3 ? "✓" : "✗") : h("span", { class: "muted" }, "(item set changed, not exact by design)")) : null,
+      h("p", { class: "muted small" }, "Hover an item row for its definition. Points = share of the train reference at least as bad × 100; contribution = points × category weight ÷ item count in the category, reweighted over the categories that exist."));
+    out.push(h("h3", {}, "Reasons (why the score is not higher)"), reasonList(rec.reasons), h("h3", {}, "Change reasons (what moved since last month)"), reasonList(rec.change_reasons));
+  } else out.push(h("p", { class: "muted" }, `Items and reasons exist only from ${S.manifest.detail_from_month}. Pick a later month.`));
+  if (d.cluster) out.push(h("h3", {}, `Versus its cluster (${d.cluster.month})`), h("table", {}, h("thead", {}, h("tr", {}, ["metric", "percentile in cluster", "robust z"].map((x, i) => h("th", { class: i ? "n" : "" }, x)))), h("tbody", {}, d.cluster.vs_cluster.map(v => h("tr", {}, h("td", {}, v.metric), h("td", { class: "n" }, fmt(v.percentile, 0)), h("td", { class: "n" }, fmt(v.robust_z, 2)))))));
+  if (d.control && d.control.length) {
+    const ci = Math.min(UI.chart, d.control.length - 1), c = d.control[ci];
+    out.push(h("h3", {}, "Control chart"), h("div", { class: "row" }, h("select", { onchange: e => { UI.chart = +e.target.value; companyDetail(box, id); } }, d.control.map((x, i) => h("option", { value: i, selected: i === ci }, `${x.comparison} · ${x.metric}`)))),
+      chartOf(c), h("p", { class: "muted small" }, controlNote(c)), persistentTable(c));
+  }
+  if (d.forecast) { const f = d.forecast, hist = d.months.slice(-12), ms = [...hist.map(r => r.month), ...f.points.map(p => p.month)], nh = hist.length, pad = a => [...Array(nh - 1).fill(null), hist[nh - 1].score, ...a];
+    out.push(h("h3", {}, `Forecast fan from ${f.origin_month} (method: ${f.method})`), chart({ months: ms, series: [{ values: [...hist.map(r => r.score), ...Array(f.points.length).fill(null)] }], center: [...Array(nh - 1).fill(null), ...Array(f.points.length + 1).fill(f.naive_last)], fan: { lo80: pad(f.points.map(p => p.lo80)), hi80: pad(f.points.map(p => p.hi80)), lo50: pad(f.points.map(p => p.lo50)), hi50: pad(f.points.map(p => p.hi50)), med: pad(f.points.map(p => p.median)) }, clamp: [0, 100] }), h("p", { class: "muted small" }, f.note)); }
+  out.push(h("h3", {}, `Alerts (${alerts.length})`), alerts.length ? alerts.map(a => alertCard(a, false)) : h("p", { class: "muted" }, "None in the feed window."));
+  box.replaceChildren(...out.flat(Infinity));
+}
+function reasonList(rs) { if (!rs || !rs.length) return h("p", { class: "muted small" }, "none"); return h("ul", { class: "plain" }, rs.map(r => h("li", {}, r.sentence, " ", h("span", { class: "muted small" }, `[${r.item}${r.points ? " " + sgn(r.points) + " pts" : ""}${r.eur !== null && r.eur !== undefined ? " · " + eur(r.eur) : ""}]`)))); }
+function chartOf(c) {
+  const pts = []; c.values.forEach((v, i) => { if (v === null) return; if (c.persistent[i]) pts.push({ i, v, r: 4, cls: "per " + c.signal[i], title: `${c.months[i]}: ${v} persistent ${c.signal[i]}` }); else if (c.signal[i] !== "none") pts.push({ i, v, cls: "sig", title: `${c.months[i]}: ${v} raw ${c.signal[i]}` }); else pts.push({ i, v, r: 2, title: `${c.months[i]}: ${v}` }); });
+  return chart({ months: c.months, series: [{ values: c.values }], center: c.center, lo: c.lower, hi: c.upper, ewma: c.ewma, points: pts, clamp: c.comparison === "group_vs_groups" || c.comparison === "cluster" ? null : [0, 100] });
+}
+const CTRL_TEXT = { own_history: "The series against the median of its own 12 months ending 3 months earlier (dashed). Blue band = EWMA limit around that baseline; blue line = smoothed level (EWMA).", cluster: "Company score minus the median score of its behaviour cluster that month: a change of relative standing, not of level.", group_own_history: "Group mean score against its own history; the floor grows as the group gets smaller.", group_vs_groups: "The group's 3-month change in mean score; band = funnel limits fitted on train groups (wider for small groups)." };
+function controlNote(c) { return `${CTRL_TEXT[c.comparison] || ""} Orange = raw signal, large red/green = the 3-of-4 persistence rule holds (low/high). An alert needs persistence AND a material gap (${JSON.stringify(S.manifest.monitor.material_points)}). Method: ${c.method.name}.`; }
+function persistentTable(c) { const rows = c.months.map((m, i) => c.persistent[i] ? [m, c.values[i], c.center[i], c.ewma ? c.ewma[i] : null, c.signal[i]] : null).filter(Boolean); if (!rows.length) return h("p", { class: "muted small" }, "No persistent signal in this chart."); return h("details", {}, h("summary", {}, `${rows.length} persistent months`), h("table", {}, h("thead", {}, h("tr", {}, ["month", "value", "baseline", "smoothed", "direction"].map((x, i) => h("th", { class: i && i < 4 ? "n" : "" }, x)))), h("tbody", {}, rows.map(r => h("tr", {}, h("td", {}, r[0]), h("td", { class: "n" }, fmt(r[1])), h("td", { class: "n" }, fmt(r[2])), h("td", { class: "n" }, fmt(r[3])), h("td", {}, r[4])))))); }
+
+/* ---------- alerts ---------- */
+function alertCard(a, linkOut = true) {
+  const chartIdx = a.kind.startsWith("score") ? 0 : -1;
+  return h("div", { class: "card" }, h("div", {}, h("span", { class: "pill " + a.severity }, a.severity), h("span", { class: "pill" }, a.kind), h("span", { class: "muted" }, a.month + " · "), a.entity.type === "company" ? h("a", { onclick: () => goCompany(a.entity.id, a.month, 0) }, a.entity.id) : h("a", { onclick: () => { UI.tab = "groups"; UI.group = a.entity.id; render(); } }, "group " + a.entity.id)),
+    h("div", {}, h("b", {}, a.title)), h("div", {}, a.summary), reasonList(a.reasons),
+    h("div", { class: "small" }, h("b", {}, "Owner: "), a.owner, " · ", h("b", {}, "Action: "), a.action),
+    h("details", {}, h("summary", {}, "evidence / how it fired"), h("table", {}, h("tbody", {}, Object.entries(a.evidence).map(([k, v]) => h("tr", {}, h("td", { class: "mono" }, k), h("td", {}, String(v))))), h("tbody", {}, h("tr", {}, h("td", { class: "mono" }, "persistence"), h("td", {}, `${a.persistence.rule} (${a.persistence.months_flagged} flagged)`)), h("tr", {}, h("td", { class: "mono" }, "rank_score"), h("td", {}, String(a.rank_score))))),
+      a.entity.type === "company" && chartIdx === 0 ? h("p", {}, h("a", { onclick: () => goCompany(a.entity.id, a.month, 0) }, "open the score chart at this month →")) : null));
+}
+function alerts(m) {
+  const kinds = [...new Set(S.alerts.alerts.map(a => a.kind))], months = [...new Set(S.alerts.alerts.map(a => a.month))].sort().reverse();
+  const selK = h("select", { onchange: draw }, h("option", { value: "" }, "all kinds"), kinds.map(k => h("option", {}, k))), selS = h("select", { onchange: draw }, ["all severities", "act", "watch", "info"].map(x => h("option", {}, x))), selM = h("select", { onchange: draw }, h("option", { value: "" }, "all months"), months.map(k => h("option", {}, k)));
+  const selE = h("select", { onchange: draw }, ["companies and groups", "company", "group"].map(x => h("option", {}, x))), q = h("input", { placeholder: "search id / text", oninput: draw }), out = h("div", {}), cnt = h("p", { class: "muted" }); let shown = 30;
+  function draw() { const n = q.value.toLowerCase(); const rows = S.alerts.alerts.filter(a => (!selK.value || a.kind === selK.value) && (selS.value.startsWith("all") || a.severity === selS.value) && (!selM.value || a.month === selM.value) && (selE.value.startsWith("companies") || a.entity.type === selE.value) && (!n || (a.entity.id + a.summary).toLowerCase().includes(n)));
+    cnt.textContent = `${rows.length} alerts`; out.replaceChildren(...rows.slice(0, shown).map(a => alertCard(a)), rows.length > shown ? h("button", { onclick: () => { shown += 30; draw(); } }, "show more") : null); }
+  m.append(h("h2", {}, "Alert feed"), h("div", { class: "row" }, selM, selK, selS, selE, q), cnt, out); draw();
+}
+
+/* ---------- groups ---------- */
+async function groups(m) {
+  const list = h("div", { class: "list" }), detail = h("div", {}), q = h("input", { placeholder: "search group", oninput: draw });
+  function draw() { const n = q.value.toLowerCase(); const rows = S.groups.groups.filter(g => !n || g.group_id.toLowerCase().includes(n)).sort((a, b) => b.n_companies - a.n_companies);
+    list.replaceChildren(...rows.map(g => h("button", { class: UI.group === g.group_id ? "on" : "", onclick: () => { UI.group = g.group_id; draw(); } }, h("span", {}, g.group_id), h("span", { class: "muted" }, `${g.n_companies} co · ${fmt(g.latest_mean_score, 0)}${g.alert_ids.length ? " ●" : ""}`))));
+    detail.replaceChildren(); if (UI.group) groupDetail(detail, S.groups.groups.find(g => g.group_id === UI.group)); }
+  m.append(h("h2", {}, "Groups"), h("div", { class: "grid" }, h("div", {}, h("div", { class: "row" }, q), list), detail)); draw();
+}
+function groupDetail(box, g) {
+  if (!g) return; const out = [h("h3", {}, g.group_id), h("p", {}, `${g.n_companies} companies · latest mean ${fmt(g.latest_mean_score)} · minimum ${fmt(g.latest_min_score)} (${g.latest_min_company_id || "–"}) · limits ${g.limits_available ? "available" : "not available (needs 3+ scored members)"}`)];
+  out.push(chart({ months: S.groups.months, series: [{ values: g.mean_scores }], clamp: [0, 100] }), h("p", { class: "muted small" }, "Mean score of the members by month (members entering or leaving move it; the chart does not adjust)."));
+  (g.control || []).forEach(c => out.push(h("h3", {}, `${c.comparison}`), chartOf(c), h("p", { class: "muted small" }, controlNote(c)), persistentTable(c)));
+  out.push(h("h3", {}, "Members"), h("p", {}, g.company_ids.map(id => [h("a", { onclick: () => goCompany(id) }, id), " "])));
+  const al = g.alert_ids.map(x => S.alerts.alerts.find(a => a.alert_id === x)).filter(Boolean); out.push(h("h3", {}, `Alerts (${al.length})`), al.map(a => alertCard(a)));
+  box.replaceChildren(...out.flat(Infinity));
+}
+
+/* ---------- method ---------- */
+function method(m) {
+  const sp = S.manifest.spec, mo = S.manifest.monitor;
+  m.append(h("h2", {}, "How the numbers are made"),
+    h("p", {}, "Every claim below comes from the manifest of this bundle, which is generated from the same code that computes the score. Not a bankruptcy predictor; validated only as explainable and monitorable (product/score/validation.md, analysis/monitor/evaluation.md)."),
+    h("h3", {}, "Score = weighted percentile scorecard"), h("ul", { class: "plain" },
+      h("li", {}, "Each item is turned into points 0-100 = share of the train reference that is at least as bad as this company-month (ties count against), so 100 is best. Items inside a category weigh equally."),
+      h("li", {}, "The score is Σ over categories of category score × weight, reweighted over the categories that exist for the company (no invoices → no payment history or mix), with a confidence flag. New credit is thin: effective weight 5, not 10."),
+      h("li", {}, `Guard: no bank booking for ${sp.guard.dark_no_booking_days} days → score capped at ${sp.guard.cap_dark}; last-3-month inflows under ${sp.guard.fading_inflow_ratio * 100}% of the company's earlier level → capped at ${sp.guard.cap_fading}. A raw 90 on a silent company must not read 90.`),
+      h("li", {}, `Trajectory: from 3- and 6-month slopes with persistence (${sp.trajectory.persist_months} months); material slopes ${sp.trajectory.slope3_material} / ${sp.trajectory.slope6_material} pts per month. "dip" = a short fall that does not persist.`)),
+    h("h3", {}, "Categories"), h("table", {}, h("thead", {}, h("tr", {}, ["category", "nominal weight", "effective weight"].map(x => h("th", {}, x)))), h("tbody", {}, Object.entries(sp.categories).map(([k, v]) => h("tr", {}, h("td", {}, v.label), h("td", {}, v.nominal_weight), h("td", {}, v.effective_weight))))),
+    h("h3", {}, "Items"), h("table", {}, h("thead", {}, h("tr", {}, ["item", "category", "unit", "higher is better", "definition"].map(x => h("th", {}, x)))), h("tbody", {}, sp.items.map(i => h("tr", {}, h("td", {}, i.label), h("td", { class: "small" }, sp.categories[i.category].label), h("td", {}, i.unit), h("td", {}, i.higher_is_better ? "yes" : "no (lower is better)"), h("td", { class: "small" }, i.why))))),
+    h("h3", {}, "Monitor"), h("ul", { class: "plain" },
+      h("li", {}, `Control chart: baseline = median of the ${mo.method.params.baseline_window_months} months ending ${mo.method.params.baseline_lag_months} months earlier (needs ${mo.method.params.min_baseline_months}); scale = 1.4826·MAD floored at the train median (floors ${JSON.stringify(mo.floors, (k, v) => typeof v === "number" ? +v.toFixed(2) : v)}); EWMA λ=${mo.method.params.lambda}, limit ${mo.method.params.ewma_L}σ; CUSUM k=${mo.method.params.cusum_k}, h=${mo.method.params.cusum_h}.`),
+      h("li", {}, `Persistence: ${mo.method.params.persistence} months signal the same way. An alert is the ONSET of a persistent signal that is also material: smoothed level at least ${JSON.stringify(mo.material_points)} points from the baseline. Severity: act ≥ 20 points from the baseline, watch ≥ 12, else info; going dark is always act.`),
+      h("li", {}, "Going dark: first month with no bank booking for 60 days. Category drop: only when no score alert covers the window. Improvements alert too (opportunity)."),
+      h("li", {}, "Top customer quiet: last quarter's top customer (largest invoiced AR in months t-3..t-1) got no invoice in month t; alerts once per quiet spell. The model score only ranks (act = top decile of onsets); it is not a probability."),
+      h("li", {}, "Clusters: 17 behaviour features, linear size signal regressed out, k-means, fitted on train. Weak structure: peer groups for a comparison, not segments."),
+      h("li", {}, "Groups: charts only from 3 scored members; limits widen as the group shrinks (variance a + b/n fitted on train groups)."),
+      h("li", {}, `Forecast: ${S.manifest.monitor.forecast_method} — a persistence fan (50% and 80%) from out-of-fold scaled errors; the smoothed level only ties the naive last value.`)),
+    h("h3", {}, "What the bundle cannot tell you"), h("ul", { class: "plain" }, h("li", {}, "Anything about individual invoices or transactions (use the clean DuckDB)."), h("li", {}, "Reasons and items before " + S.manifest.detail_from_month + "."), h("li", {}, "That a company will fail: score-fall alerts are followed by the accepted outcomes about as often as an alert on a random month.")));
+}
+
+/* ---------- boot ---------- */
+(async () => {
+  try {
+    [S.manifest, S.companies, S.alerts, S.groups, S.clusters] = await Promise.all(["manifest.json", "companies.json", "alerts.json", "groups.json", "clusters.json"].map(get));
+    $("#asof").textContent = `${S.manifest.is_sample ? "SAMPLE · " : ""}schema ${S.manifest.schema_version} · as of ${S.manifest.as_of_month}`;
+    const p = new URLSearchParams(location.search); if (p.get("company")) { UI.tab = "companies"; UI.company = p.get("company"); UI.month = p.get("month"); } if (p.get("tab")) UI.tab = p.get("tab"); if (p.get("group")) { UI.tab = "groups"; UI.group = p.get("group"); }
+    render();
+    if (p.get("audit")) document.querySelector("#main button")?.click();
+  } catch (e) { $("#main").replaceChildren(h("p", { class: "fail" }, "Could not load the bundle: " + e.message)); }
+})();
+</script>
+</body>
+</html>

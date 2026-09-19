@@ -40,6 +40,7 @@ Guardrails: holdout `analysis/splits/holdout_companies.csv` is never fit on. Y i
 | 1. Signals | `analysis/` |
 | 2–3. Score 0–100 + explain | `product/score/` (v0 dummy card: `PYTHONPATH=. python -m product.score`) |
 | 4. Web + LLM (company user) | `product/web/` (hosted demo still empty) |
+| Bundle inspector (visual check of an export bundle) | `product/score/inspector/` |
 | Streamlit POC | `poc/` (Sentinel + Portfolio; binds the v0 score when the parquet exists) |
 | App folder | `product/README.md` — Docker/runtime still empty |
 | POC (Streamlit, iterate before `product/`) | `poc/README.md` |
