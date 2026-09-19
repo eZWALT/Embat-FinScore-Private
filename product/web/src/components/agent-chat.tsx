@@ -13,6 +13,7 @@ import {
 import { ArrowUp } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import { AgentBusy } from "@/components/agent-busy";
 import { AgentMarkdown } from "@/components/agent-markdown";
 import { AgentPlot } from "@/components/agent-plot";
 import { AgentTrace } from "@/components/agent-trace";
@@ -154,6 +155,9 @@ export function AgentChat({
                       </p>
                     ) : null,
                   )
+                : segments.length === 0 && streamingMessage ? (
+                    <AgentBusy />
+                  )
                 : segments.map((segment) => {
                     if (segment.kind === "text") {
                       return (
@@ -182,7 +186,10 @@ export function AgentChat({
           );
         })}
         {busy && messages.at(-1)?.role !== "assistant" ? (
-          <li className="text-xs text-muted-foreground">Buscando…</li>
+          <li className="min-w-0 max-w-full space-y-1.5 overflow-hidden rounded-xl border bg-background px-4 py-3">
+            <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Centinela</p>
+            <AgentBusy />
+          </li>
         ) : null}
       </ol>
 
@@ -229,7 +236,7 @@ export function AgentChat({
           aria-label={placeholder}
         />
         <Button type="submit" size="sm" disabled={busy || !input.trim()}>
-          <ArrowUp data-icon="inline-start" />
+          {busy ? <AgentBusy className="size-3.5" /> : <ArrowUp data-icon="inline-start" />}
           Enviar
         </Button>
       </form>

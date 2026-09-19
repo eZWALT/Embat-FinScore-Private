@@ -3,6 +3,7 @@
 import { getToolName, isToolUIPart, type UIMessage } from "ai";
 import { ChevronRight, Wrench } from "lucide-react";
 
+import { AgentBusy } from "@/components/agent-busy";
 import { toolInputSummary, toolLabel, toolOutputSummary, toolTimingMs } from "@/lib/agent/tool-catalog";
 
 type ToolPart = Extract<UIMessage["parts"][number], { type: string }>;
@@ -53,7 +54,7 @@ export function AgentTrace({ part, index }: { part: ToolPart; index?: number }) 
         <ChevronRight className="size-3 shrink-0 transition-transform group-open:rotate-90" />
         <Wrench className="size-3 shrink-0" aria-hidden="true" />
         <span className="min-w-0 flex-1 truncate font-medium text-foreground">{toolLabel(name)}</span>
-        {status === "running" ? <span>Buscando…</span> : null}
+        {status === "running" ? <AgentBusy /> : null}
         {status === "error" ? <span className="text-destructive">Error</span> : null}
         {status === "done" && ms != null ? (
           <span className="shrink-0 font-mono text-[10px] tabular-nums">{formatSeconds(ms)}</span>
