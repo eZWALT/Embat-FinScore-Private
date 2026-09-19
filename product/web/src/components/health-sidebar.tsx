@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   Activity,
@@ -8,7 +7,6 @@ import {
   ChartNoAxesCombined,
   Database,
   Eye,
-  Layers,
   LayoutDashboard,
   MessageSquare,
 } from "lucide-react";
@@ -46,22 +44,11 @@ const views = [
   { id: "health-score" as const, label: "Índice de salud", icon: ChartNoAxesCombined },
 ];
 
-const overviewAnchors = [
-  { label: "Evolución", href: "#evolucion", icon: Activity },
-] as const;
-
 const productLinks = [
   { href: "/", label: "Empresa", icon: Building2 },
-  { href: "/grupos", label: "Grupos", icon: Layers },
   { href: "/watcher", label: "Vigilancia", icon: Eye },
   { href: "/ask", label: "Consultas", icon: MessageSquare },
 ] as const;
-
-type OverviewHref = (typeof overviewAnchors)[number]["href"] | "#resumen";
-
-function isOverviewHref(hash: string): hash is OverviewHref {
-  return hash === "#resumen" || overviewAnchors.some((item) => item.href === hash);
-}
 
 export function HealthSidebar({
   data,
@@ -78,19 +65,6 @@ export function HealthSidebar({
 }) {
   const { setOpenMobile } = useSidebar();
   const pathname = usePathname();
-  const [activeHref, setActiveHref] = useState<OverviewHref>("#resumen");
-
-  useEffect(() => {
-    const syncActiveHref = () => {
-      const { hash } = window.location;
-      setActiveHref(isOverviewHref(hash) ? hash : "#resumen");
-    };
-
-    syncActiveHref();
-    window.addEventListener("hashchange", syncActiveHref);
-
-    return () => window.removeEventListener("hashchange", syncActiveHref);
-  }, []);
 
   return (
     <Sidebar variant="inset" collapsible="icon">
@@ -146,46 +120,11 @@ export function HealthSidebar({
                     tooltip={item.label}
                     onClick={() => {
                       onViewChange(item.id);
-                      if (item.id === "overview") {
-                        setActiveHref("#resumen");
-                      }
                       setOpenMobile(false);
                     }}
                   >
                     <item.icon />
                     <span>{item.label}</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild tooltip="Grupos">
-                  <Link href="/grupos" onClick={() => setOpenMobile(false)}>
-                    <Layers />
-                    <span>Grupos</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              {overviewAnchors.map((item) => (
-                <SidebarMenuItem key={item.href}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={view === "overview" && activeHref === item.href}
-                    tooltip={item.label}
-                  >
-                    <a
-                      href={item.href}
-                      aria-current={
-                        view === "overview" && activeHref === item.href ? "location" : undefined
-                      }
-                      onClick={() => {
-                        onViewChange("overview");
-                        setActiveHref(item.href);
-                        setOpenMobile(false);
-                      }}
-                    >
-                      <item.icon />
-                      <span>{item.label}</span>
-                    </a>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
