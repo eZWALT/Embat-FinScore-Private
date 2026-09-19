@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import {
   Activity,
   BarChart3,
@@ -41,6 +42,12 @@ const navigation = [
   { label: "Señales", href: "#senales", icon: ScanSearch },
 ] as const;
 
+type NavigationHref = (typeof navigation)[number]["href"];
+
+function isNavigationHref(hash: string): hash is NavigationHref {
+  return navigation.some((item) => item.href === hash);
+}
+
 export function HealthSidebar({
   data,
   companyId,
@@ -51,6 +58,19 @@ export function HealthSidebar({
   onCompanyChange: (companyId: string) => void;
 }) {
   const { setOpenMobile } = useSidebar();
+  const [activeHref, setActiveHref] = useState<NavigationHref>("#resumen");
+
+  useEffect(() => {
+    const syncActiveHref = () => {
+      const { hash } = window.location;
+      setActiveHref(isNavigationHref(hash) ? hash : "#resumen");
+    };
+
+    syncActiveHref();
+    window.addEventListener("hashchange", syncActiveHref);
+
+    return () => window.removeEventListener("hashchange", syncActiveHref);
+  }, []);
 
   return (
     <Sidebar variant="inset" collapsible="icon">
@@ -97,10 +117,17 @@ export function HealthSidebar({
           <SidebarGroupLabel>Navegación</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {navigation.map((item, index) => (
+              {navigation.map((item) => (
                 <SidebarMenuItem key={item.href}>
-                  <SidebarMenuButton asChild isActive={index === 0} tooltip={item.label}>
-                    <a href={item.href} onClick={() => setOpenMobile(false)}>
+                  <SidebarMenuButton asChild isActive={activeHref === item.href} tooltip={item.label}>
+                    <a
+                      href={item.href}
+                      aria-current={activeHref === item.href ? "location" : undefined}
+                      onClick={() => {
+                        setActiveHref(item.href);
+                        setOpenMobile(false);
+                      }}
+                    >
                       <item.icon />
                       <span>{item.label}</span>
                     </a>
