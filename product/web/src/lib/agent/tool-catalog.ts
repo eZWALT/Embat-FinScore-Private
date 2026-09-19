@@ -1,3 +1,20 @@
+import type { ComponentType, SVGProps } from "react";
+import {
+  ArrowsRightLeftIcon,
+  BellAlertIcon,
+  BuildingOffice2Icon,
+  ChartBarIcon,
+  ChartPieIcon,
+  CircleStackIcon,
+  PresentationChartLineIcon,
+  ScaleIcon,
+  SignalIcon,
+  UserGroupIcon,
+  WrenchScrewdriverIcon,
+} from "@heroicons/react/24/outline";
+
+type ToolIcon = ComponentType<SVGProps<SVGSVGElement>>;
+
 export const TOOL_LABELS = {
   list_companies: "Listar empresas",
   get_company: "Leer índice",
@@ -13,8 +30,25 @@ export const TOOL_LABELS = {
 
 export type ToolName = keyof typeof TOOL_LABELS;
 
+export const TOOL_ICONS: Record<ToolName, ToolIcon> = {
+  list_companies: BuildingOffice2Icon,
+  get_company: ChartBarIcon,
+  explain_change: ArrowsRightLeftIcon,
+  get_group: UserGroupIcon,
+  get_alerts: BellAlertIcon,
+  get_control_chart: SignalIcon,
+  compare_with_cluster: ScaleIcon,
+  get_forecast: ChartPieIcon,
+  query_clean_db: CircleStackIcon,
+  plot_series: PresentationChartLineIcon,
+};
+
 export function toolLabel(name: string): string {
   return TOOL_LABELS[name as ToolName] ?? name;
+}
+
+export function toolIcon(name: string): ToolIcon {
+  return TOOL_ICONS[name as ToolName] ?? WrenchScrewdriverIcon;
 }
 
 export function toolInputSummary(name: string, input: unknown): string {

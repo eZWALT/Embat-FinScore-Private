@@ -27,7 +27,7 @@ type AgentToolPart = ToolUIPart | DynamicToolUIPart;
 
 type ChatSegment =
   | { kind: "text"; key: string; text: string }
-  | { kind: "tools"; key: string; items: { part: AgentToolPart; runIndex: number; key: string }[] };
+  | { kind: "tools"; key: string; items: { part: AgentToolPart; key: string }[] };
 
 /** Consecutive tools in place; a text part starts a new run. Never regroups tools to the top. */
 function segmentsInStreamOrder(messageId: string, parts: UIMessage["parts"]): ChatSegment[] {
@@ -37,7 +37,6 @@ function segmentsInStreamOrder(messageId: string, parts: UIMessage["parts"]): Ch
       const prev = segments.at(-1);
       const item = {
         part,
-        runIndex: prev?.kind === "tools" ? prev.items.length + 1 : 1,
         key: `${messageId}-tool-${part.toolCallId || partIndex}`,
       };
       if (prev?.kind === "tools") {
@@ -263,7 +262,6 @@ export function AgentChat({
                             <div key={item.key} className="min-w-0 space-y-1">
                               <AgentTrace
                                 part={item.part}
-                                index={item.runIndex}
                                 keepBusy={showPulse && lastTool}
                               />
                               {plot ? <AgentPlot spec={plot} /> : null}

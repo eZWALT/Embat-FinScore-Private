@@ -1,10 +1,10 @@
 "use client";
 
 import { getToolName, isToolUIPart, type UIMessage } from "ai";
-import { ChevronRight, Wrench } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 
 import { AgentBusy } from "@/components/agent-busy";
-import { toolInputSummary, toolLabel, toolOutputSummary, toolTimingMs } from "@/lib/agent/tool-catalog";
+import { toolIcon, toolInputSummary, toolLabel, toolOutputSummary, toolTimingMs } from "@/lib/agent/tool-catalog";
 import { formatDecimal } from "@/lib/display";
 
 type ToolPart = Extract<UIMessage["parts"][number], { type: string }>;
@@ -33,16 +33,15 @@ function formatSeconds(ms: number): string {
 
 export function AgentTrace({
   part,
-  index,
   keepBusy = false,
 }: {
   part: ToolPart;
-  index?: number;
   /** Stay spinning after the tool finishes, until the first reply token. */
   keepBusy?: boolean;
 }) {
   if (!isToolUIPart(part)) return null;
   const name = getToolName(part);
+  const Icon = toolIcon(name);
   const status = toolState(part);
   const showSpinner = status === "running" || keepBusy;
   const input = "input" in part ? part.input : undefined;
@@ -57,14 +56,9 @@ export function AgentTrace({
   return (
     <details className="group min-w-0 text-[12px] leading-snug">
       <summary className="flex min-w-0 cursor-pointer list-none items-center gap-1.5 overflow-hidden py-0.5 text-muted-foreground">
-        {index != null ? (
-          <span className="w-3 shrink-0 text-center font-mono text-[10px] tabular-nums" aria-hidden="true">
-            {index}
-          </span>
-        ) : null}
+        <Icon className="size-3 shrink-0" aria-hidden="true" />
+        <span className="min-w-0 truncate font-medium text-foreground">{toolLabel(name)}</span>
         <ChevronRight className="size-3 shrink-0 transition-transform group-open:rotate-90" />
-        <Wrench className="size-3 shrink-0" aria-hidden="true" />
-        <span className="min-w-0 flex-1 truncate font-medium text-foreground">{toolLabel(name)}</span>
         {showSpinner ? <AgentBusy /> : null}
         {status === "error" && !keepBusy ? <span className="text-destructive">Error</span> : null}
         {status === "done" && !keepBusy && ms != null ? (

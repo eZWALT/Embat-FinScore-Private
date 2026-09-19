@@ -1,7 +1,5 @@
-import { Wrench } from "lucide-react";
-
 import { WatcherSpark } from "@/components/agent-plot";
-import { toolLabel } from "@/lib/agent/tool-catalog";
+import { toolIcon, toolLabel } from "@/lib/agent/tool-catalog";
 import { entityLabel } from "@/lib/display";
 import { formatMonth } from "@/lib/format-month";
 import type { WatcherBullet, WatcherPost } from "@/lib/agent/watcher-post";
@@ -50,9 +48,10 @@ export function WatcherPostView({ post, flat = false }: { post: WatcherPost; fla
 }
 
 export function ToolCallChip({ name }: { name: string }) {
+  const Icon = toolIcon(name);
   return (
     <span className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] text-muted-foreground">
-      <Wrench className="size-3" aria-hidden="true" />
+      <Icon className="size-3" aria-hidden="true" />
       <span>{toolLabel(name)}</span>
     </span>
   );

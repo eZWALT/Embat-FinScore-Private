@@ -13,6 +13,7 @@
   "dependencies": {
     "@ai-sdk/openai": "^4.0.71",
     "@ai-sdk/react": "^4.0.110",
+    "@heroicons/react": "^2.2.0",
     "@neondatabase/serverless": "^1.1.0",
     "ai": "^7.0.107",
     "class-variance-authority": "^0.7.1",
