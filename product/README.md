@@ -1,12 +1,17 @@
 # product/
 
-Goals 2–4. `score/` is implemented (score, trajectory, explanations; see its README). `web/` is still a static mockup: no image, runtime or hosted page.
+Goals 2–4. A first dummy 0–100 card lives in [`score/`](score/).
+Web and Docker are still empty.
 
 | Path | Goal |
 |------|------|
-| [`score/`](score/) | 2. Health index 0–100 (hard feature engineering + rationale). 3. Explainability |
+| [`score/`](score/) | v0 dummy FICO-like score (train-only percentiles, a-priori weights) and the explainable scorecard with guard, trajectory, reasons and validation (`python -m product.score.run`) |
 | [`web/`](web/) | 4. Webpage + LLM. User = the company that gives the data |
 | `Dockerfile` | Empty. No base image or `CMD` |
 | `src/embat_finscore/` | Empty package name only |
+
+```bash
+PYTHONPATH=. python -m product.score
+```
 
 Do not `docker build`. Do not assume a web or LLM stack.

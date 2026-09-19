@@ -31,7 +31,7 @@ from . import spec
 from .fit import DEFAULT_STORE, fit_reference, load_holdout
 from .items import compute_items
 from .explain import trajectory
-from .score import score_frame
+from .scorecard import score_frame
 
 OUTCOMES = list(spec.OUTCOME_FORBIDDEN_FAMILIES)
 OUTCOME_MODULES = ["y2_stress", "y4_debt", "y5_payment", "y7_concentration", "y9_fees"]

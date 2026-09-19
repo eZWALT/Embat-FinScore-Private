@@ -23,7 +23,7 @@ from .amounts import compute_amounts
 from .explain import attribution, reasons, trajectory
 from .fit import load_reference
 from .items import compute_items
-from .score import score_frame
+from .scorecard import score_frame
 
 
 def score_store(store: pd.DataFrame, ref: dict, con=None, with_reasons: bool = True, drop_families=frozenset()) -> pd.DataFrame:

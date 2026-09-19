@@ -1,8 +1,104 @@
-# product/score/ — FICO-like company health score (0–100)
+# product/score/ — v0 dummy FICO-like card
 
+A first 0–100 number the product can show. Weights are fixed in advance.
+The only fit is a train-only percentile table. Not a model, not a claim
+about the hidden test.
+
+```bash
+PYTHONPATH=. python -m product.score
+```
+
+Writes `outputs/monthly_scores.parquet` and `outputs/ref_v0.json` (gitignored).
+
+## Row contract (v0, for `poc/` and later `product/web/`)
+
+One row per `company_id` × `period`. Bind these; treat the rest as extras.
+
+| Column | Meaning |
+|---|---|
+| `score` | Monthly 0–100 after stretch and dark cap |
+| `score_3m` | **Headline.** 3-month median of `score` |
+| `state` | `improving` / `stable` / `deteriorating` from Δ `score_3m` over 3 months (long dark → deteriorating) |
+| `confidence` | 0–1 from available category weight (thin file ×0.8; dark capped at 0.55) |
+| `confidence_band` | `high` / `medium` / `low` |
+| `no_invoices` | Payment + mix missing; do not show a 90 as “perfect payer” |
+| `going_dark` / `going_dark_long` | Dark cap fired |
+| `cat_payment_history` / `cat_amounts_owed` / `cat_length_stability` / `cat_mix` | Category 0–100 (NaN if dropped) |
+| `reason_1_es` … `reason_3_es` (and `_en`, `_code`) | Weakest items; Spanish for the UI |
+| `group_id` | From the store, when present |
+
+Not in v0: fifth “new credit” subscore, € on each reason, owner/action alerts (those stay step 3 / Sentinel). Rebuild the parquet after card changes.
+
+## What is on the card
+
+New credit is empty here (utilisation 1.6%, no bounced-payment token,
+facility counts are connection artefacts). Its 10 FICO points move to
+amounts owed.
+
+| Category | Weight | Variables | Direction |
+|---|---:|---|---|
+| Payment history | 35 | `e_ar_overdue_30`, `e_ap_overdue_30`, `e_delay_coll`, `e_delay_paid` | lower better |
+| Amounts owed | 40 | `b_runway`, `f_ds_r`, `f_fc_r` | runway up, ratios down |
+| Length / stability | 15 | `active_share_6` (share of last 6 months with a bank movement) | higher better |
+| Mix | 10 | `d_cust_top1`, but only the tail: 0.70 → 100 pts, 0.975 → 0 pts | lower better |
+
+Missing category → drop it and reweight the rest. No invoices (about 470
+of 1,214 train companies) means payment and mix are empty, so the number
+is runway + debt cost + “still operating”, with a medium/low confidence
+flag.
+
+Left out on purpose:
+
+- Social security / payroll / movement-days as “quiet = healthier” (Y3 trap).
+- `trail_months` as points (mostly when the company connected, not age).
+- `d_supp_hhi` (night found concentration *protective*; unsigned).
+- `e_credit_note_ratio` (experimental).
+- `e_issued_top1` / customer-loss (alert layer, not this score).
+
+## Guards
+
+- **Going dark scores low, never high.** No movements this month → cap 50.
+  Recency > 45 days → cap 35.
+- **Thin file:** fewer than 6 months on the grid → confidence × 0.8.
+  Not extra points for a long extract.
+- **Holdout** (`analysis/splits/holdout_companies.csv`) never enters the
+  percentile table.
+
+Averaging several percentile items would leave almost everyone in the
+40s–60s. After the weighted mean we stretch by 2 around 50 (a priori, not
+fit): `clip(50 + 2*(raw − 50), 0, 100)`. Then the dark cap.
+
+## Headline the product should show
+
+`score_3m` = 3-month median of the monthly score, plus a coarse state
+from the 3-month change (improving / stable / deteriorating). Long dark
+is always deteriorating.
+
+Reasons are the weakest items below 50 points, plus the dark cap when it
+fires. English and Spanish sentences sit on the row.
+
+## First run (train, latest month 2026-08)
+
+1,214 companies. `score_3m` p10 / p50 / p90 = **17 / 47 / 80**.
+39% have no invoices (cash + “still operating” only; flag the gap).
+10% are going dark (median 35). Mix is 100 for almost everyone — the
+body of concentration is treated as noise; only the >97.5% tail hurts.
+
+## What this is not
+
+It does not explain 82→68 without cash (runway *is* cash; that is the
+photograph, not a cause). It is not validated yet against the eight
+accepted outcomes. Do not quote an AUROC for this card until that check
+runs.
+
+---
+
+## Explainable scorecard (modules `spec`, `items`, `fit`, `scorecard`, `explain`, `run`, `validate`)
+
+Second, separate implementation of plan step 2 living beside the v0 dummy above: it does not write the v0 parquet and the POC does not read it yet. Modules are `spec.py`, `items.py`, `fit.py` (writes `reference.json`), `scorecard.py`, `explain.py`, `amounts.py`, `run.py`, `validate.py`, `guard_test.py`, `score_new_check.py`; run them as `python -m product.score.run` etc. (not `python -m product.score`, which is the v0 card).
 A documented, explainable score computed monthly and as-of (no look-ahead) from trailing 3–6 month windows of the treasury trail, with a trajectory state, per-variable contributions, month-on-month attribution and plain-language reasons with the € behind each. **It is a method, not a proven predictor**: on the accepted outcomes it does not beat a company-size baseline (see [validation.md](validation.md)). The claim is *explainable and monitorable*. Nothing here says anything about the hidden test.
 
-## Run
+### Run
 
 Set `PYTHONUTF8=1` and `PYTHONPATH=<repo>/.venv/Lib/site-packages:<repo>` (system Python; duckdb, pandas, pyarrow, scipy).
 
@@ -16,7 +112,7 @@ Set `PYTHONUTF8=1` and `PYTHONPATH=<repo>/.venv/Lib/site-packages:<repo>` (syste
 
 `score_new` writes `scores.csv` (`company_id, month, score, trajectory, confidence`) and `scores_detail.parquet` (categories, per-item points and contributions, month-on-month attribution `d_*`, `reasons`, `change_reasons`). The output format is ours; the organizers' submission format is still unknown.
 
-## Method
+### Method
 
 Fixed a priori (`spec.py`): categories, weights, items, directions, caps, thresholds. Fitted: only the percentile reference (`reference.json`: 501 quantiles per item, train companies only, holdout excluded by assertion).
 
@@ -40,11 +136,11 @@ Fixed a priori (`spec.py`): categories, weights, items, directions, caps, thresh
 
 **Explanations.** `contrib_<item>` sums to the pre-cap score; `guard` adjustment = score − pre-cap score. `d_<item>` is the month-on-month change per item and sums exactly to the score change (max error 3e-14), including re-weighting when a category appears. `reasons`: top 4 items by points lost against a perfect item, each with a sentence and the € behind it (late-paid amounts from `clean.invoices` over the 5 months the delay averages, overdue stock now, cash and monthly outflows, debt service and fees over 5 months, top-customer billing, credit notes). `change_reasons`: top 4 movers since last month.
 
-## Validation (numbers in [validation.md](validation.md), regenerated by `validate.py`)
+### Validation (numbers in [validation.md](validation.md), regenerated by `validate.py`)
 
 Eight accepted outcomes (`y2_neg_2of3`, `y4_ds_r_double`, `y5_*`, `y7_*`, `y9_*`; never `y3_recover_cash_6m`), 5-fold CV by group on train, reference refit per fold, the items from the label's own feature family removed per outcome, AUROC with 95% group-bootstrap intervals, size baseline. Result: level AUROC 0.48–0.55 with every interval containing 0.5, never significantly above the size baseline (which is itself ~0.5); a 3-month score fall does no better (0.455–0.537), and a naive inflow-drop monitor is at least as good. Trajectory states have no consistent relative risk across outcomes. Weights barely matter: 60 random reweightings (±30%) keep Spearman ≥ 0.977 with the base score and move AUROC by at most 0.013 on any outcome (dropping the payment-history or amounts-owed category moves it by up to 0.03–0.06). **Holdout looked at once** (72 companies, 8–96 positives per outcome, LOW_POWER; reference fitted on all train): AUROC 0.39–0.63, same picture (table in validation.md); it was not used for any choice, do not look again. Sanity check that the machinery works: with the family left in, `amounts_owed` predicts `y2_neg_2of3` at AUROC 0.84 (leaky by construction, not a result). Most accepted outcomes are defined against the company's own history (`ownp80`, `double`, `top1_lost`), so a *level* score has no reason to predict them; the night's own finding that levels are traits points the same way.
 
-## Limits and open items
+### Limits and open items
 
 - Not predictive on these outcomes; explainable and monitorable only. No claim on the hidden test.
 - No debt balance path: `debt_schedule_config` covers 87 loans (40 companies) and was not tested for rebuilding balances; debt enters only as debt service and fees over inflows.

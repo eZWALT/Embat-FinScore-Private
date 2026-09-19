@@ -26,7 +26,7 @@ from . import spec
 from .fit import DEFAULT_STORE, fit_reference, load_holdout, load_reference
 from .items import compute_items
 from .run import score_store
-from .score import score_frame
+from .scorecard import score_frame
 
 CUTOFF = pd.Timestamp("2026-03-01")   # first month without activity
 N_COMPANIES = 60
