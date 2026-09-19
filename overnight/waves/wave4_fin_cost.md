@@ -29,4 +29,4 @@ Y3 native 0.634 vs days 0.711 vs size 0.617 vs f_fc_r 0.559. beat_size=0.018. ρ
 
 - no replica miss; leftover after days 0.483 dies and is a fake days leak (ρ=-0.845; OLS 0.683). Exact twin of f_fin_cost ρ=1.000. beat_size +0.018 fails. CLOSE leftover / DROP from the 44. Do not put a_fin_cost on the 15-col card. KEEP f_fc_r_lag3 on TURNOVER.
 
-Elapsed 59s.
+Elapsed 60s.

@@ -1,12 +1,12 @@
 # Unused leftover of `a_op_out` after days as Y3 X
 
-Generated `2026-09-19T07:33:59+02:00` by agent `572fb928`. DuckDB `clean` read-only. `monthly.parquet` / `targets.parquet` read-only. Rates and AUROC on **train**. Holdout 72 is coverage only. Seed 20260918 group folds. No 0–100. No parquet rewrite. No new GBM. No `build_targets`. Do not invent `y_op_out`. Do not put a_op_out on the 15-col card. Do not overwrite `a_vol_qa.*`, `transfer_qa.*`, `growth_qa.*`, `in3_qa.*`, `n_accounts_qa.*`. Do not quote a_out_vol 0.722 as the engine. Do not grow TURNOVER.
+Generated `2026-09-19T07:37:44+02:00` by agent `572fb928`. DuckDB `clean` read-only. `monthly.parquet` / `targets.parquet` read-only. Rates and AUROC on **train**. Holdout 72 is coverage only. Seed 20260918 group folds. No 0–100. No parquet rewrite. No new GBM. No `build_targets`. Do not invent `y_op_out`. Do not put a_op_out on the 15-col card. Do not overwrite `a_vol_qa.*`, `transfer_qa.*`, `growth_qa.*`, `in3_qa.*`, `n_accounts_qa.*`. Do not quote a_out_vol 0.722 as the engine. Do not grow TURNOVER.
 
 `a_op_out` = -sum(amount | grp = op_out) this month. Trailing twins: `a_out3` / `a_out6` / `a_out12`. `a_in3` leftover 0.521 already CLOSE. Size bar 0.617 stays.
 
 ## Headline
 
-CLOSE unused leftover leftover-after-days rank 0.586 (OLS 0.675, fake=True). Y3 a_op_out 0.678 vs days 0.711 vs size 0.617 vs a_out3 0.601. SIZE=True twin_gate=True twins=['a_out3', 'a_out6']. Inverse days-after-a_op_out 0.638. Leftover after a_out3 0.617. after days+size 0.576. Q6 lag1 leftover 0.561. Demean leftover 0.5245587556401319 dies. mid-quintile leftover 0.46855822925798485 dies; T3 leftover 0.438 dies. Card: **CLOSE unused leftover** / KEEP off the 15-col card. Night Y3 0.762/0.752, days 0.711, size 0.617, TURNOVER 0.720/0.712 unchanged.
+CLOSE unused leftover leftover-after-days rank 0.586 (OLS 0.675, fake=True). Y3 a_op_out 0.678 vs days 0.711 vs size 0.617 vs a_out3 0.601. SIZE=True twin_gate=True twins=['a_out3', 'a_out6']. Inverse days-after-a_op_out 0.638. Leftover after a_out3 0.617. after days+size 0.576. Q6 lag1 leftover 0.561. Demean leftover 0.525 dies. mid-quintile leftover 0.469 dies; T3 leftover 0.438 dies. leftover after days+CV 0.518 dies (vol ate leftover). Card: **CLOSE unused leftover** / KEEP off the 15-col card. Night Y3 0.762/0.752, days 0.711, size 0.617, TURNOVER 0.720/0.712 unchanged.
 
 ## Brief questions
 
@@ -271,6 +271,26 @@ outflow CV Y3 0.795 leftover after size 0.763 fake=False ρ vs size -0.367. afte
 
 CV leftover after a_n_tx 0.735 ρ=-0.478. after a_out3 0.760 ρ=-0.448. after days+n_tx+size 0.732. PARK — not a_op_out KEEP; off the card.
 
+### leftover of a_op_out after days+CV
+
+a_op_out leftover after days+CV 0.518 fake=False. after days+CV+size 0.469. after days+CV+out3 0.534.
+
+### leftover of CV after a_op_out (inverse)
+
+CV leftover after a_op_out 0.730 fake=False. after a_op_out+days 0.717. a_op_out leftover after days+CV died 0.518 — vol ate the leftover.
+
+### leftover of a_op_out after CV-only / last-labeled days+CV
+
+a_op_out leftover after CV-only 0.548 fake=False. last-labeled leftover after days+CV 0.586 n=719.
+
+### leftover after days+CV on Dark / ERP / T3
+
+leftover after days+CV Dark 0.562 ERP 0.440 T3 0.469 2026 0.582.
+
+### leftover after days+CV on Q5 / mid / net-out
+
+leftover after days+CV Q5 0.766 mid 0.638 net-out 0.549.
+
 ## Night quotes (unchanged)
 
 | quote | locked |
@@ -292,5 +312,5 @@ Do not quote a_out_vol 0.722 as the engine. Do not grow TURNOVER. Do not put `a_
 - append-only `analysis/experiments/registry.csv`
 - `overnight/waves/wave4_op_out.md` (end, if WRITE_WAVE)
 
-Elapsed 19s. Failed: none.
+Elapsed 18s. Failed: none.
 

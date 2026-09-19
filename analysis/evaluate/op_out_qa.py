@@ -1455,6 +1455,110 @@ def extra_cv_twins(tr: pd.DataFrame, xsi: dict) -> dict:
     return {"n": after_n["rank"], "o": after_o["rank"], "dno": after_dno["rank"], "prose": prose}
 
 
+def extra_opout_after_cv(tr: pd.DataFrame, xsi: dict) -> dict:
+    print("\n" + "=" * 72)
+    print("EXTRA — leftover of a_op_out after days+CV (does vol eat leftover?)")
+    print("=" * 72)
+    y = pd.to_numeric(tr[Y3], errors="coerce")
+    lab = y.notna()
+    cv = xsi["cv"]
+    after = leftover_diag(y, tr[FLAG], (tr["c_n_days_with_tx"], cv), tr["fold"], lab)
+    after_s = leftover_diag(y, tr[FLAG], (tr["c_n_days_with_tx"], cv, tr["log_in3"]), tr["fold"], lab)
+    after_o = leftover_diag(y, tr[FLAG], (tr["c_n_days_with_tx"], cv, tr["a_out3"]), tr["fold"], lab)
+    prose = (
+        f"a_op_out leftover after days+CV {_f(after['rank'])} fake={after['fake']}. "
+        f"after days+CV+size {_f(after_s['rank'])}. after days+CV+out3 {_f(after_o['rank'])}."
+    )
+    print(prose)
+    return {"rank": after["rank"], "both": after_s["rank"], "prose": prose}
+
+
+def extra_cv_after_opout(tr: pd.DataFrame, xsi: dict) -> dict:
+    print("\n" + "=" * 72)
+    print("EXTRA — leftover of outflow CV after a_op_out (inverse)")
+    print("=" * 72)
+    y = pd.to_numeric(tr[Y3], errors="coerce")
+    lab = y.notna()
+    cv = xsi["cv"]
+    after = leftover_diag(y, cv, (tr[FLAG],), tr["fold"], lab)
+    after_d = leftover_diag(y, cv, (tr[FLAG], tr["c_n_days_with_tx"]), tr["fold"], lab)
+    prose = (
+        f"CV leftover after a_op_out {_f(after['rank'])} fake={after['fake']}. "
+        f"after a_op_out+days {_f(after_d['rank'])}. "
+        f"a_op_out leftover after days+CV died 0.518 — vol ate the leftover."
+    )
+    print(prose)
+    return {"rank": after["rank"], "both": after_d["rank"], "prose": prose}
+
+
+def extra_opout_cv_only(tr: pd.DataFrame, xsi: dict) -> dict:
+    print("\n" + "=" * 72)
+    print("EXTRA — leftover of a_op_out after CV only; leftover after days+CV last-labeled")
+    print("=" * 72)
+    y = pd.to_numeric(tr[Y3], errors="coerce")
+    lab = y.notna()
+    cv = xsi["cv"]
+    after = leftover_diag(y, tr[FLAG], (cv,), tr["fold"], lab)
+    last_lab = tr.loc[lab].groupby("company_id")["period"].transform("max")
+    last_m = pd.Series(False, index=tr.index)
+    last_m.loc[lab] = pd.to_datetime(tr.loc[lab, "period"]) == last_lab
+    last_cv = leftover_diag(y, tr[FLAG], (tr["c_n_days_with_tx"], cv), tr["fold"], last_m)
+    prose = (
+        f"a_op_out leftover after CV-only {_f(after['rank'])} fake={after['fake']}. "
+        f"last-labeled leftover after days+CV {_f(last_cv['rank'])} n={last_cv['n']}."
+    )
+    print(prose)
+    return {"cv_only": after["rank"], "last": last_cv["rank"], "prose": prose}
+
+
+def extra_cv_slices(tr: pd.DataFrame, xsi: dict, book: set[str]) -> dict:
+    print("\n" + "=" * 72)
+    print("EXTRA — leftover after days+CV on Dark / ERP / T3")
+    print("=" * 72)
+    y = pd.to_numeric(tr[Y3], errors="coerce")
+    lab = y.notna()
+    cv = xsi["cv"]
+    dark = ~tr["company_id"].isin(book)
+    d = leftover_diag(y, tr[FLAG], (tr["c_n_days_with_tx"], cv), tr["fold"], lab & dark)
+    e = leftover_diag(y, tr[FLAG], (tr["c_n_days_with_tx"], cv), tr["fold"], lab & ~dark)
+    med = tr.groupby("company_id")["log_in3"].median()
+    cuts = med.quantile([1 / 3, 2 / 3])
+    mapped = tr["company_id"].map(med)
+    t3 = leftover_diag(
+        y, tr[FLAG], (tr["c_n_days_with_tx"], cv),
+        tr["fold"], lab & (mapped > cuts.iloc[1]),
+    )
+    yr = pd.to_datetime(tr["period"]).dt.year
+    y26 = leftover_diag(y, tr[FLAG], (tr["c_n_days_with_tx"], cv), tr["fold"], lab & (yr == 2026))
+    prose = (
+        f"leftover after days+CV Dark {_f(d['rank'])} ERP {_f(e['rank'])} "
+        f"T3 {_f(t3['rank'])} 2026 {_f(y26['rank'])}."
+    )
+    print(prose)
+    return {"d": d["rank"], "e": e["rank"], "t3": t3["rank"], "y26": y26["rank"], "prose": prose}
+
+
+def extra_cv_q(tr: pd.DataFrame, xsi: dict) -> dict:
+    print("\n" + "=" * 72)
+    print("EXTRA — leftover after days+CV on Q5 / mid-quintile / net-out")
+    print("=" * 72)
+    y = pd.to_numeric(tr[Y3], errors="coerce")
+    lab = y.notna()
+    cv = xsi["cv"]
+    x = pd.to_numeric(tr[FLAG], errors="coerce")
+    q = pd.qcut(x.where(x > 0), 5, labels=False, duplicates="drop")
+    q5 = leftover_diag(y, tr[FLAG], (tr["c_n_days_with_tx"], cv), tr["fold"], lab & (q == 4))
+    mid = leftover_diag(y, tr[FLAG], (tr["c_n_days_with_tx"], cv), tr["fold"], lab & q.isin([1, 2, 3]))
+    net = pd.to_numeric(tr["a_net"], errors="coerce")
+    neg = leftover_diag(y, tr[FLAG], (tr["c_n_days_with_tx"], cv), tr["fold"], lab & (net < 0))
+    prose = (
+        f"leftover after days+CV Q5 {_f(q5['rank'])} mid {_f(mid['rank'])} "
+        f"net-out {_f(neg['rank'])}."
+    )
+    print(prose)
+    return {"q5": q5["rank"], "mid": mid["rank"], "neg": neg["rank"], "prose": prose}
+
+
 def decide(p1, p2, p3) -> dict:
     # Rank leftover is honest. OLS fake days leak must not kill a living rank.
     leftover_lives = bool(np.isfinite(p3["rank"]) and p3["rank"] >= CHANCE)
@@ -1556,8 +1660,9 @@ def write_md(ctx: dict) -> None:
             f"vs a_out3 {_f(p2['out3'])}. SIZE={p1['is_size']} twin_gate={p1['twin_gate']} "
             f"twins={p1['gate_twins'] or 'none'}. Inverse days-after-a_op_out {_f(p3['inv_rank'])}. "
             f"Leftover after a_out3 {_f(p4['rank'])}. after days+size {_f(p5['after_b'])}. "
-            f"Q6 lag1 leftover {_f(p6['l1_rank'])}. Demean leftover {ctx['xd']['rank']} dies. "
-            f"mid-quintile leftover {ctx['xwq']['mid']} dies; T3 leftover 0.438 dies. "
+            f"Q6 lag1 leftover {_f(p6['l1_rank'])}. Demean leftover {_f(ctx['xd']['rank'])} dies. "
+            f"mid-quintile leftover {_f(ctx['xwq']['mid'])} dies; T3 leftover 0.438 dies. "
+            f"leftover after days+CV {_f(ctx['xoc']['rank'])} dies (vol ate leftover). "
             f"Card: **{d['role']}** / KEEP off the 15-col card. "
             f"Night Y3 0.762/0.752, days 0.711, size 0.617, TURNOVER 0.720/0.712 unchanged."
         ),
@@ -1646,6 +1751,11 @@ def write_md(ctx: dict) -> None:
         "### leftover after days+size on noisy / leftover of CV", "", ctx["xnc"]["prose"], "",
         "### leftover of outflow CV after size (PARK)", "", ctx["xcs"]["prose"], "",
         "### leftover of outflow CV after n_tx / out3 (PARK)", "", ctx["xct"]["prose"], "",
+        "### leftover of a_op_out after days+CV", "", ctx["xoc"]["prose"], "",
+        "### leftover of CV after a_op_out (inverse)", "", ctx["xco"]["prose"], "",
+        "### leftover of a_op_out after CV-only / last-labeled days+CV", "", ctx["xoo"]["prose"], "",
+        "### leftover after days+CV on Dark / ERP / T3", "", ctx["xcv"]["prose"], "",
+        "### leftover after days+CV on Q5 / mid / net-out", "", ctx["xcq"]["prose"], "",
         "## Night quotes (unchanged)",
         "",
         "| quote | locked |",
@@ -1766,6 +1876,11 @@ def write_wave(ctx: dict) -> None:
         f"- {ctx['xnc']['prose']}\n"
         f"- {ctx['xcs']['prose']}\n"
         f"- {ctx['xct']['prose']}\n"
+        f"- {ctx['xoc']['prose']}\n"
+        f"- {ctx['xco']['prose']}\n"
+        f"- {ctx['xoo']['prose']}\n"
+        f"- {ctx['xcv']['prose']}\n"
+        f"- {ctx['xcq']['prose']}\n"
         f"- {ctx['xb']['prose']}\n\n"
         f"{d['why']}\n\n"
         f"## What failed / next\n\n"
@@ -1836,6 +1951,11 @@ def main() -> None:
     xnc = extra_noisy_cv(tr, xsi)
     xcs = extra_cv_size(tr, xsi)
     xct = extra_cv_twins(tr, xsi)
+    xoc = extra_opout_after_cv(tr, xsi)
+    xco = extra_cv_after_opout(tr, xsi)
+    xoo = extra_opout_cv_only(tr, xsi)
+    xcv = extra_cv_slices(tr, xsi, book)
+    xcq = extra_cv_q(tr, xsi)
     decision = decide(p1, p2, p3)
     print("\n" + "=" * 72)
     print(f"VERDICT: {decision['role']}")
@@ -1852,7 +1972,7 @@ def main() -> None:
         "xb": xb, "xa": xa, "xw": xw, "xz": xz, "xy7": xy7, "x2": x2, "xo": xo,
         "x3": x3, "xd": xd, "xp": xp, "xr": xr, "xsf": xsf,
         "xsh": xsh, "xlh": xlh, "xm": xm, "xps": xps, "xgz": xgz,
-        "xll": xll, "xwq": xwq, "xls": xls, "xfs": xfs, "xdl": xdl, "xor": xor, "xlr": xlr, "xin": xin, "xei": xei, "xl3": xl3, "xlo": xlo, "xnt": xnt, "xmd": xmd, "xsi": xsi, "xnc": xnc, "xcs": xcs, "xct": xct,
+        "xll": xll, "xwq": xwq, "xls": xls, "xfs": xfs, "xdl": xdl, "xor": xor, "xlr": xlr, "xin": xin, "xei": xei, "xl3": xl3, "xlo": xlo, "xnt": xnt, "xmd": xmd, "xsi": xsi, "xnc": xnc, "xcs": xcs, "xct": xct, "xoc": xoc, "xco": xco, "xoo": xoo, "xcv": xcv, "xcq": xcq,
         "decision": decision, "failed": failed, "elapsed_s": elapsed, "png": png,
     }
     write_md(ctx)

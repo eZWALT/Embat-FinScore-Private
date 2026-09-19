@@ -1,6 +1,7 @@
 # Wave 4 — invoice literature (as-of ~07:35)
 
 Owner: lit invoice / trade-credit / concentration / fee-as-label / Q4–Q6.
+As-of ~07:40 CEST (pass 3). Seat stays until ~10:00.
 Deliverable: `analysis/outputs/lit_invoice.md` + `lit_invoice_cluster.csv`.
 Sibling cash-flow scorecards → `analysis/outputs/lit_cashflow.md`. Do not grow TURNOVER **0.720**. Hidden 72 never fit.
 
@@ -24,7 +25,7 @@ Pérez-Salazar is the only **CONTRADICT** (synthetic supplier-HHI = fragility; o
 2. **Wave B — AR issued to last month’s top-1 after firm issued_lag1, on Y7 rows** (`issued_top1_qa`). Jacobson demand-shrinkage / Irvine major-customer / Amberg issued −1 pp. **Not** `d_cust_lost` (Y3 leftover 0.522 already died; n_cust twin). Never D-on-Y7.
 3. **Wave D — Y5 65% leftover as net TC × activity** (`y5_net_tc_qa`). Bureau: 1 SD (AP−AR) → +10% payment-default PD **only in shock months**. Diagnostic only — **never E as Y5 X**. If leftover dies, 65% stays the sentence.
 
-Wave C (CN note vs refund / top-1 notes) is the footnote cut if A/B/D need a fourth seat. No PD paper exists; Boissay 16.2% vs 2.1% is the only number.
+Wave C (`cn_top1_qa`) is the footnote seat if A/B/D need a fourth: CN |amt| on last month’s top-1 after firm CN. Do **not** redo note vs refund (already 0.595 / 0.496). No PD paper exists; Boissay 16.2% vs 2.1% is the only number.
 
 ## Night numbers this wave must not move
 

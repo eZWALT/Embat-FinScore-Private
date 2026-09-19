@@ -80,14 +80,18 @@
   "n_accounts": "CLOSE unused leftover. DROP from the 44 as Y3 X. Leftover after days rank 0.428 dies. Single 0.581 vs days 0.711. Twin of g_n_banks ρ 0.880. Rise-only 1561/0. Checking hole 99.1%. Access ≠ ERP. PARK y_n_accounts",
   "util_snap": "PARK as snapshot X. DROP from the 44 as Y3 X. Last-month-only 1.6% (334/21157). Native Y3 n_pos=0. fillna0 leftover 0.711 is fake days leak. Y10 utilisation impossible. Q6 CLOSE. Do not add y10 to FROZEN_ACCEPTED",
   "ap_overdue": "CLOSE unused leftover. KEEP off the 15-col card. Leftover after days rank 0.584 lives but beat-size FAIL +0.008 (Y3 0.625 vs size 0.617). Twin of e_ap_overdue_30 ρ 0.849. Y7 leftover 0.406. Dark 470 NaN. Do not grow TURNOVER. PARK y_ap_overdue",
+  "lit_invoice": "12-paper cluster VERIFIED. DSO is not PD; issued volume is. SAME TURNOVER 0.720 + DSO DROP. Perez-Salazar CONTRADICT (synthetic HHI fragility vs Y5 protective tail). CN ratio literature gap. Waves queued: top1_pastdue, issued_top1, y5_net_tc",
+  "lit_cashflow": "11-paper cluster VERIFIED. Last-value runway SAME Farrell 2016. Quiet-stressed recover NEW vs default PD. Leftover-after-days is unpublished referee. Lundmark: a_out_vol 0.722 stays a trait. Ng v4 val 0.806 / CV 0.850. Waves queued: y3_reasons, days_delta, runway_window",
+  "y3_reasons": "Siddiqi KEEP-stem reasons only. Say: no SS leftover 0.635, no salary 0.603, fewer days 0.711, days_lag1 0.684, ss_lag1 leftover 0.631. All signs minus. Do not say a_n_tx / a_op_in / a_transfer / e_dso / f_ds_r / a_out_vol / b_*. Dark and T1: days+SS not salary. 355/402 recover on long books",
+  "op_out": "CLOSE unused leftover. DROP from the 44 as Y3 X. Rank leftover after days 0.586 lives but OLS 0.675 is a fake days clone. SIZE ρ 0.741. Twin a_out3 0.907 / a_out6 0.860. Demean leftover 0.525 dies. after days+CV 0.518 dies. Q6 lag1 leftover 0.561 not added to q6_keep. PARK y_op_out. Outflow CV leftover 0.734 PARK later owner",
   "slots": {
-    "1": {"task": "a_op_out leftover QA", "agent": "572fb928-40f3-4948-9ab9-0fde761a9d50", "state": "running"},
+    "1": {"task": "a_debt_service leftover QA", "agent": "572fb928-40f3-4948-9ab9-0fde761a9d50", "state": "running"},
     "2": {"task": "a_fin_cost leftover QA", "agent": "fd8977c1-61b4-42c3-8c84-8f3faa2bb904", "state": "running"},
     "3": {"task": "d_cust_lost leftover QA", "agent": "553c6ea4-a745-42a3-962a-2299b600d939", "state": "running"}
   },
   "literature_slots": {
-    "L1": {"task": "lit cashflow scorecard", "agent": "f6fc63bd-3cca-43b9-9560-d57ce46a4b8f", "state": "running", "until": "10:00"},
-    "L2": {"task": "lit invoice lead-time", "agent": "689100e7-9d3a-41a4-b281-a0e6a8a87d65", "state": "running", "until": "10:00"}
+    "L1": {"task": "Norden days_delta leftover QA", "agent": "f6fc63bd-3cca-43b9-9560-d57ce46a4b8f", "state": "running", "until": "10:00"},
+    "L2": {"task": "top-1 PastDue% leftover QA", "agent": "689100e7-9d3a-41a4-b281-a0e6a8a87d65", "state": "running", "until": "10:00"}
   },
   "do_not_kill": true,
   "queue": "overnight/QUEUE.md"

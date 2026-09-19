@@ -3658,3 +3658,20 @@ ts,round,wave,agent,x_families,y,model,split,metric,value,coverage,notes
 2026-09-19T07:26:12+02:00,R4,4,e8b2c0d4,D,y3_recover_cash_6m,cust_lost_qa,train_cv,auroc_lost_resid_top1_rank,0.5471718347667892,0.5359,new=0.4628
 2026-09-19T07:26:12+02:00,R4,4,e8b2c0d4,D,y3_recover_cash_6m,cust_lost_qa,train_cv,rho_lost_vs_ncust,0.8605487380989041,0.5359,rho_days=0.4173 rho_size=0.3217
 2026-09-19T07:35:00+02:00,R4,4,689100e7,E,-,lit_invoice,n/a,n_ultra,12,1.0000,invoice trade-credit cluster; analysis/outputs/lit_invoice.md; do not grow TURNOVER 0.720
+2026-09-19T08:15:00+02:00,R4,4,f6fc63bd,-,-,lit_cashflow,n/a,n_ultra,11,1.0000,cash-flow SME scorecard cluster; analysis/outputs/lit_cashflow.md; Ng v4 val 0.806 / CV 0.850; never B as Y2/Y3 X
+2026-09-19T07:40:21+02:00,R4,4,689100e7,E,y7_top1_lost,top1_pastdue_qa,train_cv,auroc_top1_pastdue,0.6122289921975953,0.32641678876967434,top-1 PastDue defined 32.6% of train CM; dark 470 NaN CONFIRM. mean 0.586 (Hirshleifer 27%). ρ vs delay 0.278 DSO 0.291 overdue 0.858 TWIN. Y7 raw 0.612 vs issued_lag1 0.630 size 0.469 beat-size PASS. Leftover after issued_lag1+CN rank 0.57
+2026-09-19T07:40:21+02:00,R4,4,689100e7,E,y7_top1_lost,top1_pastdue_qa,train_cv,leftover_iss_cn_rank,0.5760341566831929,0.32641678876967434,ols=0.621 keep=CLOSE
+2026-09-19T07:40:21+02:00,R4,4,689100e7,E,y7_top1_lost,top1_pastdue_qa,train_cv,rho_vs_delay_coll,0.27812141120086425,0.32641678876967434,twins=['e_ar_overdue']
+2026-09-19T07:40:44+02:00,R4,4,572fb928,A,y3_recover_cash_6m,debt_svc_qa,train_cv,auroc_a_debt_service,0.6133506277130157,1.0000,days=0.7114 size=0.6166 beat=False
+2026-09-19T07:40:44+02:00,R4,4,572fb928,A,y3_recover_cash_6m,debt_svc_qa,train_cv,auroc_a_debt_service_resid_days,0.48383960256011305,1.0000,ols=0.6306 dies=True fake=False
+2026-09-19T07:40:44+02:00,R4,4,572fb928,A,y3_recover_cash_6m,debt_svc_qa,train_cv,auroc_a_debt_service_resid_dsr,0.5874155814753497,1.0000,rewrite=False
+2026-09-19T07:40:44+02:00,R4,4,572fb928,A,y3_recover_cash_6m,debt_svc_qa,train,debt_svc_leftover,0,1.0000,CLOSE unused leftover unused leftover after days: honest rank 0.484 dies (OLS 0.631 fake=False). DROP from the 44 as Y3 X. Off the 15-col card. Do not grow TURNOVER.
+2026-09-19T07:40:51+02:00,R4,4,y3_reasons,-,y3_recover_cash_6m,y3_reasons,n/a,ss_left,0.6347,0.6031,days=0.711 ss_l1=0.631 KEEP stems only
+2026-09-19T07:41:17+02:00,R4,4,y3_reasons,-,y3_recover_cash_6m,y3_reasons,n/a,ss_left,0.6347,0.6031,days=0.711 ss_l1=0.631 KEEP stems only
+2026-09-19T07:41:34+02:00,R4,4,y3_reasons,-,y3_recover_cash_6m,y3_reasons,n/a,ss_left,0.6347,0.6031,days=0.711 ss_l1=0.631 KEEP stems only
+2026-09-19T07:41:51+02:00,R4,4,y3_reasons,-,y3_recover_cash_6m,y3_reasons,n/a,ss_left,0.6347,0.6031,days=0.711 ss_l1=0.631 KEEP stems only
+2026-09-19T07:42:57+02:00,R4,4,689100e7,E,y7_top1_lost,top1_pastdue_qa,train_cv,leftover_after_overdue,0.518127679499505,0.32641678876967434,twin screen leftover
+2026-09-19T07:42:57+02:00,R4,4,689100e7,E,y7_top1_lost,top1_pastdue_qa,train_cv,leftover_div_share50,0.6151776254815281,0.32641678876967434,rho_od=0.784 mono=0.519
+2026-09-19T07:42:57+02:00,R4,4,689100e7,E,y7_top1_lost,top1_pastdue_qa,train_cv,leftover_gap_named_minus_overdue,0.5433332680063623,0.32641678876967434,pd30=0.556 triple=0.524
+2026-09-19T07:43:55+02:00,R4,4,days_delta_qa,C,y3_recover_cash_6m,days_delta_qa,train_cv,d3_left,0.4842,0.5171,DROP card=DROP from Y3 X / KEEP off the 15-col car
+2026-09-19T07:44:34+02:00,R4,4,689100e7,E,y7_top1_lost,top1_pastdue_qa,train_cv,leftover_div_after_overdue,0.45434931147728436,0.32641678876967434,twins=[]

@@ -1,6 +1,6 @@
 # Unused leftover of contemporaneous `a_fin_cost` after `c_n_days_with_tx`
 
-Generated `2026-09-19T07:33:39+02:00` by agent `b17e9c44`. DuckDB `clean` read-only. `monthly.parquet` / `targets.parquet` read-only. Rates and AUROC on **train**. Holdout 72 is coverage only. Seed 20260918 group folds. No 0–100. No parquet rewrite. No new GBM. Do not invent a Y. Do not merge M. Do not put `a_fin_cost` on the 15-col card. Do not grow TURNOVER. Do not overwrite `y9_why.*` / `fc_r_qa.*` / `ds_r_qa.*` / `catmix.py` / `util_snap_qa.*` / `ogtg_qa.*` / `n_types_qa.*`. Y3 never B. Night Y3 **0.762 / 0.752**. Days **0.711**. Size **0.617**. Y7 TURNOVER **0.720 / 0.712**.
+Generated `2026-09-19T07:43:27+02:00` by agent `b17e9c44`. DuckDB `clean` read-only. `monthly.parquet` / `targets.parquet` read-only. Rates and AUROC on **train**. Holdout 72 is coverage only. Seed 20260918 group folds. No 0–100. No parquet rewrite. No new GBM. Do not invent a Y. Do not merge M. Do not put `a_fin_cost` on the 15-col card. Do not grow TURNOVER. Do not overwrite `y9_why.*` / `fc_r_qa.*` / `ds_r_qa.*` / `catmix.py` / `util_snap_qa.*` / `ogtg_qa.*` / `n_types_qa.*`. Y3 never B. Night Y3 **0.762 / 0.752**. Days **0.711**. Size **0.617**. Y7 TURNOVER **0.720 / 0.712**.
 
 `a_fin_cost` = -sum(amount | grp = fin_cost). Contemporaneous `f_fc_r` already DROP leftover after days 0.449. KEEP `f_fc_r_lag3` on TURNOVER. Y9 is the fee label — leftover as Y3 X, not as Y9 X.
 
@@ -179,8 +179,16 @@ Plot: `fin_cost_qa.png`.
 - High-fee dummy leftover after days+f_fc_r on so-far≥6 0.616 n_pos=313; Y2 leftover after days on so-far≥6 0.527.
 - Amount leftover after days+f_fc_r on so-far≥6 0.522 n_pos=313; high-fee dummy leftover after days+size on so-far≥6 0.612.
 - High-fee dummy leftover after days+size+f_fc_r on so-far≥6 0.601 folds 0.610 0.591 0.618 0.588 0.598; amount leftover after days+f_fc_r_lag3 on so-far≥6 0.555.
+- High-fee dummy leftover after days+size+f_fc_r+f_fc_r_lag3 on so-far≥6 0.597 folds 0.605 0.587 0.619 0.579 0.595; amount leftover after days+f_fc_r+f_fc_r_lag3 on so-far≥6 0.528.
+- High-fee dummy leftover after days+a_debt_service on so-far≥6 0.664; a_debt_service leftover after days on so-far≥6 0.480.
+- High-fee dummy leftover after days+size+f_fc_r+a_n_tx on so-far≥6 0.594; amount leftover after days+size on so-far≥6 0.545.
+- High-fee dummy leftover after days+f_ds_r on so-far≥6 0.665; amount leftover after days+a_n_tx on so-far≥6 0.542; high-fee dummy leftover after days+size+f_fc_r+a_n_tx+f_ds_r on so-far≥6 0.594.
+- High-fee dummy leftover after days+size+f_fc_r+f_ds_r on so-far≥6 0.600; amount leftover after days+size+f_fc_r on so-far≥6 0.526; high-fee dummy leftover after days+size+a_debt_service on so-far≥6 0.623.
+- High-fee dummy leftover after days+size+f_fc_r+a_n_tx+f_ds_r+f_fc_r_lag3 on so-far≥6 0.591; amount leftover after days+size+f_fc_r+f_fc_r_lag3 on so-far≥6 0.533; amount leftover after days+f_ds_r on so-far≥6 0.492.
+- High-fee dummy leftover after days+size+f_fc_r+f_fc_r_lag3+a_debt_service on so-far≥6 0.601; amount leftover after days+size+a_n_tx on so-far≥6 0.545.
+- High-fee dummy leftover after days+size+f_fc_r+a_n_tx+f_ds_r+a_debt_service on so-far≥6 0.593; amount leftover after days+size+f_fc_r+a_n_tx on so-far≥6 0.528.
 
-Elapsed 59s.
+Elapsed 60s.
 
 Did **not**: overwrite `y9_why.*` / `fc_r_qa.*` / `ds_r_qa.*` / `catmix.py` / `util_snap_qa.*` / `ogtg_qa.*` / `n_types_qa.*`, edit `debt.py` / `gbm_core.py`, put a_fin_cost on the 15-col card, grow TURNOVER, invent a Y, merge M, write 0–100, fit holdout, touch `product/`, run `build_targets`.
 

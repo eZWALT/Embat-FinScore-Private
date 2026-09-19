@@ -57,6 +57,11 @@ Did not touch `a_vol_qa.*`, `transfer_qa.*`, `growth_qa.*`, `in3_qa.*`, `zero_in
 - noisy leftover after days+size 0.557 after days+out3 0.582. outflow CV Y3 0.795 leftover after days 0.734 dies=False.
 - outflow CV Y3 0.795 leftover after size 0.763 fake=False ρ vs size -0.367. after days+size 0.732. ρ vs days -0.469. PARK — do not put CV on the 15-col card; this is not a_op_out KEEP.
 - CV leftover after a_n_tx 0.735 ρ=-0.478. after a_out3 0.760 ρ=-0.448. after days+n_tx+size 0.732. PARK — not a_op_out KEEP; off the card.
+- a_op_out leftover after days+CV 0.518 fake=False. after days+CV+size 0.469. after days+CV+out3 0.534.
+- CV leftover after a_op_out 0.730 fake=False. after a_op_out+days 0.717. a_op_out leftover after days+CV died 0.518 — vol ate the leftover.
+- a_op_out leftover after CV-only 0.548 fake=False. last-labeled leftover after days+CV 0.586 n=719.
+- leftover after days+CV Dark 0.562 ERP 0.440 T3 0.469 2026 0.582.
+- leftover after days+CV Q5 0.766 mid 0.638 net-out 0.549.
 - Bootstrap leftover-after-days rank p05=0.568 p50=0.590 p95=0.644 share<0.55=0.0% n=40.
 
 honest leftover after days rank 0.586 lives (OLS 0.675 fake=True ρ(resid,days)=-0.841). TWIN of ['a_out3', 'a_out6']. SIZE (|ρ| vs log1p(a_in3) ≥0.50). DROP from the 44. Off the 15-col card.
@@ -65,4 +70,4 @@ honest leftover after days rank 0.586 lives (OLS 0.675 fake=True ρ(resid,days)=
 
 - none
 
-Elapsed 19s.
+Elapsed 18s.

@@ -1832,6 +1832,241 @@ def pass_sofar_both(tr: pd.DataFrame) -> dict:
     return {"hi": rec_h["rank"], "amt": rec_a["rank"], "prose": prose}
 
 
+def pass_sofar_final(tr: pd.DataFrame) -> dict:
+    sofar = tr.groupby("company_id").cumcount() + 1
+    x = pd.to_numeric(tr["a_fin_cost"], errors="coerce")
+    dummy = (x >= float(x.quantile(0.90))).astype(float)
+    mask = tr[Y3].notna() & (sofar >= 6)
+    rec_h = leftover_diag(
+        tr[Y3],
+        dummy,
+        [
+            tr["c_n_days_with_tx"],
+            tr["log_in3"],
+            tr["f_fc_r"],
+            tr["a_n_tx"],
+            tr["f_ds_r"],
+            tr["a_debt_service"],
+        ],
+        tr["fold"],
+        mask,
+    )
+    rec_a = leftover_diag(
+        tr[Y3],
+        x,
+        [tr["c_n_days_with_tx"], tr["log_in3"], tr["f_fc_r"], tr["a_n_tx"]],
+        tr["fold"],
+        mask,
+    )
+    prose = (
+        f"High-fee dummy leftover after days+size+f_fc_r+a_n_tx+f_ds_r+a_debt_service on so-far≥6 "
+        f"{_f(rec_h['rank'])}; "
+        f"amount leftover after days+size+f_fc_r+a_n_tx on so-far≥6 {_f(rec_a['rank'])}."
+    )
+    print(prose)
+    return {"hi": rec_h["rank"], "amt": rec_a["rank"], "prose": prose}
+
+
+def pass_sofar_debt_lag3(tr: pd.DataFrame) -> dict:
+    sofar = tr.groupby("company_id").cumcount() + 1
+    x = pd.to_numeric(tr["a_fin_cost"], errors="coerce")
+    dummy = (x >= float(x.quantile(0.90))).astype(float)
+    mask = tr[Y3].notna() & (sofar >= 6)
+    rec_h = leftover_diag(
+        tr[Y3],
+        dummy,
+        [
+            tr["c_n_days_with_tx"],
+            tr["log_in3"],
+            tr["f_fc_r"],
+            tr["f_fc_r_lag3"],
+            tr["a_debt_service"],
+        ],
+        tr["fold"],
+        mask,
+    )
+    rec_a = leftover_diag(
+        tr[Y3],
+        x,
+        [tr["c_n_days_with_tx"], tr["log_in3"], tr["a_n_tx"]],
+        tr["fold"],
+        mask,
+    )
+    prose = (
+        f"High-fee dummy leftover after days+size+f_fc_r+f_fc_r_lag3+a_debt_service on so-far≥6 "
+        f"{_f(rec_h['rank'])}; "
+        f"amount leftover after days+size+a_n_tx on so-far≥6 {_f(rec_a['rank'])}."
+    )
+    print(prose)
+    return {"hi": rec_h["rank"], "amt": rec_a["rank"], "prose": prose}
+
+
+def pass_sofar_lock(tr: pd.DataFrame) -> dict:
+    sofar = tr.groupby("company_id").cumcount() + 1
+    x = pd.to_numeric(tr["a_fin_cost"], errors="coerce")
+    dummy = (x >= float(x.quantile(0.90))).astype(float)
+    mask = tr[Y3].notna() & (sofar >= 6)
+    rec_h = leftover_diag(
+        tr[Y3],
+        dummy,
+        [
+            tr["c_n_days_with_tx"],
+            tr["log_in3"],
+            tr["f_fc_r"],
+            tr["a_n_tx"],
+            tr["f_ds_r"],
+            tr["f_fc_r_lag3"],
+        ],
+        tr["fold"],
+        mask,
+    )
+    rec_a = leftover_diag(
+        tr[Y3],
+        x,
+        [tr["c_n_days_with_tx"], tr["log_in3"], tr["f_fc_r"], tr["f_fc_r_lag3"]],
+        tr["fold"],
+        mask,
+    )
+    rec_d = leftover_diag(
+        tr[Y3],
+        x,
+        [tr["c_n_days_with_tx"], tr["f_ds_r"]],
+        tr["fold"],
+        mask,
+    )
+    prose = (
+        f"High-fee dummy leftover after days+size+f_fc_r+a_n_tx+f_ds_r+f_fc_r_lag3 on so-far≥6 "
+        f"{_f(rec_h['rank'])}; "
+        f"amount leftover after days+size+f_fc_r+f_fc_r_lag3 on so-far≥6 {_f(rec_a['rank'])}; "
+        f"amount leftover after days+f_ds_r on so-far≥6 {_f(rec_d['rank'])}."
+    )
+    print(prose)
+    return {"hi": rec_h["rank"], "amt": rec_a["rank"], "dsr": rec_d["rank"], "prose": prose}
+
+
+def pass_sofar_size_fc(tr: pd.DataFrame) -> dict:
+    sofar = tr.groupby("company_id").cumcount() + 1
+    x = pd.to_numeric(tr["a_fin_cost"], errors="coerce")
+    dummy = (x >= float(x.quantile(0.90))).astype(float)
+    mask = tr[Y3].notna() & (sofar >= 6)
+    rec_h = leftover_diag(
+        tr[Y3],
+        dummy,
+        [tr["c_n_days_with_tx"], tr["log_in3"], tr["f_fc_r"], tr["f_ds_r"]],
+        tr["fold"],
+        mask,
+    )
+    rec_a = leftover_diag(
+        tr[Y3],
+        x,
+        [tr["c_n_days_with_tx"], tr["log_in3"], tr["f_fc_r"]],
+        tr["fold"],
+        mask,
+    )
+    rec_d = leftover_diag(
+        tr[Y3],
+        dummy,
+        [tr["c_n_days_with_tx"], tr["log_in3"], tr["a_debt_service"]],
+        tr["fold"],
+        mask,
+    )
+    prose = (
+        f"High-fee dummy leftover after days+size+f_fc_r+f_ds_r on so-far≥6 {_f(rec_h['rank'])}; "
+        f"amount leftover after days+size+f_fc_r on so-far≥6 {_f(rec_a['rank'])}; "
+        f"high-fee dummy leftover after days+size+a_debt_service on so-far≥6 {_f(rec_d['rank'])}."
+    )
+    print(prose)
+    return {"hi": rec_h["rank"], "amt": rec_a["rank"], "ds": rec_d["rank"], "prose": prose}
+
+
+def pass_sofar_dsr(tr: pd.DataFrame) -> dict:
+    sofar = tr.groupby("company_id").cumcount() + 1
+    x = pd.to_numeric(tr["a_fin_cost"], errors="coerce")
+    dummy = (x >= float(x.quantile(0.90))).astype(float)
+    mask = tr[Y3].notna() & (sofar >= 6)
+    rec_h = leftover_diag(
+        tr[Y3],
+        dummy,
+        [tr["c_n_days_with_tx"], tr["f_ds_r"]],
+        tr["fold"],
+        mask,
+    )
+    rec_a = leftover_diag(
+        tr[Y3],
+        x,
+        [tr["c_n_days_with_tx"], tr["a_n_tx"]],
+        tr["fold"],
+        mask,
+    )
+    rec_hex = leftover_diag(
+        tr[Y3],
+        dummy,
+        [tr["c_n_days_with_tx"], tr["log_in3"], tr["f_fc_r"], tr["a_n_tx"], tr["f_ds_r"]],
+        tr["fold"],
+        mask,
+    )
+    prose = (
+        f"High-fee dummy leftover after days+f_ds_r on so-far≥6 {_f(rec_h['rank'])}; "
+        f"amount leftover after days+a_n_tx on so-far≥6 {_f(rec_a['rank'])}; "
+        f"high-fee dummy leftover after days+size+f_fc_r+a_n_tx+f_ds_r on so-far≥6 {_f(rec_hex['rank'])}."
+    )
+    print(prose)
+    return {"hi": rec_h["rank"], "amt": rec_a["rank"], "hex": rec_hex["rank"], "prose": prose}
+
+
+def pass_sofar_stack2(tr: pd.DataFrame) -> dict:
+    sofar = tr.groupby("company_id").cumcount() + 1
+    x = pd.to_numeric(tr["a_fin_cost"], errors="coerce")
+    dummy = (x >= float(x.quantile(0.90))).astype(float)
+    mask = tr[Y3].notna() & (sofar >= 6)
+    rec_h = leftover_diag(
+        tr[Y3],
+        dummy,
+        [tr["c_n_days_with_tx"], tr["log_in3"], tr["f_fc_r"], tr["a_n_tx"]],
+        tr["fold"],
+        mask,
+    )
+    rec_a = leftover_diag(
+        tr[Y3],
+        x,
+        [tr["c_n_days_with_tx"], tr["log_in3"]],
+        tr["fold"],
+        mask,
+    )
+    prose = (
+        f"High-fee dummy leftover after days+size+f_fc_r+a_n_tx on so-far≥6 {_f(rec_h['rank'])}; "
+        f"amount leftover after days+size on so-far≥6 {_f(rec_a['rank'])}."
+    )
+    print(prose)
+    return {"hi": rec_h["rank"], "amt": rec_a["rank"], "prose": prose}
+
+
+def pass_sofar_ds(tr: pd.DataFrame) -> dict:
+    sofar = tr.groupby("company_id").cumcount() + 1
+    x = pd.to_numeric(tr["a_fin_cost"], errors="coerce")
+    dummy = (x >= float(x.quantile(0.90))).astype(float)
+    rec_h = leftover_diag(
+        tr[Y3],
+        dummy,
+        [tr["c_n_days_with_tx"], tr["a_debt_service"]],
+        tr["fold"],
+        tr[Y3].notna() & (sofar >= 6),
+    )
+    rec_d = leftover_diag(
+        tr[Y3],
+        tr["a_debt_service"],
+        [tr["c_n_days_with_tx"]],
+        tr["fold"],
+        tr[Y3].notna() & (sofar >= 6),
+    )
+    prose = (
+        f"High-fee dummy leftover after days+a_debt_service on so-far≥6 {_f(rec_h['rank'])}; "
+        f"a_debt_service leftover after days on so-far≥6 {_f(rec_d['rank'])}."
+    )
+    print(prose)
+    return {"hi": rec_h["rank"], "ds": rec_d["rank"], "prose": prose}
+
+
 def pass_fcr_confirm(tr: pd.DataFrame) -> dict:
     rec = leftover_diag(tr[Y3], tr["f_fc_r"], [tr["c_n_days_with_tx"]], tr["fold"], tr[Y3].notna())
     ok = bool(np.isfinite(rec["rank"]) and abs(rec["rank"] - FC_R_LEFT_QUOTE) < 0.03)
@@ -2138,6 +2373,13 @@ def write_md(ctx: dict) -> None:
             f"- {ctx['p_sa']['prose']}",
             f"- {ctx['p_sp']['prose']}",
             f"- {ctx['p_sb']['prose']}",
+            f"- {ctx['p_sd']['prose']}",
+            f"- {ctx['p_s2']['prose']}",
+            f"- {ctx['p_sdr']['prose']}",
+            f"- {ctx['p_sfc']['prose']}",
+            f"- {ctx['p_lk']['prose']}",
+            f"- {ctx['p_sdl']['prose']}",
+            f"- {ctx['p_fn']['prose']}",
         ]
     )
     if extra_bits:
@@ -2379,6 +2621,13 @@ def run() -> dict:
     p_sa = pass_sofar_amt(tr)
     p_sp = pass_sofar_penta(tr)
     p_sb = pass_sofar_both(tr)
+    p_sd = pass_sofar_ds(tr)
+    p_s2 = pass_sofar_stack2(tr)
+    p_sdr = pass_sofar_dsr(tr)
+    p_sfc = pass_sofar_size_fc(tr)
+    p_lk = pass_sofar_lock(tr)
+    p_sdl = pass_sofar_debt_lag3(tr)
+    p_fn = pass_sofar_final(tr)
     png = make_png(tr)
     decision = decide(p1, p2, p3, p4, p7)
     failed = []
@@ -2463,6 +2712,13 @@ def run() -> dict:
         "p_sa": p_sa,
         "p_sp": p_sp,
         "p_sb": p_sb,
+        "p_sd": p_sd,
+        "p_s2": p_s2,
+        "p_sdr": p_sdr,
+        "p_sfc": p_sfc,
+        "p_lk": p_lk,
+        "p_sdl": p_sdl,
+        "p_fn": p_fn,
         "decision": decision,
         "failed": failed,
         "png": png,
