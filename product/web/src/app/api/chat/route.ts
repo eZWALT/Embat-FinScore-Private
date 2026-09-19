@@ -1,5 +1,7 @@
 import { convertToModelMessages, streamText, type UIMessage } from "ai";
 
+import { createHelmcodeModel, helmcodeApiKey } from "@/lib/agent/llm";
+
 export const maxDuration = 30;
 export const dynamic = "force-dynamic";
 
@@ -10,13 +12,17 @@ No inventes cifras, empresas ni resultados del índice. Si no tienes el dato, di
 Nunca digas "revenue at risk"; si hablas del cliente principal silencioso, di que dejó de facturar y hay que revisar exposición y cobros.`;
 
 export async function POST(request: Request) {
+  if (!helmcodeApiKey()) {
+    return Response.json({ error: "HELMCODE_API_KEY is not set" }, { status: 503 });
+  }
+
   const { messages }: { messages?: UIMessage[] } = await request.json();
   if (!messages?.length) {
     return Response.json({ error: "messages is required" }, { status: 400 });
   }
 
   const result = streamText({
-    model: "openai/gpt-5.4",
+    model: createHelmcodeModel(),
     system: SYSTEM,
     messages: await convertToModelMessages(messages),
   });
@@ -24,9 +30,6 @@ export async function POST(request: Request) {
   return result.toUIMessageStreamResponse({
     onError: (error) => {
       const text = error instanceof Error ? error.message : String(error);
-      if (text.includes("credit card")) {
-        return "AI Gateway pide una tarjeta en el equipo Vercel para desbloquear créditos.";
-      }
       return text || "No se pudo completar la respuesta.";
     },
   });
