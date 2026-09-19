@@ -129,7 +129,7 @@ export function SentinelLanding({
               </div>
               <figcaption className="mt-2 flex items-center justify-between border-t border-neutral-200 pt-2 text-[10px] tracking-[0.2em] text-neutral-400 uppercase">
                 <span>Fig. 01.A</span>
-                <span>Índice 0–100</span>
+                <span>Health Score 0–100</span>
               </figcaption>
               {reflection ? (
                 <div

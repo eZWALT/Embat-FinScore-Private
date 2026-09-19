@@ -11,7 +11,7 @@ import type { DashboardCompany } from "@/lib/data/types";
 type SortKey = "score" | "delta1m" | "delta3m" | "id";
 
 const SORTS: { key: SortKey; label: string }[] = [
-  { key: "score", label: "Índice" },
+  { key: "score", label: "Health Score" },
   { key: "delta1m", label: "Δ 1 m" },
   { key: "delta3m", label: "Δ 3 m" },
   { key: "id", label: "Empresa" },
@@ -101,7 +101,7 @@ export function QuickList({
         <span className="pl-6">Empresa</span>
         <span className="flex gap-4">
           <span>Δ 3 m</span>
-          <span className="w-10 text-right">Índice</span>
+          <span className="min-w-10 text-right">Health Score</span>
         </span>
       </div>
       <ul aria-label="Empresas" className="max-h-[min(46vh,420px)] divide-y overflow-y-auto rounded-lg border">
