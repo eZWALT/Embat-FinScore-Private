@@ -38,9 +38,11 @@ Guardrails: holdout `analysis/splits/holdout_companies.csv` is never fit on. Y i
 | Field dictionary | `data/data_dictionary.md` |
 | Dataset notes | `data/README.md` |
 | 1. Signals | `analysis/` |
-| 2–3. Score 0–100 + explain | `product/score/` |
-| 4. Web + LLM (company user) | `product/web/` |
+| 2–3. Score 0–100 + explain | `product/score/` (v0 dummy card: `PYTHONPATH=. python -m product.score`) |
+| 4. Web + LLM (company user) | `product/web/` (hosted demo still empty) |
+| Streamlit POC | `poc/` (Sentinel + Portfolio; binds the v0 score when the parquet exists) |
 | App folder | `product/README.md` — Docker/runtime still empty |
+| POC (Streamlit, iterate before `product/`) | `poc/README.md` |
 | Feature store / Y / models | `analysis/` + plan `.agents/persistent-memory/2026-09-18-2350-feature-store-and-y-plan.md` |
 | Night run status | `overnight/README.md` + `overnight/CONTRACT.md` |
 | Public sibling | `../Embat-FinScore` (GitHub: `eZWALT/Embat-FinScore`) |

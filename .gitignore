@@ -242,6 +242,11 @@ data/raw/output/
 # Artefactos locales del pipeline
 *.pkl
 
+# Dummy score fit + monthly table (keep the folder)
+product/score/outputs/*.parquet
+product/score/outputs/*.json
+!product/score/outputs/.gitkeep
+
 # Feature-store outputs (keep the dictionary and acceptance table)
 data/feature_store/*.parquet
 data/feature_store/coverage.csv
