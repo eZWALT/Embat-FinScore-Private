@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 
-export type AgentRole = "sentinel" | "chat";
+export type AgentRole = "sentinel" | "chat" | "quick";
 
 /** Ask stack (full context, do not drop a layer): MAP → ROLE → SCOPE → PRODUCT → WORDING → FORMAT → TOOLS → RECORDS → SESSION. */
 const FILES = {
@@ -9,6 +9,7 @@ const FILES = {
   sentinel: "sentinel_system.md",
   chat: "chat_system.md",
   scope: "scope.md",
+  quick: "quick_system.md",
   product: "product_context.md",
   wording: "wording_rules.md",
   format: "watcher_format.md",

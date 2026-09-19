@@ -9,7 +9,7 @@ import {
 import { createHelmcodeModel, helmcodeApiKey } from "./llm";
 import { coerceUiMessages, sessionExtra } from "./messages";
 import { loadSystemPrompt, type AgentRole } from "./prompt-loader";
-import { chatTools, sentinelTools } from "./tools";
+import { chatTools, quickTools, sentinelTools } from "./tools";
 
 export async function streamAgentResponse({
   role,
@@ -38,7 +38,7 @@ export async function streamAgentResponse({
 
   const system = await loadSystemPrompt(role, sessionExtra(companyId, groupId, asOf));
   const modelMessages = await convertToModelMessages(uiMessages);
-  const tools = role === "sentinel" ? sentinelTools() : chatTools();
+  const tools = role === "sentinel" ? sentinelTools() : role === "quick" ? quickTools() : chatTools();
 
   const started = Date.now();
   const result = streamText({

@@ -28,6 +28,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ClientOnly } from "@/components/client-only";
+import { ModeToggle, type AnalysisMode } from "@/components/mode-toggle";
+import { QuickAnalysis } from "@/components/quick/quick-analysis";
 import { confidenceLabels, scoreColor, trajectoryLabels } from "@/components/group/labels";
 import { HealthScoreChat } from "@/components/health-score-chat";
 import { HealthScoreView } from "@/components/health-score-view";
@@ -73,10 +75,12 @@ export function HealthDashboard({
   data,
   openChat = false,
   initialCompanyId,
+  initialMode = "quick",
 }: {
   data: DashboardData;
   openChat?: boolean;
   initialCompanyId?: string;
+  initialMode?: AnalysisMode;
 }) {
   const defaultCompany =
     data.companies.find((company) => company.companyId === initialCompanyId) ??
@@ -85,6 +89,7 @@ export function HealthDashboard({
   const [companyId, setCompanyId] = useState(defaultCompany.companyId);
   const [view, setView] = useState<AppView>("overview");
   const [chatOpen, setChatOpen] = useState(openChat);
+  const [mode, setMode] = useState<AnalysisMode>(initialMode);
   const company =
     data.companies.find((candidate) => candidate.companyId === companyId) ?? defaultCompany;
 
@@ -102,6 +107,11 @@ export function HealthDashboard({
     window.history.replaceState(null, "", `/${queryFor({ company: next })}`);
   }
 
+  function changeMode(next: AnalysisMode) {
+    setMode(next);
+    window.history.replaceState(null, "", next === "quick" ? "/" : `/${queryFor({ modo: "profundo", company: companyId })}`);
+  }
+
   function goVigilancia() {
     setView("overview");
     requestAnimationFrame(() => {
@@ -113,6 +123,10 @@ export function HealthDashboard({
     ...point,
     label: formatMonth(point.month),
   }));
+
+  if (mode === "quick") {
+    return <QuickAnalysis data={data} mode={mode} onModeChange={changeMode} />;
+  }
 
   return (
     <SidebarProvider>
@@ -141,9 +155,12 @@ export function HealthDashboard({
               </p>
             </div>
           </div>
-          <Badge variant="outline" className="font-mono text-[11px] font-normal text-muted-foreground">
-            {formatMonth(data.asOfMonth)}
-          </Badge>
+          <div className="flex items-center gap-3">
+            <ModeToggle mode={mode} onChange={changeMode} />
+            <Badge variant="outline" className="hidden font-mono text-[11px] font-normal text-muted-foreground sm:inline-flex">
+              {formatMonth(data.asOfMonth)}
+            </Badge>
+          </div>
         </header>
 
         <main

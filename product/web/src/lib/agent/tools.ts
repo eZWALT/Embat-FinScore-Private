@@ -669,6 +669,15 @@ export function chatTools() {
   });
 }
 
+/** Explicación rápida: solo lo necesario para decir qué movió la puntuación. */
+export function quickTools() {
+  return {
+    get_company,
+    explain_change,
+    get_alerts,
+  };
+}
+
 export function sentinelTools() {
   return timeAll({
     get_company,

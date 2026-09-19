@@ -27,7 +27,7 @@ import type { DashboardCompany, DashboardData } from "@/lib/data/types";
 
 const MAX_SERIES = 8;
 
-const SERIES_COLORS = [
+export const SERIES_COLORS = [
   "oklch(0.52 0.19 250)",
   "oklch(0.55 0.16 145)",
   "oklch(0.58 0.18 35)",
@@ -52,7 +52,7 @@ function defaultSelection(companies: DashboardCompany[], first?: string): string
   return picks;
 }
 
-function buildChartRows(selected: DashboardCompany[]) {
+export function buildChartRows(selected: DashboardCompany[]) {
   const months = [
     ...new Set(selected.flatMap((company) => (company.scoreHistory ?? []).map((point) => point.month))),
   ].sort();
@@ -70,7 +70,7 @@ function buildChartRows(selected: DashboardCompany[]) {
   });
 }
 
-function yDomainForSelection(
+export function yDomainForSelection(
   rows: Record<string, string | number | null>[],
   companyIds: string[],
 ): [number, number] {
