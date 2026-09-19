@@ -14,6 +14,8 @@ function first(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
 }
 
+export const dynamic = "force-dynamic";
+
 export default async function GruposPage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
   const data = await getGroupMapData(first(params.group), first(params.company));

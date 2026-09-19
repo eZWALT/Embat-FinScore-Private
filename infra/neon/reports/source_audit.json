@@ -1,0 +1,777 @@
+{
+  "duckdb_path": "/Users/ruben/Desktop/Embat-handoff/embat_clean.duckdb",
+  "duckdb_bytes": 219688960,
+  "tables": [
+    {
+      "table": "balances",
+      "rows": 7996,
+      "columns": [
+        {
+          "name": "product_id",
+          "type": "VARCHAR",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "company_id",
+          "type": "VARCHAR",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "date",
+          "type": "TIMESTAMP",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "balance",
+          "type": "DOUBLE",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "granted",
+          "type": "DOUBLE",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "liquidity",
+          "type": "DOUBLE",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "countable",
+          "type": "DOUBLE",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "balance_sentinel",
+          "type": "BOOLEAN",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "product_known",
+          "type": "BOOLEAN",
+          "null": "YES",
+          "key": null,
+          "default": null
+        }
+      ]
+    },
+    {
+      "table": "banking_products",
+      "rows": 5987,
+      "columns": [
+        {
+          "name": "product_id",
+          "type": "VARCHAR",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "company_id",
+          "type": "VARCHAR",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "label",
+          "type": "VARCHAR",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "type",
+          "type": "VARCHAR",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "bank_name",
+          "type": "VARCHAR",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "service",
+          "type": "VARCHAR",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "currency",
+          "type": "VARCHAR",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMP",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "created_after_snapshot",
+          "type": "BOOLEAN",
+          "null": "YES",
+          "key": null,
+          "default": null
+        }
+      ]
+    },
+    {
+      "table": "companies",
+      "rows": 1286,
+      "columns": [
+        {
+          "name": "company_id",
+          "type": "VARCHAR",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "group_id",
+          "type": "VARCHAR",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "country",
+          "type": "VARCHAR",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "currency",
+          "type": "VARCHAR",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "erp",
+          "type": "VARCHAR",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMP",
+          "null": "YES",
+          "key": null,
+          "default": null
+        }
+      ]
+    },
+    {
+      "table": "debt_products",
+      "rows": 2239,
+      "columns": [
+        {
+          "name": "product_id",
+          "type": "VARCHAR",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "company_id",
+          "type": "VARCHAR",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "label",
+          "type": "VARCHAR",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "type",
+          "type": "VARCHAR",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "bank_name",
+          "type": "VARCHAR",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "service",
+          "type": "VARCHAR",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "currency",
+          "type": "VARCHAR",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMP",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "granted",
+          "type": "DOUBLE",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "outstanding",
+          "type": "DOUBLE",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "liquidity",
+          "type": "DOUBLE",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "created_after_snapshot",
+          "type": "BOOLEAN",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "outstanding_gt_granted",
+          "type": "BOOLEAN",
+          "null": "YES",
+          "key": null,
+          "default": null
+        }
+      ]
+    },
+    {
+      "table": "debt_schedule_config",
+      "rows": 87,
+      "columns": [
+        {
+          "name": "product_id",
+          "type": "VARCHAR",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "company_id",
+          "type": "VARCHAR",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "settlement_product_id",
+          "type": "VARCHAR",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "currency",
+          "type": "VARCHAR",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "amortization_type",
+          "type": "VARCHAR",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "interest_calc_method",
+          "type": "VARCHAR",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "amortising_frequency",
+          "type": "VARCHAR",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "granted_balance",
+          "type": "DOUBLE",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "outstanding_balance",
+          "type": "DOUBLE",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "total_periods",
+          "type": "BIGINT",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "next_payment_date",
+          "type": "TIMESTAMP",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "last_payment_date",
+          "type": "TIMESTAMP",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "annual_interest_rate_or_spread",
+          "type": "DOUBLE",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "interest_type",
+          "type": "VARCHAR",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "outstanding_gt_granted",
+          "type": "BOOLEAN",
+          "null": "YES",
+          "key": null,
+          "default": null
+        }
+      ]
+    },
+    {
+      "table": "dq_log",
+      "rows": 58,
+      "columns": [
+        {
+          "name": "table_name",
+          "type": "VARCHAR",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "issue",
+          "type": "VARCHAR",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "action",
+          "type": "VARCHAR",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "rows_affected",
+          "type": "BIGINT",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "source",
+          "type": "VARCHAR",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "rows_in_raw_table",
+          "type": "BIGINT",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "pct",
+          "type": "DOUBLE",
+          "null": "YES",
+          "key": null,
+          "default": null
+        }
+      ]
+    },
+    {
+      "table": "groups",
+      "rows": 250,
+      "columns": [
+        {
+          "name": "group_id",
+          "type": "VARCHAR",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "erp",
+          "type": "VARCHAR",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "n_companies_in_sample",
+          "type": "BIGINT",
+          "null": "YES",
+          "key": null,
+          "default": null
+        }
+      ]
+    },
+    {
+      "table": "invoices",
+      "rows": 896711,
+      "columns": [
+        {
+          "name": "operation_id",
+          "type": "VARCHAR",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "company_id",
+          "type": "VARCHAR",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "document_type",
+          "type": "VARCHAR",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "issuance_date",
+          "type": "TIMESTAMP",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "due_date",
+          "type": "TIMESTAMP",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "payment_date",
+          "type": "TIMESTAMP",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "amount",
+          "type": "DOUBLE",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "pending_amount",
+          "type": "DOUBLE",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "currency",
+          "type": "VARCHAR",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "accounting_currency",
+          "type": "VARCHAR",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "exchange_rate",
+          "type": "DOUBLE",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "status",
+          "type": "VARCHAR",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "concept",
+          "type": "VARCHAR",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "counterparty_id",
+          "type": "VARCHAR",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "payment_date_invalid",
+          "type": "BOOLEAN",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "is_extreme",
+          "type": "BOOLEAN",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "issued_after_snapshot",
+          "type": "BOOLEAN",
+          "null": "YES",
+          "key": null,
+          "default": null
+        }
+      ]
+    },
+    {
+      "table": "transactions",
+      "rows": 2556068,
+      "columns": [
+        {
+          "name": "transaction_id",
+          "type": "VARCHAR",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "company_id",
+          "type": "VARCHAR",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "product_id",
+          "type": "VARCHAR",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "date",
+          "type": "TIMESTAMP",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "value_date",
+          "type": "TIMESTAMP",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "amount",
+          "type": "DOUBLE",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "exchange_rate",
+          "type": "DOUBLE",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "status",
+          "type": "VARCHAR",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "accounting_status",
+          "type": "VARCHAR",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "category",
+          "type": "VARCHAR",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "description",
+          "type": "VARCHAR",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "counterparty_id",
+          "type": "VARCHAR",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "is_dup",
+          "type": "BOOLEAN",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "is_extreme",
+          "type": "BOOLEAN",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "product_known",
+          "type": "BOOLEAN",
+          "null": "YES",
+          "key": null,
+          "default": null
+        },
+        {
+          "name": "out_of_window",
+          "type": "BOOLEAN",
+          "null": "YES",
+          "key": null,
+          "default": null
+        }
+      ]
+    }
+  ],
+  "keys": {
+    "companies": 1286,
+    "groups_table": 250,
+    "distinct_group_id_in_companies": 250,
+    "product_id_overlap_banking_debt": 0,
+    "transactions_null_id": 0,
+    "transactions_duplicate_id": 0,
+    "counterparty_ids_that_match_company_id": 0,
+    "transactions_unknown_product": 1313,
+    "invoice_duplicate_company_operation": 0
+  },
+  "bundle": {
+    "schema_version": "1.1.0",
+    "counts": {
+      "companies": 1286,
+      "groups": 250,
+      "company_months": 19658
+    },
+    "company_files": 1286,
+    "is_sample": false,
+    "as_of_month": "2026-08",
+    "zip_duplicates_not_loaded": [
+      "bundle.zip",
+      "embat_clean.duckdb.zip"
+    ]
+  },
+  "classification": {
+    "source_clean": [
+      "balances",
+      "banking_products",
+      "companies",
+      "debt_products",
+      "debt_schedule_config",
+      "dq_log",
+      "groups",
+      "invoices",
+      "transactions"
+    ],
+    "computed_bundle": [
+      "manifest",
+      "companies.json",
+      "companies/*.json",
+      "groups.json",
+      "alerts.json",
+      "clusters.json"
+    ],
+    "derived_not_loaded": [
+      "bundle.zip",
+      "embat_clean.duckdb.zip",
+      "types.ts"
+    ]
+  }
+}

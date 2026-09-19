@@ -149,6 +149,8 @@ activemq-data/
 
 # Environments
 .env
+.env.*
+!.env.example
 .envrc
 .venv
 env/
@@ -272,3 +274,8 @@ node_modules/
 poc/.state/
 data/bundle/
 data/bundle_work/
+
+# Neon load staging (CSV extracts, never commit)
+infra/neon/.staging/
+infra/neon/.env
+.neon

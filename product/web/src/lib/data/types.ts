@@ -182,6 +182,7 @@ export interface ScoreRepository {
   getCompany(companyId: string): Promise<CompanyDetail>;
   listGroups(): Promise<GroupRow[]>;
   getAlerts(): Promise<AlertFeed>;
+  getDashboardSnapshot?(): Promise<DashboardData>;
 }
 
 export interface DashboardCompany {
