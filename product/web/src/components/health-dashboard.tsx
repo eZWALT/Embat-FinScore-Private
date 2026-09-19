@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   Activity,
@@ -35,7 +35,8 @@ import { QuickAnalysis } from "@/components/quick/quick-analysis";
 import { ThemeIconToggle } from "@/components/theme-switcher";
 import { confidenceLabels, scoreColor, trajectoryLabels } from "@/components/group/labels";
 import { HealthScoreChat } from "@/components/health-score-chat";
-import { HealthScoreView } from "@/components/health-score-view";
+import { HealthScoreView, SERIES_COLOR_LABELS } from "@/components/health-score-view";
+import { type MonthRange } from "@/components/quick/quick-chart";
 import { HealthSidebar, type AppView } from "@/components/health-sidebar";
 import { ResumenVigilancia } from "@/components/resumen-vigilancia";
 import {
@@ -47,7 +48,8 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { formatMonth } from "@/lib/format-month";
-import type { DashboardData } from "@/lib/data/types";
+import type { DashboardView } from "@/lib/agent/view-context";
+import type { DashboardCompany, DashboardData } from "@/lib/data/types";
 
 const scoreChartConfig = {
   score: { label: "Índice de salud", color: "var(--chart-1)" },
@@ -66,6 +68,17 @@ function Delta({ value }: { value: number | null }) {
       {value > 0 ? "+" : ""}{value.toFixed(1)} pts
     </span>
   );
+}
+
+function legendSeries(companies: DashboardCompany[]) {
+  return companies.map((company, index) => ({
+    companyId: company.companyId,
+    groupId: company.groupId ?? undefined,
+    color: SERIES_COLOR_LABELS[index % SERIES_COLOR_LABELS.length],
+    score: company.score,
+    trajectory: trajectoryLabels[company.trajectory],
+    delta3m: company.delta3m,
+  }));
 }
 
 function queryFor(params: Record<string, string | null>) {
@@ -95,6 +108,8 @@ export function HealthDashboard({
   const [mode, setMode] = useState<AnalysisMode>(initialMode);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [quickCompanies, setQuickCompanies] = useState<DashboardData["companies"]>([]);
+  const [indiceCompanies, setIndiceCompanies] = useState<DashboardCompany[]>([]);
+  const [quickRange, setQuickRange] = useState<MonthRange | null>(null);
   const [seedPrompt, setSeedPrompt] = useState<string | undefined>();
   const [seedKey, setSeedKey] = useState(0);
   const company =
@@ -134,6 +149,42 @@ export function HealthDashboard({
       : quickCompanies.length === 1
         ? quickCompanies[0]
         : undefined;
+
+  const dashboardView = useMemo((): DashboardView => {
+    if (mode === "quick") {
+      if (quickCompanies.length === 0) {
+        return { mode: "rapido", screen: "inicio", asOf: data.asOfMonth };
+      }
+      return {
+        mode: "rapido",
+        screen: "rapido_chart",
+        asOf: data.asOfMonth,
+        series: legendSeries(quickCompanies),
+        periodFrom: quickRange?.from,
+        periodTo: quickRange?.to,
+      };
+    }
+    if (view === "health-score") {
+      return {
+        mode: "profundo",
+        screen: "indice",
+        asOf: data.asOfMonth,
+        series: legendSeries(indiceCompanies),
+      };
+    }
+    return {
+      mode: "profundo",
+      screen: "resumen",
+      asOf: data.asOfMonth,
+      focusCompanyId: company.companyId,
+      focusGroupId: company.groupId ?? undefined,
+      score: company.score,
+      trajectory: trajectoryLabels[company.trajectory],
+      delta1m: company.delta1m,
+      topReason: company.topReason,
+      categories: company.categories.map((row) => ({ label: row.label, score: row.score })),
+    };
+  }, [mode, view, data.asOfMonth, quickCompanies, quickRange, indiceCompanies, company]);
 
   function goVigilancia() {
     setView("overview");
@@ -200,7 +251,12 @@ export function HealthDashboard({
 
         {mode === "quick" ? (
           <div key="quick" className="flex flex-1 flex-col animate-in fade-in-0 duration-300 motion-reduce:animate-none">
-            <QuickAnalysis data={data} onCompaniesChange={setQuickCompanies} onExplain={explainRange} />
+            <QuickAnalysis
+              data={data}
+              onCompaniesChange={setQuickCompanies}
+              onRangeChange={setQuickRange}
+              onExplain={explainRange}
+            />
           </div>
         ) : (
         <main
@@ -213,7 +269,11 @@ export function HealthDashboard({
           )}
         >
           {view === "health-score" ? (
-            <HealthScoreView data={data} initialCompanyId={company.companyId} />
+            <HealthScoreView
+              data={data}
+              initialCompanyId={company.companyId}
+              onSelectionChange={setIndiceCompanies}
+            />
           ) : (
             <>
           <section id="resumen" className="flex scroll-mt-20 flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
@@ -383,6 +443,7 @@ export function HealthDashboard({
           asOf={data.asOfMonth}
           seedPrompt={seedPrompt}
           seedKey={seedKey}
+          view={dashboardView}
           open={chatOpen}
           onOpenChange={setChatOpen}
         />

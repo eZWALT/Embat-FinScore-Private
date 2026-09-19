@@ -38,6 +38,18 @@ export const SERIES_COLORS = [
   "oklch(0.5 0.16 340)",
 ] as const;
 
+/** Same order as SERIES_COLORS. The chat names lines with these words. */
+export const SERIES_COLOR_LABELS = [
+  "azul",
+  "verde",
+  "naranja",
+  "violeta",
+  "turquesa",
+  "rojo",
+  "oliva",
+  "rosa",
+] as const;
+
 function defaultSelection(companies: DashboardCompany[], first?: string): string[] {
   const picks: string[] = [];
   if (first && companies.some((company) => company.companyId === first)) picks.push(first);
@@ -97,9 +109,11 @@ const PAGE_SIZE = 50;
 export function HealthScoreView({
   data,
   initialCompanyId,
+  onSelectionChange,
 }: {
   data: DashboardData;
   initialCompanyId?: string;
+  onSelectionChange?: (companies: DashboardCompany[]) => void;
 }) {
   const [selectedIds, setSelectedIds] = useState<string[]>(() =>
     defaultSelection(data.companies, initialCompanyId),
@@ -117,6 +131,12 @@ export function HealthScoreView({
         .filter((company): company is DashboardCompany => Boolean(company)),
     [data.companies, selectedIds],
   );
+
+  const onSelectionChangeRef = useRef(onSelectionChange);
+  onSelectionChangeRef.current = onSelectionChange;
+  useEffect(() => {
+    onSelectionChangeRef.current?.(selected);
+  }, [selected]);
 
   const filtered = useMemo(() => {
     const needle = query.trim().toLowerCase();

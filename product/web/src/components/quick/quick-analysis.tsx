@@ -29,10 +29,12 @@ const OPTIONS: { id: Tab; label: string; hint: string; icon: LucideIcon }[] = [
 export function QuickAnalysis({
   data,
   onCompaniesChange,
+  onRangeChange,
   onExplain,
 }: {
   data: DashboardData;
   onCompaniesChange?: (companies: DashboardCompany[]) => void;
+  onRangeChange?: (range: MonthRange | null) => void;
   onExplain?: (prompt: string) => void;
 }) {
   const [tab, setTab] = useState<Tab | null>(null);
@@ -68,9 +70,11 @@ export function QuickAnalysis({
   function selectRange(next: MonthRange | null) {
     if (!next || selected.length === 0) {
       setRange(null);
+      onRangeChange?.(null);
       return;
     }
     setRange(next);
+    onRangeChange?.(next);
     onExplain?.(buildPrompt(selected, next));
   }
 

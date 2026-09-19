@@ -1,4 +1,5 @@
 import { streamAgentResponse } from "@/lib/agent/runtime";
+import { parseDashboardView } from "@/lib/agent/view-context";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
@@ -10,6 +11,7 @@ export async function POST(request: Request) {
     companyId?: string;
     groupId?: string;
     asOf?: string;
+    view?: unknown;
   };
   return streamAgentResponse({
     role: "chat",
@@ -17,5 +19,6 @@ export async function POST(request: Request) {
     companyId: body.companyId,
     groupId: body.groupId,
     asOf: body.asOf,
+    view: parseDashboardView(body.view),
   });
 }

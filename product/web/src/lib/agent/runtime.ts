@@ -10,6 +10,7 @@ import { createHelmcodeModel, helmcodeApiKey } from "./llm";
 import { coerceUiMessages, sessionExtra } from "./messages";
 import { loadSystemPrompt, type AgentRole } from "./prompt-loader";
 import { chatTools, quickTools, sentinelTools } from "./tools";
+import type { DashboardView } from "./view-context";
 
 export async function streamAgentResponse({
   role,
@@ -17,12 +18,14 @@ export async function streamAgentResponse({
   companyId,
   groupId,
   asOf,
+  view,
 }: {
   role: AgentRole;
   messages: unknown;
   companyId?: string;
   groupId?: string;
   asOf?: string;
+  view?: DashboardView;
 }): Promise<Response> {
   if (!helmcodeApiKey()) {
     return Response.json({ error: "HELMCODE_API_KEY is not set" }, { status: 503 });
@@ -36,7 +39,7 @@ export async function streamAgentResponse({
     return Response.json({ error: "messages is required" }, { status: 400 });
   }
 
-  const system = await loadSystemPrompt(role, sessionExtra(companyId, groupId, asOf));
+  const system = await loadSystemPrompt(role, sessionExtra({ companyId, groupId, asOf, view }));
   const modelMessages = await convertToModelMessages(uiMessages);
   const tools = role === "sentinel" ? sentinelTools() : role === "quick" ? quickTools() : chatTools();
 

@@ -1,5 +1,7 @@
 import type { ModelMessage, UIMessage } from "ai";
 
+import { formatDashboardView, type DashboardView } from "./view-context";
+
 type LooseMessage = {
   id?: string;
   role?: string;
@@ -40,12 +42,20 @@ export function coerceUiMessages(input: unknown): UIMessage[] {
   });
 }
 
-export function sessionExtra(companyId?: string, groupId?: string, asOf?: string): string | undefined {
+export function sessionExtra(input: {
+  companyId?: string;
+  groupId?: string;
+  asOf?: string;
+  view?: DashboardView;
+}): string | undefined {
   const lines: string[] = [];
-  if (companyId) lines.push(`company_id=${companyId}`);
-  if (groupId) lines.push(`group_id=${groupId}`);
-  if (asOf) lines.push(`as_of=${asOf}`);
-  return lines.length ? `session\n${lines.join("\n")}` : undefined;
+  if (input.companyId) lines.push(`company_id=${input.companyId}`);
+  if (input.groupId) lines.push(`group_id=${input.groupId}`);
+  if (input.asOf) lines.push(`as_of=${input.asOf}`);
+  const ids = lines.length ? `session\n${lines.join("\n")}` : undefined;
+  const screen = input.view ? formatDashboardView(input.view) : undefined;
+  if (ids && screen) return `${ids}\n\n${screen}`;
+  return screen ?? ids;
 }
 
 export type { ModelMessage, UIMessage };

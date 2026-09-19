@@ -13,17 +13,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { formatMonth } from "@/lib/format-month";
+import type { DashboardView } from "@/lib/agent/view-context";
 
-const COMPANY_QUESTIONS = [
-  "¿Por qué este índice este mes?",
+const QUESTIONS = [
+  "¿Qué muestra este gráfico?",
   "¿Qué cambió y quién tiene que actuar?",
-  "¿Qué alertas hay y qué importe hay detrás?",
-] as const;
-
-const INDEX_QUESTIONS = [
-  "¿Qué empresas necesitan atención este mes?",
-  "¿Quién se alejó de su propia normalidad?",
+  "¿Hay alguna alerta que revisar?",
 ] as const;
 
 export function HealthScoreChat({
@@ -35,8 +30,7 @@ export function HealthScoreChat({
   defaultOpen = false,
   seedPrompt,
   seedKey,
-  suggestions,
-  description,
+  view,
 }: {
   companyId?: string;
   groupId?: string;
@@ -46,8 +40,7 @@ export function HealthScoreChat({
   defaultOpen?: boolean;
   seedPrompt?: string;
   seedKey?: number;
-  suggestions?: readonly string[];
-  description?: string;
+  view?: DashboardView;
 }) {
   const [internal, setInternal] = useState(defaultOpen);
   const isOpen = open ?? internal;
@@ -61,25 +54,13 @@ export function HealthScoreChat({
     if (seedPrompt) setOpen(true);
   }, [seedPrompt, setOpen]);
 
-  const chips = suggestions
-    ? [...suggestions]
-    : companyId
-      ? [...COMPANY_QUESTIONS]
-      : [...INDEX_QUESTIONS];
-  const when = asOf ? formatMonth(asOf) : null;
-  const subtitle =
-    description ??
-    (companyId
-      ? `Por qué este índice${when ? ` en ${when}` : ""}, qué ha cambiado y qué hay que revisar.`
-      : "Qué empresas se han alejado de su normalidad.");
-
   return (
     <div className="pointer-events-none fixed right-4 bottom-4 z-50 flex flex-col items-end gap-3 sm:right-6 sm:bottom-6">
       {isOpen ? (
         <Card className="pointer-events-auto flex h-[min(82vh,720px)] w-[min(calc(100vw-2rem),36rem)] flex-col shadow-lg">
           <CardHeader className="border-b pb-3">
             <CardTitle>Pregunta</CardTitle>
-            <CardDescription>{subtitle}</CardDescription>
+            <CardDescription>Sobre los paneles, las tendencias o un periodo.</CardDescription>
             <CardAction>
               <Button
                 type="button"
@@ -99,15 +80,12 @@ export function HealthScoreChat({
               companyId={companyId}
               groupId={groupId}
               asOf={asOf}
+              view={view}
               layout="sheet"
               seedPrompt={seedPrompt}
               seedKey={seedKey}
-              placeholder={
-                companyId
-                  ? "Ej. ¿Por qué bajó el índice este mes?"
-                  : "Ej. ¿Quién necesita atención este mes?"
-              }
-              suggestions={chips}
+              placeholder="Ej. ¿Qué tendencia ves en este gráfico?"
+              suggestions={[...QUESTIONS]}
             />
           </CardContent>
         </Card>

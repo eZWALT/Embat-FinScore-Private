@@ -61,6 +61,7 @@ export function AgentChat({
   suggestions,
   seedPrompt,
   seedKey,
+  view,
   layout = "page",
 }: {
   api: "/api/ask" | "/api/watcher/reply";
@@ -72,10 +73,11 @@ export function AgentChat({
   suggestions?: string[];
   seedPrompt?: string;
   seedKey?: number;
+  view?: AgentContext["view"];
   layout?: "page" | "sheet";
 }) {
-  const ctxRef = useRef<AgentContext>({ companyId, groupId, asOf });
-  ctxRef.current = { companyId, groupId, asOf };
+  const ctxRef = useRef<AgentContext>({ companyId, groupId, asOf, view });
+  ctxRef.current = { companyId, groupId, asOf, view };
 
   const transport = useMemo(
     () =>

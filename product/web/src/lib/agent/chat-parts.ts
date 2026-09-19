@@ -1,19 +1,22 @@
 import { getToolName, isTextUIPart, isToolUIPart, type UIMessage } from "ai";
 
 import { isPlotSpec, type PlotSpec } from "./plot-spec";
+import type { DashboardView } from "./view-context";
 
 export type AgentContext = {
   companyId?: string;
   groupId?: string;
   asOf?: string;
+  view?: DashboardView;
 };
 
 /** Fields the Ask / Watcher reply routes expect besides `messages`. */
-export function contextBody(context: AgentContext): Record<string, string> {
-  const body: Record<string, string> = {};
+export function contextBody(context: AgentContext): Record<string, unknown> {
+  const body: Record<string, unknown> = {};
   if (context.companyId) body.companyId = context.companyId;
   if (context.groupId) body.groupId = context.groupId;
   if (context.asOf) body.asOf = context.asOf;
+  if (context.view) body.view = context.view;
   return body;
 }
 
