@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { ArrowDownRight, ArrowUpRight, Layers, Minus } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AppHeader } from "@/components/app-header";
@@ -26,6 +25,7 @@ import {
 } from "@/components/group/labels";
 import { HealthScoreChat } from "@/components/health-score-chat";
 import { ProductCredit } from "@/components/product-credit";
+import { TrajectoryStatus } from "@/components/trajectory-status";
 import { HealthScoreView } from "@/components/health-score-view";
 import { type MonthRange } from "@/components/quick/quick-chart";
 import { SERIES_COLOR_LABELS } from "@/components/quick/series";
@@ -46,11 +46,11 @@ const DEEP_VIEWS: SegmentedOption<DeepView>[] = [
   { value: "health-score", label: "Comparar" },
 ];
 
-function Delta({ value }: { value: number | null }) {
+function Delta({ value, title = "Cambio mensual" }: { value: number | null; title?: string }) {
   if (value === null) return <span className="text-sm text-muted-foreground">—</span>;
   const Icon = value > 0 ? ArrowUpRight : value < 0 ? ArrowDownRight : Minus;
   return (
-    <span className="inline-flex items-center gap-1 font-mono text-sm tabular-nums text-muted-foreground" title="Cambio mensual">
+    <span className="inline-flex items-center gap-1 font-mono text-sm tabular-nums text-muted-foreground" title={title}>
       <Icon className="size-4" />
       {formatPoints(value)} pts
     </span>
@@ -393,8 +393,12 @@ export function HealthDashboard({
                   <CardHeader className="pb-2">
                     <CardTitle className="text-xs font-medium text-muted-foreground">Trayectoria</CardTitle>
                   </CardHeader>
-                  <CardContent className="flex h-11 items-center">
-                    <Badge variant="secondary">{trajectoryLabels[company.trajectory]}</Badge>
+                  <CardContent className="flex items-center justify-between gap-3">
+                    <TrajectoryStatus trajectory={company.trajectory} />
+                    <span className="flex shrink-0 flex-col items-end gap-0.5">
+                      <Delta value={company.delta3m} title="Cambio en 3 meses" />
+                      <span className="text-[11px] text-muted-foreground">en 3 meses</span>
+                    </span>
                   </CardContent>
                 </Card>
               </section>
