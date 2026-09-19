@@ -93,6 +93,8 @@ runs.
 
 ---
 
+> Plain-language walk through cleaning, the 17 items, the score, the monitor and every decision: [METHOD.md](METHOD.md).
+
 ## Explainable scorecard (modules `spec`, `items`, `fit`, `scorecard`, `explain`, `run`, `validate`)
 
 Second, separate implementation of plan step 2 living beside the v0 dummy above: it does not write the v0 parquet and the POC does not read it yet. Modules are `spec.py`, `items.py`, `fit.py` (writes `reference.json`), `scorecard.py`, `explain.py`, `amounts.py`, `run.py`, `validate.py`, `guard_test.py`, `score_new_check.py`; run them as `python -m product.score.run` etc. (not `python -m product.score`, which is the v0 card).

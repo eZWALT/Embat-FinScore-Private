@@ -5,6 +5,7 @@ For whoever builds the web app (Next.js on Vercel). The pipeline runs **once** o
 - Types: [`contract/types.ts`](contract/types.ts) (also copied into every bundle). Loader example: [`contract/loader.example.ts`](contract/loader.example.ts).
 - **Sample bundle to develop against, committed: [`sample_bundle/`](sample_bundle/)** (12 varied companies picked to include every alert kind, 0.6 MB, real output on the synthetic data). Its `groups.json` lists only the sampled members of each group, so `n_companies` there is smaller than in a full bundle.
 - **Inspector, to check and understand a bundle visually: [`inspector/`](inspector/README.md)** (`python product/score/inspector/serve.py --bundle <bundle_dir> --open`; re-checks the score arithmetic and the sha256 in the browser).
+- **What is calculated and why, in plain language: [METHOD.md](METHOD.md).**
 - Method and validation: [README.md](README.md), [validation.md](validation.md). Monitor, clusters and forecast: [`analysis/monitor/`](../../analysis/monitor/README.md). Not a predictor: show `manifest.disclaimer`.
 
 ## Flow
