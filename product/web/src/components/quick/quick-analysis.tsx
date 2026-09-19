@@ -12,14 +12,15 @@ import { QuickChart, type MonthRange } from "@/components/quick/quick-chart";
 import { buildPrompt } from "@/components/quick/quick-explain";
 import { QuickList } from "@/components/quick/quick-list";
 import type { DashboardCompany, DashboardData } from "@/lib/data/types";
+import { HALF_LIFE_MONTHS, recencyWeightedMean } from "@/lib/quick-ranking";
 
 type Tab = "top" | "bottom" | "search";
 
 const MAX_PICKED = 8;
 
 const OPTIONS: { id: Tab; label: string; hint: string; icon: LucideIcon }[] = [
-  { id: "top", label: "Mejores 5", hint: "Las cinco empresas con mayor índice hoy", icon: TrendingUp },
-  { id: "bottom", label: "Peores 5", hint: "Las cinco con menor índice hoy", icon: TrendingDown },
+  { id: "top", label: "Mejores 5", hint: "Mayor media del índice, con más peso a los meses recientes", icon: TrendingUp },
+  { id: "bottom", label: "Peores 5", hint: "Menor media del índice, con más peso a los meses recientes", icon: TrendingDown },
   { id: "search", label: "Buscar", hint: "Por nombre o grupo", icon: Search },
 ];
 
@@ -48,21 +49,34 @@ export function QuickAnalysis({
 
   const idle = tab === null;
 
-  const byScore = useMemo(
-    () => data.companies.slice().sort((a, b) => b.score - a.score || a.companyId.localeCompare(b.companyId)),
-    [data.companies],
+  // Best and worst are ranked by the recency-weighted mean of the whole history, not by last month alone.
+  const weighted = useMemo(() => {
+    const means = new Map<string, number>();
+    for (const company of data.companies) {
+      const mean = recencyWeightedMean(company.scoreHistory, data.asOfMonth);
+      if (mean !== null) means.set(company.companyId, mean);
+    }
+    return means;
+  }, [data.companies, data.asOfMonth]);
+
+  const ranked = useMemo(
+    () =>
+      data.companies
+        .filter((company) => weighted.has(company.companyId))
+        .sort((a, b) => weighted.get(b.companyId)! - weighted.get(a.companyId)! || a.companyId.localeCompare(b.companyId)),
+    [data.companies, weighted],
   );
 
   const selected: DashboardCompany[] = useMemo(() => {
-    if (tab === "top") return byScore.slice(0, 5);
-    if (tab === "bottom") return byScore.slice(-5).reverse();
+    if (tab === "top") return ranked.slice(0, 5);
+    if (tab === "bottom") return ranked.slice(-5).reverse();
     if (tab === "search") {
       return picked
         .map((id) => data.companies.find((company) => company.companyId === id))
         .filter((company): company is DashboardCompany => Boolean(company));
     }
     return [];
-  }, [tab, byScore, picked, data.companies]);
+  }, [tab, ranked, picked, data.companies]);
 
   useEffect(() => {
     onCompaniesChangeRef.current?.(selected);
@@ -220,7 +234,16 @@ export function QuickAnalysis({
                           aria-hidden="true"
                         />
                         {company.companyId}
-                        <span className="text-muted-foreground tabular-nums">{company.score.toFixed(0)}</span>
+                        {tab !== "search" && weighted.has(company.companyId) ? (
+                          <span
+                            className="text-muted-foreground tabular-nums"
+                            title={`Media ponderada del índice (vida media ${HALF_LIFE_MONTHS} meses) · último mes ${company.score.toFixed(0)}`}
+                          >
+                            media {weighted.get(company.companyId)!.toFixed(0)} · hoy {company.score.toFixed(0)}
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground tabular-nums">{company.score.toFixed(0)}</span>
+                        )}
                         {company.delta3m !== null ? (
                           <span className="text-muted-foreground tabular-nums" title="Cambio en 3 meses">
                             {formatPoints(company.delta3m)}
