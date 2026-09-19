@@ -1,4 +1,4 @@
-# Formato de la ficha de vigilancia (fijo, no negociable)
+# Capa 5 — FORMAT (ficha mensual; no la reescribas)
 
 Cada ficha mensual es esta forma y nada más. El renderer la dibuja. El modelo no inventa Headline / Story / Act / Info, párrafos ni pies de gráfico. Si escribes una ficha (solo lote offline), emite el JSON, no prosa.
 

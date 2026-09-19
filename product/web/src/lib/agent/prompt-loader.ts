@@ -3,7 +3,9 @@ import path from "node:path";
 
 export type AgentRole = "sentinel" | "chat";
 
+/** Ask stack (full context, do not drop a layer): MAP → ROLE → SCOPE → PRODUCT → WORDING → FORMAT → TOOLS → RECORDS → SESSION. */
 const FILES = {
+  map: "prompt_map.md",
   sentinel: "sentinel_system.md",
   chat: "chat_system.md",
   scope: "scope.md",
@@ -24,6 +26,7 @@ async function readPrompt(name: string) {
 
 export async function loadSystemPrompt(role: AgentRole, extra?: string) {
   const parts = [
+    await readPrompt(FILES.map),
     await readPrompt(FILES[role]),
     await readPrompt(FILES.scope),
     await readPrompt(FILES.product),

@@ -1,4 +1,4 @@
-# Cleaned database (`clean` schema, read-only)
+# Capa 7 — RECORDS (`clean.*` / Neon `core`; solo Ask)
 
 DuckDB. Query only these tables, with `clean.` prefix. `SELECT` only. Always filter by `company_id` (or a list of them) and add a `LIMIT`. Money is in each row's `currency`. Dates are timestamps; use `date_trunc('month', col)` for monthly views. Window: 2024-09-01 → 2026-09-01.
 

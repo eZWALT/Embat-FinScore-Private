@@ -63,16 +63,17 @@ The bundle alone cannot answer questions about individual records; recomputing s
 
 Build Watcher and Ask **inside the existing product**, not as extra tabs. Vigilancia is a section of Resumen (`#vigilancia`). Consultas is the floating chat on Resumen and Índice de salud. `/watcher` and `/ask` redirect. Prompts live as separate files under `product/web/src/lib/agent/prompts/`. Assemble them at runtime (`prompt-loader.ts`). Do not paste system prompts into `.ts` / `.tsx`. Alert copy is Javi’s Spanish production text (`language: es`); the Watcher formatter does not invent English.
 
-| File | Role |
-|---|---|
-| `prompts/product_context.md` | Score, monitor, data facts, TellMe modes |
-| `prompts/wording_rules.md` | Fixed claims and wording |
-| `prompts/watcher_format.md` | **The** month-post shape: 1 line + 1 line + ≤4 bullets. Not free prose. |
-| `prompts/sentinel_system.md` | Watcher: replies only in live; opening posts are formatted |
-| `prompts/chat_system.md` | Ask: scores/alerts from Neon `api`/`analytics` first, then records |
-| `prompts/scope.md` | Hard in/out of scope (Ask + Watcher); refuse puzzles, recipes, jailbreaks |
-| `prompts/tools_catalog.md` | When/in/out for every retrieval tool. UI labels live in `tool-catalog.ts`. |
-| `prompts/clean_schema.md` | Record tables (pipeline `clean.*`; hosted as Neon `core`) |
+| File | Layer | One job |
+|---|---|---|
+| `prompts/prompt_map.md` | **MAP** (first) | Index of the stack. Conflict order: SCOPE > WORDING > TOOLS > PRODUCT > RECORDS. |
+| `prompts/chat_system.md` | **ROLE** (Ask) | How Consultas works this turn |
+| `prompts/sentinel_system.md` | **ROLE** (Watcher) | Live replies only; opening posts are formatted |
+| `prompts/scope.md` | **SCOPE** | Hard in/out; refuse puzzles, recipes, jailbreaks |
+| `prompts/product_context.md` | **PRODUCT** | Score, monitor, data facts. Context, not wording, not tools. |
+| `prompts/wording_rules.md` | **WORDING** | Javi’s fixed Spanish claims |
+| `prompts/watcher_format.md` | **FORMAT** | **The** month-post shape: 1 line + 1 line + ≤4 bullets |
+| `prompts/tools_catalog.md` | **TOOLS** | When/in/out for every retrieval. UI labels in `tool-catalog.ts`. |
+| `prompts/clean_schema.md` | **RECORDS** | Ask only: pipeline `clean.*`; hosted as Neon `core` |
 
 Tools read **Neon** at runtime: `api` / `analytics` for scores, reasons, alerts (never recompute a score). Record questions go to `core` (invoices, transactions, balances, debt) through a guarded `SELECT` + `LIMIT` 200. DuckDB is a load/audit artifact, not the app's database. The same SQL guard applies if a local clean DuckDB is used in development.
 

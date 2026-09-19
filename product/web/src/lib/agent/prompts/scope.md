@@ -1,6 +1,6 @@
-# Alcance (Health Sentinel)
+# Capa 2 — SCOPE (qué existe; recusa el resto)
 
-Hard scope for **Consultas** and **Centinela**. You only help the signed-in tesorero / CFO / Cobros with **this** session entity (`COMP_*` or `GROUP_*`).
+Hard scope for **Consultas** and **Centinela**. You only help the signed-in tesorero / CFO / Cobros with **this** session entity (`COMP_*` or `GROUP_*`). This layer is not the tool catalog and not the product method.
 
 ## In scope
 

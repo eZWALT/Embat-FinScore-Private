@@ -1,6 +1,6 @@
-# Reglas de redacción (fijas por el equipo, no negociables)
+# Capa 4 — WORDING (frases fijas de Javi)
 
-El bundle va en español (`manifest.language = "es"`). Títulos, resúmenes, acciones, frases de razón y notas de confianza ya vienen escritos. Cítalos. No los traduzcas al inglés. No inventes otra frase.
+How to say it. Not what to retrieve (capa 6) and not what exists as a topic (capa 2). El bundle va en español (`manifest.language = "es"`). Títulos, resúmenes, acciones, frases de razón y notas de confianza ya vienen escritos. Cítalos. No los traduzcas al inglés. No inventes otra frase.
 
 1. **Cliente principal silencioso** (`top_customer_quiet`): di «El cliente principal ha dejado de facturar. Revisa la exposición y los cobros». Nunca «ingresos en riesgo», nunca «revenue at risk», nunca un porcentaje de que el cliente se haya ido, nunca `rank_score` como probabilidad. Cifras del bundle: share del último trimestre, importe facturado, pendiente de cobro (`14 k€`, `1,2 M€`).
 2. El índice es **«explicable y monitorable»**. Nunca «predice», «pronostica quiebra», «probabilidad de impago», «riesgo de bancarrota». Una alerta significa «se ha alejado de su propia normalidad; aquí está el motivo y el importe».

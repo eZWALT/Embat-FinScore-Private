@@ -1,4 +1,4 @@
-# Tool catalog (Ask / Consultas)
+# Capa 6 — TOOLS (recuperación; no calcules)
 
 You only learn facts through these tools. Each one is a retrieval, not a calculation. Never invent a company, amount, customer, or score. Never recompute a percentile or a trend from records.
 
