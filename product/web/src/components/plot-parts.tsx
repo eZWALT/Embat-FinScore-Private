@@ -163,6 +163,7 @@ export function PlotChart({
   centerLabel = "Normalidad",
   zeroLine = false,
   forecast = false,
+  peerMedian = false,
   loading = false,
   hidden = false,
   contributions = null,
@@ -174,6 +175,8 @@ export function PlotChart({
   /** The values are differences around zero, not scores: draw the 0 line and let the axis fit. Score plots are always 0–100. */
   zeroLine?: boolean;
   forecast?: boolean;
+  /** Draw the `peers` column of the rows as a line: the median of comparable companies. */
+  peerMedian?: boolean;
   loading?: boolean;
   /** Draw nothing (the card shows why). */
   hidden?: boolean;
@@ -184,6 +187,7 @@ export function PlotChart({
     value: { label: valueLabel, color: "var(--chart-1)" },
     center: { label: centerLabel, color: "var(--muted-foreground)" },
     median: { label: "Predicción (mediana)", color: "var(--chart-2)" },
+    peers: { label: "Mediana de empresas similares", color: "var(--chart-2)" },
   } satisfies ChartConfig;
 
   return (
@@ -226,6 +230,9 @@ export function PlotChart({
               />
               {control ? (
                 <Line dataKey="center" type="monotone" stroke="var(--color-center)" strokeWidth={1.5} strokeDasharray="5 4" dot={false} activeDot={false} isAnimationActive={false} />
+              ) : null}
+              {peerMedian ? (
+                <Line dataKey="peers" type="monotone" stroke="var(--color-peers)" strokeWidth={2} dot={false} activeDot={{ r: 4 }} isAnimationActive={false} connectNulls={false} />
               ) : null}
               {forecast ? (
                 <Line dataKey="median" type="monotone" stroke="var(--color-median)" strokeWidth={2.5} strokeDasharray="6 4" dot={false} activeDot={{ r: 4 }} isAnimationActive={false} />

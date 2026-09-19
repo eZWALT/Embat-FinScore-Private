@@ -23,7 +23,7 @@ const COPY: Record<PlotView, { title: string; unit: string }> = {
   score: { title: "Evolución de la puntuación", unit: "Índice" },
   own: { title: "Índice vs tendencia histórica", unit: "Índice" },
   peers: { title: "Índice vs empresas del grupo", unit: "Índice" },
-  cluster: { title: "Diferencia vs empresas similares", unit: "Diferencia con empresas similares" },
+  cluster: { title: "Índice vs empresas similares", unit: "Índice" },
 };
 
 /** A group of fewer scored companies than this has no meaningful spread to compare against. */
@@ -65,6 +65,33 @@ function peerSeries(company: DashboardCompany, everyone: DashboardCompany[]): Co
     signal: values.map((value, i) => (value === null ? "none" : value < stats[i].lower ? "low" : value > stats[i].upper ? "high" : "none")),
     persistent: values.map(() => false),
   };
+}
+
+/**
+ * The cluster chart is computed as the company's gap to the median of its cluster. Adding each month's median back
+ * (score − gap) puts the gap, its normal and its band on the 0–100 score scale, so the line is the company's own score.
+ * A month is outside the band in either scale, so the signals carry over unchanged.
+ */
+function clusterRows(company: DashboardCompany, series: ControlSeries): PlotRow[] {
+  const score = new Map(company.scoreHistory.map((point) => [point.month, point.score]));
+  const clamp = (value: number) => Math.max(0, Math.min(100, value));
+  return series.months.map((month, i) => {
+    const own = score.get(month) ?? null;
+    const gap = series.values[i];
+    const peers = own !== null && gap !== null ? own - gap : null;
+    const center = series.center[i];
+    const lower = series.lower[i];
+    const upper = series.upper[i];
+    return {
+      month,
+      value: own,
+      peers,
+      center: peers !== null && center !== null ? peers + center : null,
+      band: peers !== null && lower !== null && upper !== null ? [clamp(peers + lower), clamp(peers + upper)] : null,
+      signal: series.signal[i],
+      persistent: series.persistent[i],
+    };
+  });
 }
 
 function scoreRows(company: DashboardCompany, monitor: CompanyMonitor | null, showForecast: boolean): PlotRow[] {
@@ -153,8 +180,15 @@ export function MonitorPlot({
   const empty = isControl && !loading && !failed && !series;
 
   const rows = useMemo(
-    () => (isControl ? (series ? controlRows(series) : []) : scoreRows(company, monitor, showForecast)),
-    [isControl, series, company, monitor, showForecast],
+    () =>
+      isControl
+        ? series
+          ? view === "cluster"
+            ? clusterRows(company, series)
+            : controlRows(series)
+          : []
+        : scoreRows(company, monitor, showForecast),
+    [isControl, series, view, company, monitor, showForecast],
   );
 
   const copy = COPY[view];
@@ -202,8 +236,8 @@ export function MonitorPlot({
         rows={rows}
         control={isControl}
         valueLabel={copy.unit}
-        centerLabel={view === "peers" ? "Mediana del grupo" : "Normalidad"}
-        zeroLine={view === "cluster"}
+        centerLabel={view === "peers" ? "Mediana del grupo" : view === "cluster" ? "Habitual frente a similares" : "Normalidad"}
+        peerMedian={view === "cluster"}
         forecast={view === "score" && showForecast && !!monitor?.forecast}
         loading={loading}
         hidden={empty}
