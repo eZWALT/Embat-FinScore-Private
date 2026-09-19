@@ -614,6 +614,73 @@ const plot_series = tool({
   },
 });
 
+/** Distinct calls allowed per tool in one Pregunta turn. Two companies = two reads, not four. */
+export const TOOL_CALL_CAP: Record<string, number> = {
+  list_companies: 1,
+  get_company: 2,
+  explain_change: 2,
+  get_group: 2,
+  get_alerts: 2,
+  get_control_chart: 2,
+  compare_with_cluster: 2,
+  get_forecast: 2,
+  query_clean_db: 2,
+  plot_series: 1,
+};
+
+function inputKey(input: unknown): string {
+  if (input == null || typeof input !== "object") return JSON.stringify(input ?? null);
+  const row = input as Record<string, unknown>;
+  const ordered: Record<string, unknown> = {};
+  for (const key of Object.keys(row).sort()) {
+    if (row[key] !== undefined) ordered[key] = row[key];
+  }
+  return JSON.stringify(ordered);
+}
+
+export function countToolCallsByName(steps: { toolCalls?: { toolName: string }[] }[]): Map<string, number> {
+  const counts = new Map<string, number>();
+  for (const step of steps) {
+    for (const call of step.toolCalls ?? []) {
+      counts.set(call.toolName, (counts.get(call.toolName) ?? 0) + 1);
+    }
+  }
+  return counts;
+}
+
+export function activeToolsUnderCap(names: string[], steps: { toolCalls?: { toolName: string }[] }[]): string[] {
+  const counts = countToolCallsByName(steps);
+  return names.filter((name) => (counts.get(name) ?? 0) < (TOOL_CALL_CAP[name] ?? 2));
+}
+
+export function totalToolCalls(steps: { toolCalls?: { toolName: string }[] }[]): number {
+  return steps.reduce((sum, step) => sum + (step.toolCalls?.length ?? 0), 0);
+}
+
+function withMemoize<T extends Record<string, { execute?: (...args: never[]) => unknown }>>(tools: T): T {
+  const cache = new Map<string, Promise<unknown>>();
+  return Object.fromEntries(
+    Object.entries(tools).map(([name, definition]) => {
+      const execute = definition.execute;
+      if (typeof execute !== "function") return [name, definition];
+      return [
+        name,
+        {
+          ...definition,
+          execute: ((input: never, options: never) => {
+            const key = `${name}:${inputKey(input)}`;
+            const hit = cache.get(key);
+            if (hit) return hit;
+            const pending = Promise.resolve(execute(input, options));
+            cache.set(key, pending);
+            return pending;
+          }) as (typeof definition)["execute"],
+        },
+      ];
+    }),
+  ) as T;
+}
+
 function withTiming<T extends { execute?: (...args: never[]) => unknown }>(name: string, definition: T): T {
   const execute = definition.execute;
   if (typeof execute !== "function") return definition;
@@ -638,18 +705,20 @@ function timeAll<T extends Record<string, { execute?: (...args: never[]) => unkn
 }
 
 export function chatTools() {
-  return timeAll({
-    list_companies,
-    get_company,
-    explain_change,
-    get_group,
-    get_alerts,
-    get_control_chart,
-    compare_with_cluster,
-    get_forecast,
-    query_clean_db,
-    plot_series,
-  });
+  return withMemoize(
+    timeAll({
+      list_companies,
+      get_company,
+      explain_change,
+      get_group,
+      get_alerts,
+      get_control_chart,
+      compare_with_cluster,
+      get_forecast,
+      query_clean_db,
+      plot_series,
+    }),
+  );
 }
 
 /** Explicación rápida: solo lo necesario para decir qué movió la puntuación. */
@@ -662,11 +731,13 @@ export function quickTools() {
 }
 
 export function sentinelTools() {
-  return timeAll({
-    get_company,
-    get_group,
-    get_alerts,
-    get_control_chart,
-    plot_series,
-  });
+  return withMemoize(
+    timeAll({
+      get_company,
+      get_group,
+      get_alerts,
+      get_control_chart,
+      plot_series,
+    }),
+  );
 }

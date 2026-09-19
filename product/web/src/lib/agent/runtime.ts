@@ -3,7 +3,7 @@ import { convertToModelMessages, isStepCount, smoothStream, streamText } from "a
 import { createHelmcodeModel, helmcodeApiKey, helmcodeTemperature } from "./llm";
 import { coerceUiMessages, sessionExtra } from "./messages";
 import { loadSystemPrompt, type AgentRole } from "./prompt-loader";
-import { chatTools, quickTools, sentinelTools } from "./tools";
+import { activeToolsUnderCap, chatTools, quickTools, sentinelTools, totalToolCalls } from "./tools";
 import type { DashboardView } from "./view-context";
 
 export async function streamAgentResponse({
@@ -44,7 +44,11 @@ export async function streamAgentResponse({
     system,
     messages: modelMessages,
     tools,
-    stopWhen: isStepCount(8),
+    stopWhen: [isStepCount(6), ({ steps }) => totalToolCalls(steps) >= 8],
+    prepareStep({ steps }) {
+      const names = Object.keys(tools) as (keyof typeof tools)[];
+      return { activeTools: activeToolsUnderCap(names as string[], steps) as typeof names };
+    },
     abortSignal,
     temperature: helmcodeTemperature(),
     experimental_transform: smoothStream({
