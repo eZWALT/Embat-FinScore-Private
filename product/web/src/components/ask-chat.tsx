@@ -9,13 +9,13 @@ import { ProductNav } from "@/components/product-nav";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const COMPANY_QUESTIONS = [
-  "¿Por qué el índice es el que es este mes?",
-  "¿Qué cambió en los últimos tres meses y quién actúa?",
+  "¿Por qué este índice este mes?",
+  "¿Qué cambió en tres meses?",
 ] as const;
 
 const GROUP_QUESTIONS = [
-  "¿Qué empresas del grupo hay que revisar este mes?",
-  "¿Qué alertas del grupo debe ver Cobros o el tesorero?",
+  "¿Qué empresas hay que revisar?",
+  "¿Qué alertas debe ver Cobros?",
 ] as const;
 
 export function AskChat({

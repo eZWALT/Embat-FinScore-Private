@@ -50,7 +50,7 @@ function Delta({ value }: { value: number | null }) {
   if (value === null) return <span className="text-sm text-muted-foreground">—</span>;
   const Icon = value > 0 ? ArrowUpRight : value < 0 ? ArrowDownRight : Minus;
   return (
-    <span className="inline-flex items-center gap-1 font-mono text-sm tabular-nums">
+    <span className="inline-flex items-center gap-1 font-mono text-sm tabular-nums text-muted-foreground" title="Cambio mensual">
       <Icon className="size-4" />
       {formatPoints(value)} pts
     </span>
@@ -349,7 +349,7 @@ export function HealthDashboard({
                 ) : null}
               </section>
 
-              <section className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              <section className="mt-6 grid gap-4 sm:grid-cols-3">
                 <Card>
                   <CardHeader className="pb-2">
                     <CardTitle className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
@@ -357,7 +357,7 @@ export function HealthDashboard({
                       <HealthIndexHelp />
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="flex items-center justify-between gap-3">
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <div
@@ -397,13 +397,6 @@ export function HealthDashboard({
                         </ul>
                       </TooltipContent>
                     </Tooltip>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-xs font-medium text-muted-foreground">Cambio mensual</CardTitle>
-                  </CardHeader>
-                  <CardContent className="flex h-11 items-center">
                     <Delta value={company.delta1m} />
                   </CardContent>
                 </Card>

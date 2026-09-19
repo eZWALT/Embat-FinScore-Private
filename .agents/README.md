@@ -43,6 +43,7 @@ Add a new dated file after meaningful work. Do not rewrite old ones. If the new 
 | `persistent-memory/2026-09-19-2025-qa-sample-bundle.md` | Local web without Neon uses `product/score/sample_bundle`. Production still requires `DATABASE_URL`. |
 | `persistent-memory/2026-09-19-2055-followups-visible-push.md` | Pregunta chips: 2-col row above the composer; fallback immediately; product name is Sentinel. |
 | `persistent-memory/2026-09-19-2108-ask-uses-repository.md` | Pregunta does not 503 without Neon locally; tools use the score repository. |
+| `persistent-memory/2026-09-19-2112-chip-wording.md` | Pregunta chips: one idea, short tap; no yes/no; Δ in the Índice card. |
 
 Plain-language method (not a journal file): `product/score/METHOD.md`.
 

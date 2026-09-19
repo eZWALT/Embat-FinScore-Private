@@ -112,7 +112,7 @@ export function HealthScoreChat({
               layout="sheet"
               seedPrompt={seedPrompt}
               seedKey={seedKey}
-              placeholder="Ej. ¿Qué tendencia ves en este gráfico?"
+              placeholder="Ej. ¿Qué cambió este mes?"
               suggestions={openingSuggestions(view)}
             />
           </CardContent>

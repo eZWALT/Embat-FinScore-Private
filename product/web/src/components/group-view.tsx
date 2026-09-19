@@ -86,30 +86,25 @@ export function GroupView({
     <>
       {header}
 
-      <section className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="mt-6 grid gap-4 sm:grid-cols-3">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-xs font-medium text-muted-foreground">Media del grupo</CardTitle>
           </CardHeader>
-          <CardContent className="flex items-baseline gap-2">
-            {overview.meanScore !== null ? (
-              <span className="size-2.5 self-center rounded-full" style={{ background: scoreColor(overview.meanScore) }} aria-hidden="true" />
-            ) : null}
-            <span className="font-mono text-4xl font-medium tracking-tight tabular-nums">
-              {overview.meanScore === null ? "—" : overview.meanScore.toFixed(0)}
-            </span>
-            <span className="text-sm text-muted-foreground">/ 100</span>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground">Cambio mensual de la media</CardTitle>
-          </CardHeader>
-          <CardContent className="flex h-11 items-center">
+          <CardContent className="flex items-center justify-between gap-3">
+            <div className="flex items-baseline gap-2">
+              {overview.meanScore !== null ? (
+                <span className="size-2.5 self-center rounded-full" style={{ background: scoreColor(overview.meanScore) }} aria-hidden="true" />
+              ) : null}
+              <span className="font-mono text-4xl font-medium tracking-tight tabular-nums">
+                {overview.meanScore === null ? "—" : overview.meanScore.toFixed(0)}
+              </span>
+              <span className="text-sm text-muted-foreground">/ 100</span>
+            </div>
             {change === null ? (
               <span className="text-sm text-muted-foreground">—</span>
             ) : (
-              <span className="inline-flex items-center gap-1 font-mono text-sm tabular-nums">
+              <span className="inline-flex items-center gap-1 font-mono text-sm tabular-nums text-muted-foreground" title="Cambio mensual">
                 <ChangeIcon className="size-4" />
                 {formatPoints(change)} pts
               </span>

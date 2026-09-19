@@ -6,27 +6,18 @@ import type { DashboardView } from "./view-context";
  */
 export function openingSuggestions(view?: DashboardView): string[] {
   if (view?.periodFrom && view?.periodTo) {
-    return [
-      "¿Qué cambió en el periodo que acabo de marcar?",
-      "¿Quién tiene que actuar sobre ese cambio?",
-    ];
+    return ["¿Qué cambió en este periodo?", "¿Quién tiene que actuar?"];
   }
   if (view?.screen === "resumen") {
-    return [
-      "¿Por qué el índice es el que es este mes?",
-      "¿Hay alguna alerta que revisar?",
-    ];
+    return ["¿Por qué este índice este mes?", "¿Qué alertas hay?"];
   }
   if (view?.screen === "indice") {
-    return [
-      "¿Qué empresa de las que ves necesita revisión?",
-      "¿Qué cambió y quién tiene que actuar?",
-    ];
+    return ["¿Qué empresa hay que revisar?", "¿Quién tiene que actuar?"];
   }
   if (view?.screen === "rapido_chart") {
-    return ["¿Qué muestra este gráfico?", "¿Hay alguna alerta que revisar?"];
+    return ["¿Qué explica este gráfico?", "¿Qué alertas hay?"];
   }
-  return ["¿Qué muestra este gráfico?", "¿Qué cambió y quién tiene que actuar?"];
+  return ["¿Por qué este índice este mes?", "¿Qué alertas hay?"];
 }
 
 export function cleanFollowupLine(line: string): string | null {
@@ -36,7 +27,7 @@ export function cleanFollowupLine(line: string): string | null {
     .replace(/\s+/g, " ")
     .trim();
   if (text.length < 8) return null;
-  const clipped = text.length > 80 ? `${text.slice(0, 77).trimEnd()}…` : text;
+  const clipped = text.length > 56 ? `${text.slice(0, 53).trimEnd()}…` : text;
   return /[?¿]$/.test(clipped) ? clipped : `${clipped}?`;
 }
 
@@ -52,5 +43,5 @@ export function extractFollowups(text: string): string[] {
 }
 
 export function fallbackFollowups(): string[] {
-  return ["¿Por qué ha cambiado y quién actúa?", "¿Hay alguna alerta que revisar?"];
+  return ["¿Por qué ha cambiado?", "¿Quién tiene que actuar?"];
 }
