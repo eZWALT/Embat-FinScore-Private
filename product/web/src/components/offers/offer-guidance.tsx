@@ -6,8 +6,8 @@ import { ChevronRight, Handshake } from "lucide-react";
 import { cn } from "cn";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { companyLabel } from "@/components/group/labels";
-import { Segmented, type SegmentedOption } from "@/components/segmented";
 import { MAGNITUDES, type Posture, type Tone } from "@/config/offers";
 import { guidanceFor } from "@/lib/offers";
 import type { CompanySize } from "@/lib/data/size";
@@ -59,16 +59,8 @@ function SizeBands({ current, currency }: { current?: string; currency: string |
   );
 }
 
-type Stretch = "low" | "high";
-
-const STRETCH: SegmentedOption<Stretch>[] = [
-  { value: "low", label: "Prudente" },
-  { value: "high", label: "Ambicioso" },
-];
-
 /** Deep view: the posture and each product that fits. Hover a product for the numbers that make it fit. */
 export function OfferGuidanceCard({ company }: { company: DashboardCompany }) {
-  const [stretch, setStretch] = useState<Stretch>("low");
   const [loaded, setLoaded] = useState<{ key: string; size: CompanySize | null } | null>(null);
   const key = `${company.companyId}|${company.latestMonth}`;
   const settled = loaded?.key === key;
@@ -92,7 +84,6 @@ export function OfferGuidanceCard({ company }: { company: DashboardCompany }) {
 
   const guidance = useMemo(() => guidanceFor(company, size), [company, size]);
   const { posture, suggestions, magnitude, tooSmallFor } = guidance;
-  const sized = suggestions.some((suggestion) => suggestion.amount);
 
   return (
     <Card id="ofertas" className="scroll-mt-20">
@@ -128,16 +119,19 @@ export function OfferGuidanceCard({ company }: { company: DashboardCompany }) {
             </p>
             <SizeBands current={magnitude?.id} currency={company.currency} />
           </div>
-          {sized ? (
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              Importe orientativo
-              <Segmented options={STRETCH} value={stretch} onChange={setStretch} ariaLabel="Magnitud del importe" />
-            </div>
-          ) : null}
         </div>
       </CardHeader>
       <CardContent>
-        {suggestions.length === 0 ? (
+        {/* The list waits for the size: it decides which products fit and their amounts, and showing it first makes it jump. */}
+        {!settled ? (
+          <ul aria-busy="true" aria-label="Calculando sugerencias" className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            {[0, 1, 2].map((slot) => (
+              <li key={slot}>
+                <Skeleton className="h-[7.25rem] rounded-xl" />
+              </li>
+            ))}
+          </ul>
+        ) : suggestions.length === 0 ? (
           <p className="text-sm text-muted-foreground">
             {posture.id === "protect"
               ? "Ningún producto nuevo en esta situación."
@@ -157,7 +151,10 @@ export function OfferGuidanceCard({ company }: { company: DashboardCompany }) {
                 <p className="mt-0.5 text-sm text-muted-foreground">{product.pitch}</p>
                 {amount ? (
                   <p className="mt-2 flex flex-wrap items-baseline gap-x-2 text-sm">
-                    <span className="font-mono font-medium tabular-nums">≈ {formatMoney(amount[stretch], company.currency)}</span>
+                    <span className="font-mono font-medium tabular-nums">
+                      ≈ {formatMoney(amount.low, company.currency)}
+                      {amount.high > amount.low ? ` – ${formatMoney(amount.high, company.currency)}` : ""}
+                    </span>
                     <span className="text-xs text-muted-foreground">{amount.basis}</span>
                   </p>
                 ) : null}
