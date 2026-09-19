@@ -55,10 +55,10 @@ const overviewAnchors = [
 ] as const;
 
 const productLinks = [
-  { href: "/", label: "Company", icon: Building2 },
-  { href: "/grupos", label: "Groups", icon: Layers },
-  { href: "/watcher", label: "Watcher", icon: Eye },
-  { href: "/ask", label: "Ask", icon: MessageSquare },
+  { href: "/", label: "Empresa", icon: Building2 },
+  { href: "/grupos", label: "Grupos", icon: Layers },
+  { href: "/watcher", label: "Vigilancia", icon: Eye },
+  { href: "/ask", label: "Consultas", icon: MessageSquare },
 ] as const;
 
 type OverviewHref = (typeof overviewAnchors)[number]["href"] | "#resumen";
@@ -200,7 +200,7 @@ export function HealthSidebar({
         <SidebarSeparator />
 
         <SidebarGroup>
-          <SidebarGroupLabel>Product</SidebarGroupLabel>
+          <SidebarGroupLabel>Producto</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {productLinks.map((item) => (

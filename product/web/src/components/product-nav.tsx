@@ -1,10 +1,10 @@
 import Link from "next/link";
 
 const LINKS = [
-  { href: "/", label: "Company" },
-  { href: "/grupos", label: "Groups" },
-  { href: "/watcher", label: "Watcher" },
-  { href: "/ask", label: "Ask" },
+  { href: "/", label: "Empresa" },
+  { href: "/grupos", label: "Grupos" },
+  { href: "/watcher", label: "Vigilancia" },
+  { href: "/ask", label: "Consultas" },
 ] as const;
 
 export function ProductNav({ current }: { current: (typeof LINKS)[number]["href"] }) {
