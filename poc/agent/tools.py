@@ -265,8 +265,9 @@ def compare_with_cluster(company_id: str) -> str:
 
 @tool
 def get_forecast(company_id: str) -> str:
-    """Score fan 1-6 months ahead (median, 50% and 80% bands) with the naive-last baseline. Method is naive_last:
-    it says how far the score usually moves, not which way."""
+    """Score fan 1-6 months ahead (median, 50% and 80% bands) with the naive-last baseline, the company's own average and `drivers`
+    (why the 3-month median sits where it does). The score is pulled toward its own average and is not a trend: the fan says where
+    the score usually goes and how far it can move, not a prediction of outcomes."""
     b = _bundle()
     f = b.company(company_id).get("forecast")
     return _j(f or {"error": "no forecast (under 4 scored months)"})

@@ -26,7 +26,7 @@ from .explain import PERSIST_MONTHS, SLOPE3_MATERIAL, SLOPE6_MATERIAL
 from .fit import load_reference
 from .run import score_folder
 
-SCHEMA_VERSION = "1.1.0"
+SCHEMA_VERSION = "1.2.0"
 SCORECARD_VERSION = "v1"
 CONTRACT_DIR = Path(__file__).resolve().parent / "contract"
 ITEM_NAMES = [i.name for i in spec.ITEMS]
@@ -148,17 +148,44 @@ def run_monitor_and_forecast(work_dir: Path, detail: pd.DataFrame, items: pd.Dat
         con.close()
     fparams = json.loads(fc.PARAMS_PATH.read_text(encoding="utf8"))
     S = mfit.wide(detail, "score", mon.grid)
-    rows = dict(zip(S.index, fc.forecast_rows(S.to_numpy(dtype=float), fparams, params["control"]["floors"]["score"])))
+    rows = dict(zip(S.index, fc.forecast_rows(S.to_numpy(dtype=float), fparams)))
     return mon, rows, {**params, "material": engine.MATERIAL}, fparams
+
+
+def _gap(x: float, ref: str) -> str:
+    """'N point(s) above/below <ref>', or 'in line with <ref>' when the gap is under a point."""
+    n = round(abs(x))
+    return f"in line with {ref}" if n == 0 else f"{n} point{'s' if n > 1 else ''} {'above' if x > 0 else 'below'} {ref}"
+
+
+def _driver_text(factor: str, d: dict, centre: float) -> str:
+    """Plain-language sentence for one part of the 3-month forecast drivers (d: the drivers dict plus the company's own average)."""
+    if factor == "own_average":
+        ref = "the company's own average (%.0f)" % d["own_average"]
+        return "the last score is " + _gap(d["own_deviation"], ref)
+    if factor == "portfolio_level":
+        return "the score is " + _gap(d["level_vs_portfolio"], "the typical company (%.0f)" % centre)
+    if factor == "recent_move":
+        move = d["last_3_month_move"]
+        return "the score is flat over the last 3 months" if round(abs(move)) == 0 else f"the score moved {move:+.0f} points over the last 3 months"
+    return "typical drift for a company with this volatility"
 
 
 def forecast_json(row: dict, grid, fparams: dict) -> dict:
     origin = grid[row["origin_index"]]
     pts = [{"month": f"{origin + pd.DateOffset(months=p['h']):%Y-%m}", "median": _f(p["median"], 1), "lo50": _f(p["lo50"], 1), "hi50": _f(p["hi50"], 1),
-            "lo80": _f(p["lo80"], 1), "hi80": _f(p["hi80"], 1)} for p in row["points"]]
+            "lo80": _f(p["lo80"], 1), "hi80": _f(p["hi80"], 1), "method": p["method"]} for p in row["points"]]
+    drv = row["drivers"]
+    drivers = None
+    if drv:
+        ctx = drv | {"own_average": row["own_average"]}
+        drivers = {"horizon_months": drv["horizon"], "expected_change": _f(drv["expected_change"], 1),
+                   "parts": [{"factor": k, "points": _f(v, 1), "text": _driver_text(k, ctx, fparams["level_centre"])} for k, v in drv["parts"].items()]}
     return {"metric": "score", "method": fparams["method"], "origin_month": f"{origin:%Y-%m}", "horizon_months": fparams["horizon"], "points": pts,
-            "naive_last": _f(row["naive_last"], 1), "skill_vs_naive": _f(fparams["skill_h3"], 3),
-            "note": "skill_vs_naive: CV skill of the smoothed level against the naive last value at 3 months; " + fparams["why"] + ". A persistence fan, not a prediction of outcomes."}
+            "naive_last": _f(row["naive_last"], 1), "own_average": _f(row["own_average"], 1), "drivers": drivers,
+            "skill_vs_naive": _f(fparams["skill_h3"], 3), "skill_by_horizon": [_f(fparams["skill_by_horizon"][str(h)], 3) for h in range(1, fparams["horizon"] + 1)],
+            "note": "skill: cross-validated pinball-loss improvement of this fan over the naive fan (last value, pooled error quantiles) at 3 months and at each horizon; "
+                    + fparams["why"] + ". A persistence fan, not a prediction of outcomes."}
 
 
 def pick_sample(detail: pd.DataFrame, n: int, alert_companies: dict[str, list[str]] | None = None) -> list[str]:
@@ -331,12 +358,18 @@ def build_bundle(csv_folder: Path, out: Path, work_dir: Path | None = None, deta
             "control_charts": {"status": "available", "plan_step": 3, "files": ["companies/{company_id}.json#control", "groups.json#control"]},
             "clusters": {"status": "available", "plan_step": 3, "files": ["clusters.json", "companies/{company_id}.json#cluster"]},
             "alerts": {"status": "available", "plan_step": 3, "files": ["alerts.json"], "note": "two-sided score alerts, category drops, going dark, top customer quiet; onsets only"},
-            "forecast": {"status": "available", "plan_step": 4, "files": ["companies/{company_id}.json#forecast"], "note": f"method shipped: {fparams['method']} (a tie with the naive last value)"},
+            "forecast": {"status": "available", "plan_step": 4, "files": ["companies/{company_id}.json#forecast"], "note": f"method shipped: {fparams['method']}; fan skill over the naive fan at 3 months {fparams['skill_h3']:+.1%} (cross-validated, train companies); "
+                                                                                  + ("seasonality found" if fparams["seasonality"]["supported"] else "no seasonality found (tested)")},
             "owners_actions": {"status": "available", "plan_step": 5, "note": "Alert.owner and Alert.action are filled by analysis/monitor/routing.py"},
             "counterparty_entities": {"status": "blocked", "note": "customers/suppliers only if counterparty IDs map to company IDs; they do not today"},
         },
         "monitor": {"params_fitted_on": mparams["fitted_on"], "floors": mparams["control"]["floors"], "method": mparams["control"]["method"],
-                    "material_points": mparams["material"], "forecast_method": fparams["method"]},
+                    "material_points": mparams["material"], "forecast_method": fparams["method"],
+                    "forecast": {"method_by_horizon": fparams["method_by_horizon"], "skill_by_horizon": fparams["skill_by_horizon"], "features": fparams["features"],
+                                 "seasonality": {k: fparams["seasonality"][k] for k in ("supported", "acf_lag12", "acf_lag12_ci", "calendar_month_corr_year1_year2", "note")},
+                                 "time_split": {"split_month": fparams["time_split_check"]["split_month"],
+                                                "per_horizon": {h: {k: v[k] for k in ("pinball_skill", "cover50", "cover80")} for h, v in fparams["time_split_check"]["per_horizon"].items()}},
+                                 "move_persistence": fparams["move_persistence"]}},
         "spec": manifest_spec(), "disclaimer": DISCLAIMER, "files": files,
     }
     files["manifest.json"] = None
@@ -399,6 +432,9 @@ def validate_bundle(path: Path) -> list[str]:
                 v = [p_["lo80"], p_["lo50"], p_["median"], p_["hi50"], p_["hi80"]]
                 if any(x is None for x in v) or v != sorted(v) or not 0 <= v[0] or not v[-1] <= 100:
                     bad.append(f"{f.stem}: forecast fan not ordered or outside 0-100 at {p_['month']}")
+            drv = fc.get("drivers")
+            if drv and abs(sum(x["points"] for x in drv["parts"]) - drv["expected_change"]) > 0.3:
+                bad.append(f"{f.stem}: forecast drivers do not add up to the expected change")
         prev = None
         for r in doc["months"]:
             n_rows += 1

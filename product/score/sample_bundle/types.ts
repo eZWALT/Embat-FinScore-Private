@@ -4,7 +4,7 @@
  *
  * Rules for consumers
  *  - Ignore unknown fields. A section whose manifest.sections status is not "available" is absent (today only counterparty_entities is "blocked").
- *  - Additive changes bump the minor version (1.1.0), breaking ones the major (2.0.0). Check manifest.schema_version.
+ *  - Additive changes bump the minor version (1.2.0), breaking ones the major (2.0.0). Check manifest.schema_version.
  *  - Months are "YYYY-MM" strings, sorted ascending. A missing value is `null`, never NaN or "".
  *  - Money is in the invoice / account currency of the company, not converted (see Company.currency).
  *  - Files are static JSON. Nothing here is a live API.
@@ -44,7 +44,8 @@ export interface Manifest {
     floors: Record<string, number>; // chart floors in score points
     method: { name: string; params: Record<string, number | string> };
     material_points: Record<string, number>; // an alert needs the smoothed level this far from the baseline
-    forecast_method: "smoothed_level" | "naive_last";
+    forecast_method: ForecastMethod; // "reversion_quantile" when it beat the naive fan at any horizon; each point says which method made it
+    forecast?: ForecastStats; // 1.2.0
   }; // 1.1.0
   spec: Spec;
   disclaimer: string; // show it where the score is shown; the score is not a predictor
@@ -239,14 +240,33 @@ export interface AlertFeed {
   alerts: Alert[]; // newest month first, then severity, then rank_score
 }
 
-/** Fan chart, not a point estimate. A tie with the naive last value (method "naive_last" ships today), so show it as "where the score usually goes from here". */
+export type ForecastMethod = "reversion_quantile" | "naive_last" | "smoothed_level";
+
+/** Fan chart, not a point estimate. The score is not a trending series: the fan is skewed by level and pulled toward the company's own average
+ *  (1.2.0: "reversion_quantile"; before it was a flat naive fan). Show it as "where the score usually goes from here and how far it can move". */
 export interface Forecast {
   metric: "score";
-  method: "smoothed_level" | "naive_last";
+  method: ForecastMethod;
   origin_month: string;
   horizon_months: number;
   note: string;
-  points: { month: string; median: number; lo50: number; hi50: number; lo80: number; hi80: number }[];
+  points: { month: string; median: number; lo50: number; hi50: number; lo80: number; hi80: number; method: ForecastMethod }[]; // method: 1.2.0
   naive_last: number;
-  skill_vs_naive: number | null; // CV skill of the smoothed level over the naive last value at 3 months; ~0 is the honest result
+  own_average?: number; // 1.2.0: mean of the company's scored months, the level the fan is pulled toward
+  skill_vs_naive: number | null; // CV pinball-loss improvement of this fan over the naive fan at 3 months (before 1.2.0: the smoothed level's MAE skill, ~0)
+  skill_by_horizon?: (number | null)[]; // 1.2.0: same, horizons 1..horizon_months
+  /** 1.2.0: why the 3-month median sits where it does; `parts` add up to `expected_change` (points, before clipping to 0-100). Null when the naive fan was used. */
+  drivers?: { horizon_months: number; expected_change: number; parts: { factor: "own_average" | "portfolio_level" | "recent_move" | "baseline"; points: number; text: string }[] } | null;
+}
+
+/** manifest.monitor.forecast (1.2.0): what was measured about the score's dynamics on train companies. Quote it next to the fan. */
+export interface ForecastStats {
+  method_by_horizon: Record<string, ForecastMethod>;
+  skill_by_horizon: Record<string, number>;
+  features: string[];
+  /** Stricter check: fit on the first months, test on later ones with held-out companies. Smaller gain, 80% interval covers a little under 80%. */
+  time_split: { split_month: string; per_horizon: Record<string, { pinball_skill: number; cover50: number; cover80: number }> };
+  seasonality: { supported: boolean; acf_lag12: number; acf_lag12_ci: [number, number]; calendar_month_corr_year1_year2: number | null; note: string };
+  /** After a material (>= 8 points) 3-month move, what the next 3 months did. The typical fall holds; the average fall partly recovers. */
+  move_persistence: Record<"falls" | "rises", { n: number; median_move: number; median_next_3m: number; mean_next_3m: number; share_reversed_at_least_half: number; share_reversed_ci: [number, number]; share_continued: number }>;
 }

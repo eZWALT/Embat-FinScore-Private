@@ -102,7 +102,7 @@ It watches **change**, because levels are largely company traits (size, business
 
 ## 7. Forecast (`forecast.py`)
 
-A fan (median, 50% and 80% intervals) for the score 1-6 months ahead, not a point estimate. Candidates: the naive last value and an exponentially smoothed level, compared by group-fold CV. The smoothed level is worse at 1-2 months, ties at 3 and is +0.4 to +1.0% better at 4-6; the rule "ship it only if it wins at every horizon with an interval above zero" is not met, so the **naive last value ships**. The fan comes from out-of-fold errors scaled by the company's own noise and covers 50% and 80% as intended. It says how far the score usually moves, not which way. First thing to cut if space is short.
+A fan (median, 50% and 80% intervals) for the score 1-6 months ahead, not a point estimate. The score is not a trending series: monthly changes are negatively autocorrelated and the score is pulled toward the company's own average and the portfolio level. Damped trend (Holt) loses to the last value at 1-3 months and ties at 4-6, per-company ARIMA loses at short horizons, and no yearly seasonality shows in 24 months. What works is a **pooled quantile regression** on the company's own features (deviation from its average, level, last 1- and 3-month moves, volatility): a fan that is skewed by level and shifts with the deviation. Against the naive fan (last value, pooled error quantiles) it improves the pinball loss by 3% at 1 month up to 16% at 6, with 50% and 80% intervals that cover 50% and 80% on held-out companies (holding out the later months too: +1.5% to +12%, 80% interval covering 74-78%); the median alone gains little (up to 5% at 6 months). Each forecast comes with the pulls behind its 3-month median. After a material fall the typical company stays down (only 28% recover at least half in 3 months); the average one partly recovers because of a minority. Persistence and mean reversion, not a prediction of outcomes.
 
 ## 8. What was measured (`analysis/monitor/evaluation.md`, train companies only)
 
@@ -130,7 +130,7 @@ A fan (median, 50% and 80% intervals) for the score 1-6 months ahead, not a poin
 | Top customer quiet is an alert, not a score input | It is the only signal with measured lift; a transparent rule, with a model only for ranking |
 | Clusters with size removed, treated as peer groups | Compare behaviour, not size; structure is weak so no segment stories |
 | Group minimum size 3 and funnel limits | The median group has 2 companies; small groups are noisy |
-| Naive last value for the forecast | The smoothed level does not beat it with an interval above zero |
+| Pooled quantile regression for the forecast fan, no trend, no seasonality | Trend models and per-company ARIMA do not beat the last value; the mean-reversion fan beats the naive fan at every horizon out of fold; no yearly pattern in 24 months |
 | Static JSON bundle plus a clean DuckDB | The pipeline runs once; the bundle explains, the DuckDB answers questions about records |
 
 ## 10. Guardrails
