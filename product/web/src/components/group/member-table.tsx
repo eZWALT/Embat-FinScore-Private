@@ -49,11 +49,11 @@ export function MemberTable({
         <thead className="text-left text-xs text-muted-foreground">
           <tr className="[&>th]:pb-2 [&>th]:font-medium">
             <th>Empresa</th>
-            <th className="text-right">Score</th>
+            <th className="text-right">Puntuación</th>
             <th className="text-right">Δ 3m</th>
             <th>Trayectoria</th>
             <th>Confianza</th>
-            <th>Guard</th>
+            <th>Límite</th>
             <th className="text-right">Alertas</th>
           </tr>
         </thead>

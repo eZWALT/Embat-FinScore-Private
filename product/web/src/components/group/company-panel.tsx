@@ -31,7 +31,7 @@ import { GuardBadge } from "@/components/group/member-table";
 import type { GroupCompanyPanel } from "@/lib/data/group-service";
 
 const scoreChartConfig = {
-  score: { label: "Health Score", color: "var(--chart-1)" },
+  score: { label: "Índice de salud", color: "var(--chart-1)" },
 } satisfies ChartConfig;
 
 const severityColor = {
@@ -48,7 +48,7 @@ export function CompanyPanel({ company }: { company: GroupCompanyPanel | null })
           <CardTitle className="text-base">Empresa</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">Este grupo no tiene empresas con score.</p>
+          <p className="text-sm text-muted-foreground">Este grupo no tiene empresas con puntuación.</p>
         </CardContent>
       </Card>
     );
@@ -123,7 +123,7 @@ export function CompanyPanel({ company }: { company: GroupCompanyPanel | null })
         </div>
 
         <div>
-          <h3 className="mb-2 text-sm font-medium">Por qué el score no es más alto</h3>
+          <h3 className="mb-2 text-sm font-medium">Por qué la puntuación no es más alta</h3>
           {company.reasons.length === 0 ? (
             <p className="text-sm text-muted-foreground">Sin razones detalladas para este mes.</p>
           ) : (

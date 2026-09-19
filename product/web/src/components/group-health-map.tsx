@@ -89,11 +89,11 @@ export function GroupHealthMap({ data }: { data: GroupMapData }) {
               Grupos de empresas
             </div>
             <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-              Score de cada empresa del grupo, mes a mes.
+              Puntuación de cada empresa del grupo, mes a mes.
             </h1>
             <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              Score explicable y monitorizable de 0 a 100. Las filas son las empresas del grupo,
-              ordenadas de menor a mayor score; las columnas, los meses con score.
+              Índice explicable y monitorizable de 0 a 100. Las filas son las empresas del grupo,
+              ordenadas de menor a mayor puntuación; las columnas, los meses con dato.
             </p>
           </div>
           <GroupSelector options={data.groupOptions} value={data.group.groupId} onChange={selectGroup} />
@@ -107,7 +107,7 @@ export function GroupHealthMap({ data }: { data: GroupMapData }) {
             <CardContent>
               <span className="font-mono text-2xl font-medium tabular-nums">{data.group.nCompanies}</span>
               {data.members.length !== data.group.nCompanies && (
-                <span className="ml-2 text-xs text-muted-foreground">{data.members.length} con score</span>
+                <span className="ml-2 text-xs text-muted-foreground">{data.members.length} con puntuación</span>
               )}
             </CardContent>
           </Card>
@@ -139,11 +139,11 @@ export function GroupHealthMap({ data }: { data: GroupMapData }) {
         <Card className={`mt-4 transition-opacity ${isPending ? "opacity-70" : ""}`}>
           <CardHeader className="gap-1">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <CardTitle className="text-base">Mapa de calor del score</CardTitle>
+              <CardTitle className="text-base">Mapa de calor de la puntuación</CardTitle>
               <HeatmapLegend />
             </div>
             <p className="text-sm text-muted-foreground">
-              Primera fila: media del grupo. Pasa el cursor por una celda para ver empresa, mes y score; haz clic para
+              Primera fila: media del grupo. Pasa el cursor por una celda para ver empresa, mes y puntuación; haz clic para
               seleccionar la empresa.
             </p>
           </CardHeader>
@@ -162,7 +162,7 @@ export function GroupHealthMap({ data }: { data: GroupMapData }) {
           <Card>
             <CardHeader className="gap-1">
               <CardTitle className="text-base">Empresas del grupo</CardTitle>
-              <p className="text-sm text-muted-foreground">Ordenadas por score actual, de menor a mayor.</p>
+              <p className="text-sm text-muted-foreground">Ordenadas por puntuación actual, de menor a mayor.</p>
             </CardHeader>
             <CardContent>
               <MemberTable
@@ -191,7 +191,7 @@ export function GroupHealthMap({ data }: { data: GroupMapData }) {
               emptyText={
                 data.group.limitsAvailable
                   ? "Sin alertas de grupo en la ventana de detalle."
-                  : "Las alertas de grupo requieren al menos 3 empresas con score."
+                  : "Las alertas de grupo requieren al menos 3 empresas con puntuación."
               }
             />
           </CardContent>

@@ -4,8 +4,8 @@ import { GroupHealthMap } from "@/components/group-health-map";
 import { getGroupMapData } from "@/lib/data/group-service";
 
 export const metadata: Metadata = {
-  title: "Mapa de grupos · Health Sentinel",
-  description: "Score de cada empresa del grupo, mes a mes, con sus razones y alertas.",
+  title: "Mapa de grupos · Centinela de salud",
+  description: "Puntuación de cada empresa del grupo, mes a mes, con sus razones y alertas.",
 };
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;

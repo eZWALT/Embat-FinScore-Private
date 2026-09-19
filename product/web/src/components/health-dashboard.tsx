@@ -37,7 +37,7 @@ import { formatMonth } from "@/lib/format-month";
 import type { DashboardData, Trajectory } from "@/lib/data/types";
 
 const scoreChartConfig = {
-  score: { label: "Health Score", color: "var(--chart-1)" },
+  score: { label: "Índice de salud", color: "var(--chart-1)" },
 } satisfies ChartConfig;
 
 const categoryChartConfig = {
@@ -94,7 +94,7 @@ export function HealthDashboard({ data }: { data: DashboardData }) {
             <Separator orientation="vertical" className="h-4" />
             <div className="min-w-0">
               <p className="truncate font-mono text-sm font-medium">
-                {view === "health-score" ? "Health Score" : company.companyId}
+                {view === "health-score" ? "Índice de salud" : company.companyId}
               </p>
               <p className="truncate text-xs text-muted-foreground">
                 {view === "health-score"
@@ -129,7 +129,7 @@ export function HealthDashboard({ data }: { data: DashboardData }) {
               Entiende qué cambia antes de que se convierta en un problema.
             </h1>
             <p className="mt-3 text-sm leading-6 text-muted-foreground sm:text-base">
-              Score explicable de 0 a 100 calculado a partir de la tesorería, deuda y comportamiento de pagos.
+              Puntuación explicable de 0 a 100 calculada a partir de la tesorería, la deuda y el comportamiento de pagos.
             </p>
           </div>
         </section>
@@ -139,7 +139,7 @@ export function HealthDashboard({ data }: { data: DashboardData }) {
         <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-xs font-medium text-muted-foreground">Health Score</CardTitle>
+              <CardTitle className="text-xs font-medium text-muted-foreground">Índice de salud</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-baseline gap-2">
@@ -179,7 +179,7 @@ export function HealthDashboard({ data }: { data: DashboardData }) {
           <Card id="evolucion" className="scroll-mt-20">
             <CardHeader className="gap-1">
               <div className="flex items-center justify-between gap-4">
-                <CardTitle className="text-base">Evolución del score</CardTitle>
+                <CardTitle className="text-base">Evolución de la puntuación</CardTitle>
                 <Badge variant="outline" className="gap-1.5 font-normal text-muted-foreground">
                   <CalendarDays className="size-3" />
                   hasta {formatMonth(data.asOfMonth)}
@@ -215,7 +215,7 @@ export function HealthDashboard({ data }: { data: DashboardData }) {
 
           <Card id="categorias" className="scroll-mt-20">
             <CardHeader className="gap-1">
-              <CardTitle className="text-base">Score por categoría</CardTitle>
+              <CardTitle className="text-base">Puntuación por categoría</CardTitle>
               <p className="text-sm text-muted-foreground">Qué dimensiones sostienen o limitan el resultado actual.</p>
             </CardHeader>
             <CardContent>

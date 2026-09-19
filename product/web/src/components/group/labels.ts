@@ -34,13 +34,13 @@ export const severityLabels: Record<AlertSeverity, string> = {
 
 export const ownerLabels: Record<Owner, string> = {
   treasurer: "Tesorero",
-  cfo: "CFO",
+  cfo: "Dirección financiera",
   collections: "Cobros",
 };
 
 export const kindLabels: Record<AlertKind, string> = {
-  score_deterioration: "Deterioro del score",
-  score_improvement: "Mejora del score",
+  score_deterioration: "Deterioro de la puntuación",
+  score_improvement: "Mejora de la puntuación",
   category_drop: "Caída de una categoría",
   going_dark: "Sin movimientos bancarios",
   top_customer_quiet: "Cliente principal sin facturar",

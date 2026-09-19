@@ -45,7 +45,7 @@ export type AppView = "overview" | "health-score";
 
 const views = [
   { id: "overview" as const, label: "Resumen", icon: LayoutDashboard },
-  { id: "health-score" as const, label: "Health Score", icon: ChartNoAxesCombined },
+  { id: "health-score" as const, label: "Índice de salud", icon: ChartNoAxesCombined },
 ];
 
 const overviewAnchors = [
@@ -55,10 +55,10 @@ const overviewAnchors = [
 ] as const;
 
 const productLinks = [
-  { href: "/", label: "Company", icon: Building2 },
-  { href: "/grupos", label: "Groups", icon: Layers },
-  { href: "/watcher", label: "Watcher", icon: Eye },
-  { href: "/ask", label: "Ask", icon: MessageSquare },
+  { href: "/", label: "Empresa", icon: Building2 },
+  { href: "/grupos", label: "Grupos", icon: Layers },
+  { href: "/watcher", label: "Vigilancia", icon: Eye },
+  { href: "/ask", label: "Consultas", icon: MessageSquare },
 ] as const;
 
 type OverviewHref = (typeof overviewAnchors)[number]["href"] | "#resumen";
@@ -104,8 +104,8 @@ export function HealthSidebar({
             <Activity className="size-4" aria-hidden="true" />
           </div>
           <div className="min-w-0 group-data-[collapsible=icon]:hidden">
-            <p className="truncate text-sm font-semibold leading-none">Health Sentinel</p>
-            <p className="mt-1 truncate text-xs text-sidebar-foreground/60">Embat Financial Intelligence</p>
+            <p className="truncate text-sm font-semibold leading-none">Centinela de salud</p>
+            <p className="mt-1 truncate text-xs text-sidebar-foreground/60">Inteligencia financiera Embat</p>
           </div>
         </div>
 
@@ -200,7 +200,7 @@ export function HealthSidebar({
         <SidebarSeparator />
 
         <SidebarGroup>
-          <SidebarGroupLabel>Product</SidebarGroupLabel>
+          <SidebarGroupLabel>Producto</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {productLinks.map((item) => (
@@ -225,7 +225,7 @@ export function HealthSidebar({
       <SidebarFooter className="gap-3 p-3">
         <div className="flex items-center gap-2 px-1 text-xs text-sidebar-foreground/60 group-data-[collapsible=icon]:justify-center">
           <Database className="size-3.5 shrink-0" />
-          <span className="group-data-[collapsible=icon]:hidden">Neon · {data.asOfMonth}</span>
+          <span className="group-data-[collapsible=icon]:hidden">Datos · {data.asOfMonth}</span>
         </div>
         <div className="group-data-[collapsible=icon]:hidden">
           <ThemeSwitcher />
