@@ -49,8 +49,9 @@ Add a new dated file after meaningful work. Do not rewrite old ones. If the new 
 | `persistent-memory/2026-09-20-0100-thinking-brain-followups.md` | Pregunta chips after the answer + tools. Brain = DeepSeek `thinking` on. |
 | `persistent-memory/2026-09-20-0112-tool-call-caps.md` | Same tool catalog. Cap 2 calls/tool/turn; stop at 6 steps or 8 calls. |
 | `persistent-memory/2026-09-20-0115-thinking-no-verbose.md` | Brain on: drop the length cap. Do not ask for a longer reply. |
-| `persistent-memory/2026-09-20-0120-thinking-max-exa.md` | Brain on: `reasoning_effort=max`. Exa part superseded. |
-| `persistent-memory/2026-09-20-0130-drop-exa.md` | No Exa. No `search_web`. No `EXA_API_KEY`. Thinking max stays. |
+| `persistent-memory/2026-09-20-0120-thinking-max-exa.md` | Exa + `max` superseded. |
+| `persistent-memory/2026-09-20-0130-drop-exa.md` | No Exa. No `search_web`. No `EXA_API_KEY`. |
+| `persistent-memory/2026-09-20-0135-thinking-icon-high.md` | Brain on: `reasoning_effort=high`. Pensando chip like a tool row. Do not dump CoT. |
 
 Plain-language method (not a journal file): `product/score/METHOD.md`.
 

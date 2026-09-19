@@ -1,6 +1,6 @@
 # Capa — PENSAR (el cerebro está encendido)
 
-DeepSeek razona en thinking. No pegues ese razonamiento en la burbuja. El API va a `reasoning_effort=max`.
+DeepSeek razona en thinking. No pegues ese razonamiento en la burbuja. El API va a `reasoning_effort=high` (no `max`: demasiado lento para el popup).
 
 Esta capa **anula BREVITY y el tope de 3–6 frases de ROLE**. No hay cuota de longitud.
 

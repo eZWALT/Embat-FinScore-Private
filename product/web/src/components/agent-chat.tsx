@@ -19,7 +19,7 @@ import { cn } from "cn";
 import { AgentBusy, AgentPulse } from "@/components/agent-busy";
 import { AgentMarkdown } from "@/components/agent-markdown";
 import { AgentPlot } from "@/components/agent-plot";
-import { AgentTrace } from "@/components/agent-trace";
+import { AgentThinking, AgentTrace } from "@/components/agent-trace";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { contextBody, plotFromPart, type AgentContext } from "@/lib/agent/chat-parts";
@@ -30,13 +30,19 @@ type AgentToolPart = ToolUIPart | DynamicToolUIPart;
 
 type ChatSegment =
   | { kind: "text"; key: string; text: string }
+  | { kind: "thinking"; key: string }
   | { kind: "tools"; key: string; items: { part: AgentToolPart; key: string }[] };
 
 /** Consecutive tools in place; a text part starts a new run. Never regroups tools to the top. */
 function segmentsInStreamOrder(messageId: string, parts: UIMessage["parts"]): ChatSegment[] {
   const segments: ChatSegment[] = [];
   parts.forEach((part, partIndex) => {
-    if (isReasoningUIPart(part)) return;
+    if (isReasoningUIPart(part)) {
+      const prev = segments.at(-1);
+      if (prev?.kind === "thinking") return;
+      segments.push({ kind: "thinking", key: `${messageId}-think-${partIndex}` });
+      return;
+    }
     if (isToolUIPart(part)) {
       const prev = segments.at(-1);
       const item = {
@@ -115,6 +121,7 @@ export function AgentChat({
   const [thinking, setThinking] = useState(false);
   const thinkingRef = useRef(false);
   thinkingRef.current = thinking;
+  const [turnThinking, setTurnThinking] = useState(false);
 
   function requestBody() {
     return { ...contextBody(ctxRef.current), thinking: thinkingRef.current };
@@ -163,6 +170,7 @@ export function AgentChat({
     if (lastSeed.current === token) return;
     lastSeed.current = token;
     resetFollowups();
+    setTurnThinking(thinkingRef.current);
     void sendMessage({ text }, { body: requestBody() });
   }, [seedPrompt, seedKey, busy, sendMessage]);
 
@@ -170,6 +178,7 @@ export function AgentChat({
     const trimmed = text.trim();
     if (!trimmed || busy) return;
     resetFollowups();
+    setTurnThinking(thinkingRef.current);
     void sendMessage({ text: trimmed }, { body: requestBody() });
     setInput("");
   }
@@ -234,9 +243,17 @@ export function AgentChat({
           <li className="text-sm text-muted-foreground">{emptyHint}</li>
         ) : null}
         {messages.map((message) => {
-          const segments = segmentsInStreamOrder(message.id, message.parts);
-          const lastSegment = segments.at(-1);
           const streamingMessage = busy && message.role === "assistant" && message.id === messages.at(-1)?.id;
+          const segments = segmentsInStreamOrder(message.id, message.parts);
+          if (
+            message.role === "assistant" &&
+            turnThinking &&
+            streamingMessage &&
+            !segments.some((segment) => segment.kind === "thinking")
+          ) {
+            segments.unshift({ kind: "thinking", key: `${message.id}-think-wait` });
+          }
+          const lastSegment = segments.at(-1);
           const waitingForReply = Boolean(streamingMessage && lastSegment?.kind !== "text");
 
           return (
@@ -261,7 +278,7 @@ export function AgentChat({
                   )
                 : segments.length === 0 && streamingMessage ? (
                     <>
-                      <AgentBusy />
+                      {turnThinking ? <AgentThinking streaming /> : <AgentBusy />}
                       <AgentPulse divided={false} />
                     </>
                   )
@@ -276,6 +293,14 @@ export function AgentChat({
                       );
                     }
                     const showPulse = waitingForReply && lastSegment?.key === segment.key;
+                    if (segment.kind === "thinking") {
+                      return (
+                        <div key={segment.key} className="flex min-w-0 flex-col gap-0.5">
+                          <AgentThinking streaming={Boolean(showPulse)} />
+                          {showPulse ? <AgentPulse /> : null}
+                        </div>
+                      );
+                    }
                     return (
                       <div key={segment.key} className="flex min-w-0 flex-col gap-0.5">
                         {segment.items.map((item, itemIndex) => {
@@ -301,7 +326,7 @@ export function AgentChat({
         {busy && messages.at(-1)?.role !== "assistant" ? (
           <li className="min-w-0 max-w-full space-y-1.5 overflow-hidden rounded-xl border bg-background px-4 py-3">
             <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Sentinel</p>
-            <AgentBusy />
+            {turnThinking ? <AgentThinking streaming /> : <AgentBusy />}
             <AgentPulse divided={false} />
           </li>
         ) : null}

@@ -68,6 +68,7 @@ export async function streamAgentResponse({
 
   // Exists in ai@7 (deprecated alias). Same SSE as createUIMessageStreamResponse + toUIMessageStream.
   return result.toUIMessageStreamResponse({
+    sendReasoning: thinking,
     headers: {
       "Content-Encoding": "identity",
     },

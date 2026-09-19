@@ -26,13 +26,20 @@ export function helmcodeTemperature(): number {
  * In `@ai-sdk/openai` v4, `createOpenAI()(modelId)` uses the Responses API (`/responses`).
  * There is no provider `stream` flag: `streamText` is what sends `stream: true`.
  */
+/** DeepSeek V4: `low` | `high` | `max`. `max` is too slow for the popup; default `high`. */
+export function helmcodeReasoningEffort(): "low" | "high" | "max" {
+  const raw = process.env.HELMCODE_REASONING_EFFORT?.trim().toLowerCase();
+  if (raw === "low" || raw === "high" || raw === "max") return raw;
+  return "high";
+}
+
 function withThinkingBody(thinking: boolean): typeof fetch {
   return async (input, init) => {
     if (init?.body && typeof init.body === "string") {
       try {
         const body = JSON.parse(init.body) as Record<string, unknown>;
         body.thinking = { type: thinking ? "enabled" : "disabled" };
-        if (thinking) body.reasoning_effort = "max";
+        if (thinking) body.reasoning_effort = helmcodeReasoningEffort();
         init = { ...init, body: JSON.stringify(body) };
       } catch {
         /* leave the provider body as-is */

@@ -1,0 +1,79 @@
+{
+  "when": "2026-09-19T23:36:52.788Z",
+  "model": "deepseek-v4-flash",
+  "chosen": "high",
+  "rows": [
+    {
+      "id": "off",
+      "effort": null,
+      "first_reasoning_ms": 1330,
+      "first_visible_ms": 1330,
+      "first_tool_ms": null,
+      "first_text_ms": 1782,
+      "last_token_ms": 2449,
+      "total_ms": 4933,
+      "reasoning_chars": 347,
+      "tools": [
+        "get_company",
+        "get_alerts"
+      ],
+      "answer_chars": 576,
+      "has_68": true,
+      "has_cobros": true
+    },
+    {
+      "id": "low",
+      "effort": "low",
+      "first_reasoning_ms": 1053,
+      "first_visible_ms": 1053,
+      "first_tool_ms": null,
+      "first_text_ms": 1639,
+      "last_token_ms": 2269,
+      "total_ms": 4041,
+      "reasoning_chars": 480,
+      "tools": [
+        "get_company",
+        "get_alerts"
+      ],
+      "answer_chars": 475,
+      "has_68": true,
+      "has_cobros": true
+    },
+    {
+      "id": "high",
+      "effort": "high",
+      "first_reasoning_ms": 1084,
+      "first_visible_ms": 1084,
+      "first_tool_ms": null,
+      "first_text_ms": 2321,
+      "last_token_ms": 3325,
+      "total_ms": 5199,
+      "reasoning_chars": 1030,
+      "tools": [
+        "get_company",
+        "get_alerts"
+      ],
+      "answer_chars": 809,
+      "has_68": true,
+      "has_cobros": true
+    },
+    {
+      "id": "max",
+      "effort": "max",
+      "first_reasoning_ms": 958,
+      "first_visible_ms": 958,
+      "first_tool_ms": null,
+      "first_text_ms": 4758,
+      "last_token_ms": 5205,
+      "total_ms": 7121,
+      "reasoning_chars": 3352,
+      "tools": [
+        "get_company",
+        "get_alerts"
+      ],
+      "answer_chars": 389,
+      "has_68": true,
+      "has_cobros": true
+    }
+  ]
+}

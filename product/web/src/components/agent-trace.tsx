@@ -1,7 +1,7 @@
 "use client";
 
 import { getToolName, isToolUIPart, type UIMessage } from "ai";
-import { ChevronRight } from "lucide-react";
+import { Brain, ChevronRight } from "lucide-react";
 
 import { AgentBusy } from "@/components/agent-busy";
 import { toolIcon, toolInputSummary, toolLabel, toolOutputSummary, toolTimingMs } from "@/lib/agent/tool-catalog";
@@ -29,6 +29,21 @@ function preview(value: unknown, max = 1800): string {
 function formatSeconds(ms: number): string {
   if (ms < 50) return "<0.1 s";
   return `${formatDecimal(ms / 1000, 1)} s`;
+}
+
+/** Same row as a tool chip. Do not dump the chain-of-thought. */
+export function AgentThinking({ streaming = false }: { streaming?: boolean }) {
+  return (
+    <div
+      className="flex min-w-0 items-center gap-1.5 py-0.5 text-[12px] leading-snug text-muted-foreground"
+      role="status"
+      aria-label={streaming ? "Pensando" : "Pensó"}
+    >
+      <Brain className="size-3 shrink-0 text-violet-600" strokeWidth={2.25} aria-hidden="true" />
+      <span className="min-w-0 truncate font-medium text-foreground">Pensando</span>
+      {streaming ? <AgentBusy label="Pensando" /> : null}
+    </div>
+  );
 }
 
 export function AgentTrace({
