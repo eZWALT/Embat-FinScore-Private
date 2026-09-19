@@ -57,7 +57,7 @@ export function ScoreHeatmap({
   selectedCompanyId: string | null;
   onSelectCompany: (companyId: string) => void;
 }) {
-  const gridTemplateColumns = `minmax(7.5rem, auto) repeat(${months.length}, minmax(1.5rem, 1fr)) minmax(6.5rem, auto)`;
+  const gridTemplateColumns = `minmax(7.5rem, auto) repeat(${months.length}, minmax(1.5rem, 1fr)) auto 2.5rem`;
 
   return (
     <div className="overflow-x-auto">
@@ -75,13 +75,13 @@ export function ScoreHeatmap({
             </div>
           );
         })}
-        <div className="flex items-end justify-end pb-0.5 pl-2 text-[10px] font-medium leading-3 text-muted-foreground">Alertas</div>
+        <div className="col-span-2 flex items-end justify-center pb-0.5 pl-3 text-[10px] font-medium leading-3 text-muted-foreground">Alertas</div>
 
         <div className="flex items-center pr-2 text-xs font-medium">Media del grupo</div>
         {months.map((month, index) => (
           <Cell key={month} label="Media del grupo" month={month} score={meanScores[index] ?? null} />
         ))}
-        <div />
+        <div className="col-span-2" />
 
         <div className="col-span-full my-1 h-px bg-border" />
 
@@ -137,9 +137,11 @@ function MemberRow({
           onClick={onSelect}
         />
       ))}
-      <div className="flex h-5 items-center justify-end gap-1.5 pl-2">
-        <span className={cn("font-mono text-xs tabular-nums", member.nAlerts === 0 && "text-muted-foreground")}>{member.nAlerts}</span>
+      <div className="flex h-5 items-center justify-center pl-3">
         {member.maxAlertSeverity ? <SeverityBadge severity={member.maxAlertSeverity} /> : null}
+      </div>
+      <div className={cn("flex h-5 items-center justify-end font-mono text-xs tabular-nums", member.nAlerts === 0 && "text-muted-foreground")}>
+        {member.nAlerts}
       </div>
     </>
   );
