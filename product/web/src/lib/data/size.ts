@@ -26,7 +26,7 @@ export interface CompanySize {
   /** Mean monthly operating inflow. The size measure the score's own size baseline uses. */
   monthlyInflow: number;
   monthlyOutflow: number;
-  /** Cash on the latest balance snapshot, counted accounts only. Null without a snapshot. */
+  /** Sum of the positive account balances on the latest snapshot. Null without a snapshot. */
   cash: number | null;
   /** First and last month of the window, YYYY-MM. */
   from: string;
@@ -40,14 +40,48 @@ function monthStart(month: string, offset: number): Date {
 
 const isoMonth = (date: Date) => date.toISOString().slice(0, 7);
 
+/** The precomputed row of the current run (`analytics.company_size`, filled by infra/neon/scripts/export_company_size.py). */
+async function storedSize(companyId: string): Promise<CompanySize | null> {
+  try {
+    const rows = await neonQuery<{
+      as_of_month: string;
+      window_months: number;
+      monthly_inflow: number;
+      monthly_outflow: number;
+      cash: number | null;
+    }>(
+      `SELECT s.as_of_month, s.window_months, s.monthly_inflow, s.monthly_outflow, s.cash
+       FROM analytics.company_size s
+       JOIN api.current_run r ON r.run_id = s.run_id
+       WHERE s.company_id = $1`,
+      [companyId],
+    );
+    const row = rows[0];
+    if (!row) return null;
+    return {
+      monthlyInflow: Number(row.monthly_inflow),
+      monthlyOutflow: Number(row.monthly_outflow),
+      cash: row.cash === null ? null : Number(row.cash),
+      from: isoMonth(monthStart(row.as_of_month, -(Number(row.window_months) - 1))),
+      to: row.as_of_month,
+    };
+  } catch {
+    // The table does not exist yet (migration 007 not applied).
+    return null;
+  }
+}
+
 /**
- * Size of one company from `core.transactions` and `core.balances`, for the window of months ending at `month`.
- * Read-only aggregates on existing tables; nothing is stored. Needs the core schema to be loaded.
+ * Size of one company: the stored row of the current run when there is one, else computed from `core.transactions`
+ * and `core.balances` for the window ending at `month`. Read-only. Fails with "Unavailable" when neither source has it.
  */
 export async function getCompanySize(companyId: string, month: string): Promise<CompanySize> {
   if (!COMPANY_ID.test(companyId)) throw new Error(`Invalid company id: ${companyId}`);
   if (!MONTH.test(month)) throw new Error(`Invalid month: ${month}`);
-  if (!(await coreIsMounted())) throw new Error("Unavailable: the core schema is not loaded");
+
+  const stored = await storedSize(companyId);
+  if (stored) return stored;
+  if (!(await coreIsMounted())) throw new Error("Unavailable: no size for this company (company_size and core are empty)");
 
   const start = monthStart(month, -(WINDOW_MONTHS - 1));
   const end = monthStart(month, 1);
@@ -62,7 +96,7 @@ export async function getCompanySize(companyId: string, month: string): Promise<
       [companyId, start.toISOString().slice(0, 10), end.toISOString().slice(0, 10), OP_IN, OP_OUT],
     ),
     neonQuery<{ cash: number | null }>(
-      `SELECT SUM(countable) AS cash
+      `SELECT SUM(GREATEST(balance, 0)) AS cash
        FROM core.balances
        WHERE company_id = $1
          AND NOT COALESCE(balance_sentinel, false)

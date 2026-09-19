@@ -8,7 +8,7 @@ import { cn } from "cn";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { companyLabel } from "@/components/group/labels";
 import { Segmented, type SegmentedOption } from "@/components/segmented";
-import type { Posture, Tone } from "@/config/offers";
+import { MAGNITUDES, type Posture, type Tone } from "@/config/offers";
 import { guidanceFor } from "@/lib/offers";
 import type { CompanySize } from "@/lib/data/size";
 import type { DashboardCompany } from "@/lib/data/types";
@@ -29,6 +29,36 @@ export function PostureBadge({ posture, className }: { posture: Posture; classNa
   );
 }
 
+/** The size bands the suggestions are graded by, by monthly inflow. The company's own band is filled in when known. */
+function SizeBands({ current, currency }: { current?: string; currency: string | null }) {
+  return (
+    <ul className="flex flex-wrap gap-1.5" aria-label="Tamaños de empresa (ingresos mensuales)">
+      {MAGNITUDES.map((band, index) => {
+        const next = MAGNITUDES[index + 1];
+        const range = next
+          ? index === 0
+            ? `< ${formatMoney(next.minMonthlyInflow, currency)}`
+            : `${formatMoney(band.minMonthlyInflow, currency)} – ${formatMoney(next.minMonthlyInflow, currency)}`
+          : `> ${formatMoney(band.minMonthlyInflow, currency)}`;
+        const active = band.id === current;
+        return (
+          <li
+            key={band.id}
+            className={cn(
+              "inline-flex h-6 items-center gap-1.5 rounded-full border px-2 text-[11px]",
+              active ? "border-foreground bg-foreground text-background" : "text-muted-foreground",
+            )}
+            aria-current={active ? "true" : undefined}
+          >
+            <span className="font-medium">{band.label}</span>
+            <span className={cn("font-mono tabular-nums", active ? "text-background/70" : "text-muted-foreground/70")}>{range}</span>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
 type Stretch = "low" | "high";
 
 const STRETCH: SegmentedOption<Stretch>[] = [
@@ -39,20 +69,22 @@ const STRETCH: SegmentedOption<Stretch>[] = [
 /** Deep view: the posture and each product that fits. Hover a product for the numbers that make it fit. */
 export function OfferGuidanceCard({ company }: { company: DashboardCompany }) {
   const [stretch, setStretch] = useState<Stretch>("low");
-  const [loaded, setLoaded] = useState<{ key: string; size: CompanySize } | null>(null);
+  const [loaded, setLoaded] = useState<{ key: string; size: CompanySize | null } | null>(null);
   const key = `${company.companyId}|${company.latestMonth}`;
-  const size = loaded?.key === key ? loaded.size : null;
+  const settled = loaded?.key === key;
+  const size = settled ? loaded.size : null;
 
-  // The company's size comes from its bank records. Without it (no database, records not loaded) the card stays as it was.
+  // The company's size comes from its bank records. Without them the card still lists the bands and says why it cannot place the company.
   useEffect(() => {
     let cancelled = false;
     fetch(`/api/size?company=${encodeURIComponent(company.companyId)}&month=${encodeURIComponent(company.latestMonth)}`)
       .then(async (res) => {
-        if (!res.ok) return;
-        const body = (await res.json()) as CompanySize;
+        const body = res.ok ? ((await res.json()) as CompanySize) : null;
         if (!cancelled) setLoaded({ key, size: body });
       })
-      .catch(() => {});
+      .catch(() => {
+        if (!cancelled) setLoaded({ key, size: null });
+      });
     return () => {
       cancelled = true;
     };
@@ -73,29 +105,36 @@ export function OfferGuidanceCard({ company }: { company: DashboardCompany }) {
           <PostureBadge posture={posture} className="h-6 px-2.5 text-xs" />
         </div>
         <p className="text-sm text-muted-foreground">{posture.headline}</p>
-        {size ? (
-          <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 pt-1">
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 pt-1">
+          <div className="min-w-0 space-y-1.5">
             <p
               className="text-xs text-muted-foreground"
-              title={`Media mensual de los últimos 3 meses (${size.from} → ${size.to}), según los movimientos bancarios.`}
+              title={size ? `Media mensual de los últimos 3 meses (${size.from} → ${size.to}), según los movimientos bancarios.` : undefined}
             >
-              {magnitude ? (
-                <>
-                  Tamaño: <span className="font-medium text-foreground">{magnitude.label}</span> · ingresos de ≈{" "}
-                  {formatMoney(size.monthlyInflow, company.currency)} al mes
-                </>
+              {size ? (
+                magnitude ? (
+                  <>
+                    Tamaño: <span className="font-medium text-foreground">{magnitude.label}</span> · ingresos de ≈{" "}
+                    {formatMoney(size.monthlyInflow, company.currency)} al mes
+                  </>
+                ) : (
+                  "Sin ingresos recientes: no se puede estimar el tamaño."
+                )
+              ) : settled ? (
+                "No se puede situar a esta empresa por tamaño: los movimientos bancarios no están disponibles en la base de datos."
               ) : (
-                "Sin ingresos recientes: no se puede estimar el tamaño."
+                "Calculando el tamaño…"
               )}
             </p>
-            {sized ? (
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                Importe orientativo
-                <Segmented options={STRETCH} value={stretch} onChange={setStretch} ariaLabel="Magnitud del importe" />
-              </div>
-            ) : null}
+            <SizeBands current={magnitude?.id} currency={company.currency} />
           </div>
-        ) : null}
+          {sized ? (
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              Importe orientativo
+              <Segmented options={STRETCH} value={stretch} onChange={setStretch} ariaLabel="Magnitud del importe" />
+            </div>
+          ) : null}
+        </div>
       </CardHeader>
       <CardContent>
         {suggestions.length === 0 ? (
