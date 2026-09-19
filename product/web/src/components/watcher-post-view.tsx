@@ -12,9 +12,9 @@ const SEVERITY: Record<WatcherBullet["severity"], { label: string; className: st
   follow: { label: "SEGUIR", className: "bg-muted text-muted-foreground" },
 };
 
-export function WatcherPostView({ post }: { post: WatcherPost }) {
+export function WatcherPostView({ post, flat = false }: { post: WatcherPost; flat?: boolean }) {
   return (
-    <article className="space-y-2 rounded-xl border bg-background px-4 py-3">
+    <article className={flat ? "space-y-2" : "space-y-2 rounded-xl border bg-background px-4 py-3"}>
       <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">{formatMonth(post.month)}</p>
       <p className="text-sm font-semibold leading-snug">{post.line1}</p>
       <p className="text-sm leading-snug text-muted-foreground">{post.line2}</p>

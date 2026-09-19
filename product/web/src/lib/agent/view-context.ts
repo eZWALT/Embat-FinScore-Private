@@ -35,7 +35,7 @@ export type DashboardView = {
 const SCREENS: Record<DashboardView["screen"], string> = {
   inicio: "Rápido, sin gráfico aún: tres opciones (mejores 5, peores 5, buscar).",
   rapido_chart: "Rápido: índice 0–100 por mes, una línea por empresa. El color es el de la leyenda.",
-  resumen: "Resumen de una empresa: índice, cambio mensual, trayectoria, confianza, señal principal, línea de evolución, barras de categorías, Vigilancia (últimos 3 meses).",
+  resumen: "Resumen de una empresa: índice, cambio mensual, trayectoria, confianza, señal principal, gráfico de evolución con control y predicción, puntuación por categoría al pasar el cursor por el índice, Alerts (últimos 3 meses).",
   indice: "Índice de salud: varias empresas en el mismo gráfico, una línea por color.",
 };
 

@@ -12,7 +12,7 @@ import {
 } from "recharts";
 
 import { ClientOnly } from "@/components/client-only";
-import { buildChartRows, SERIES_COLORS, yDomainForSelection } from "@/components/health-score-view";
+import { buildChartRows, SERIES_COLORS, yDomainForSelection } from "@/components/quick/series";
 import {
   type ChartConfig,
   ChartContainer,

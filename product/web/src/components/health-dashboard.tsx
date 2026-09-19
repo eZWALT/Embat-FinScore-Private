@@ -2,63 +2,35 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import {
-  Activity,
-  ArrowDownRight,
-  ArrowUpRight,
-  CalendarDays,
-  ChartNoAxesCombined,
-  Eye,
-  Layers,
-  Minus,
-  TriangleAlert,
-} from "lucide-react";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Line,
-  LineChart,
-  ReferenceLine,
-  XAxis,
-  YAxis,
-} from "recharts";
-
-import { cn } from "cn";
+import { ArrowDownRight, ArrowUpRight, Layers, Minus, TriangleAlert } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ClientOnly } from "@/components/client-only";
+import { AppHeader } from "@/components/app-header";
+import { CompanyAlerts } from "@/components/company-alerts";
+import { EntityCombobox } from "@/components/entity-combobox";
+import { HealthIndexHelp } from "@/components/health-index-help";
 import { ModeToggle, type AnalysisMode } from "@/components/mode-toggle";
+import { MonitorPlot } from "@/components/monitor-plot";
 import { QuickAnalysis } from "@/components/quick/quick-analysis";
-import { ThemeIconToggle } from "@/components/theme-switcher";
+import { Segmented, type SegmentedOption } from "@/components/segmented";
 import { confidenceLabels, scoreColor, trajectoryLabels } from "@/components/group/labels";
 import { HealthScoreChat } from "@/components/health-score-chat";
 import { ProductCredit } from "@/components/product-credit";
-import { HealthScoreView, SERIES_COLOR_LABELS } from "@/components/health-score-view";
+import { HealthScoreView } from "@/components/health-score-view";
 import { type MonthRange } from "@/components/quick/quick-chart";
-import { HealthSidebar, type AppView } from "@/components/health-sidebar";
-import { ResumenVigilancia } from "@/components/resumen-vigilancia";
-import {
-  ChartConfig,
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
-import { Separator } from "@/components/ui/separator";
-import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { formatMonth } from "@/lib/format-month";
+import { SERIES_COLOR_LABELS } from "@/components/quick/series";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { DashboardView } from "@/lib/agent/view-context";
 import type { DashboardCompany, DashboardData } from "@/lib/data/types";
 
-const scoreChartConfig = {
-  score: { label: "Índice de salud", color: "var(--chart-1)" },
-} satisfies ChartConfig;
+type DeepView = "overview" | "health-score";
 
-const categoryChartConfig = {
-  score: { label: "Puntuación", color: "var(--chart-2)" },
-} satisfies ChartConfig;
+const DEEP_VIEWS: SegmentedOption<DeepView>[] = [
+  { value: "overview", label: "Resumen" },
+  { value: "health-score", label: "Comparar" },
+];
 
 function Delta({ value }: { value: number | null }) {
   if (value === null) return <span className="text-sm text-muted-foreground">—</span>;
@@ -104,10 +76,9 @@ export function HealthDashboard({
     data.companies.find((company) => company.trajectory === "improving") ??
     data.companies[0];
   const [companyId, setCompanyId] = useState(defaultCompany.companyId);
-  const [view, setView] = useState<AppView>("overview");
+  const [view, setView] = useState<DeepView>("overview");
   const [chatOpen, setChatOpen] = useState(openChat);
   const [mode, setMode] = useState<AnalysisMode>(initialMode);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [quickCompanies, setQuickCompanies] = useState<DashboardData["companies"]>([]);
   const [indiceCompanies, setIndiceCompanies] = useState<DashboardCompany[]>([]);
   const [quickRange, setQuickRange] = useState<MonthRange | null>(null);
@@ -121,7 +92,10 @@ export function HealthDashboard({
   }, [openChat]);
 
   useEffect(() => {
-    if (window.location.hash === "#vigilancia") setView("overview");
+    if (window.location.hash === "#alerts") {
+      setView("overview");
+      requestAnimationFrame(() => document.getElementById("alerts")?.scrollIntoView());
+    }
   }, []);
 
   // The company lives in the URL so a shared link or a link out of Grupos keeps it, without refetching.
@@ -187,266 +161,189 @@ export function HealthDashboard({
     };
   }, [mode, view, data.asOfMonth, quickCompanies, quickRange, indiceCompanies, company]);
 
-  function goVigilancia() {
-    setView("overview");
-    requestAnimationFrame(() => {
-      document.getElementById("vigilancia")?.scrollIntoView({ behavior: "smooth" });
-    });
-  }
-
-  const scoreHistory = company.scoreHistory.map((point) => ({
-    ...point,
-    label: formatMonth(point.month),
-  }));
-
-  // One shell for both modes: the header and the frame stay put, only the sidebar slides in and the body cross-fades.
   return (
-    <SidebarProvider
-      open={mode === "deep" && sidebarOpen}
-      onOpenChange={(next) => {
-        if (mode === "deep") setSidebarOpen(next);
-      }}
-    >
-      <HealthSidebar
-        hidden={mode === "quick"}
-        data={data}
-        companyId={companyId}
-        onCompanyChange={selectCompany}
-        view={view}
-        onViewChange={setView}
-        onVigilancia={goVigilancia}
-      />
-      <SidebarInset>
-        <header className="sticky top-0 z-10 flex h-14 items-center justify-between border-b bg-background/95 px-4 backdrop-blur sm:px-6">
-          {mode === "deep" ? (
-            <div key="deep" className="flex min-w-0 items-center gap-3 animate-in fade-in-0 duration-300 motion-reduce:animate-none">
-              <SidebarTrigger />
-              <Separator orientation="vertical" className="h-4" />
-              <div className="min-w-0">
-                <p className="truncate font-mono text-sm font-medium">
-                  {view === "health-score" ? "Índice de salud" : company.companyId}
-                </p>
-                <p className="truncate text-xs text-muted-foreground">
-                  {view === "health-score"
-                    ? `${data.companies.length} empresas`
-                    : (company.groupId ?? "Sin grupo")}
-                </p>
-              </div>
-            </div>
-          ) : (
-            <div key="quick" className="flex items-center gap-2.5 animate-in fade-in-0 duration-300 motion-reduce:animate-none">
-              <div className="grid size-8 shrink-0 place-items-center rounded-lg border bg-background">
-                <Activity className="size-4" aria-hidden="true" />
-              </div>
-              <span className="hidden text-sm font-semibold sm:inline">Centinela de salud</span>
-            </div>
-          )}
-          <div className="flex items-center gap-3">
-            <ModeToggle mode={mode} onChange={changeMode} />
-            <Badge variant="outline" className="hidden font-mono text-[11px] font-normal text-muted-foreground sm:inline-flex">
-              {formatMonth(data.asOfMonth)}
-            </Badge>
-            <ThemeIconToggle />
-          </div>
-        </header>
+    <div className="flex min-h-svh flex-col">
+      <AppHeader>
+        <ModeToggle mode={mode} onChange={changeMode} />
+      </AppHeader>
 
-        {mode === "quick" ? (
-          <div key="quick" className="flex flex-1 flex-col animate-in fade-in-0 duration-300 motion-reduce:animate-none">
-            <QuickAnalysis
-              data={data}
-              onCompaniesChange={setQuickCompanies}
-              onRangeChange={setQuickRange}
-              onExplain={explainRange}
-            />
-          </div>
-        ) : (
+      {mode === "quick" ? (
+        <div key="quick" className="flex flex-1 flex-col animate-in fade-in-0 duration-300 motion-reduce:animate-none">
+          <QuickAnalysis
+            data={data}
+            onCompaniesChange={setQuickCompanies}
+            onRangeChange={setQuickRange}
+            onExplain={explainRange}
+          />
+        </div>
+      ) : (
         <main
           key="deep"
-          className={cn(
-            "animate-in fade-in-0 duration-300 motion-reduce:animate-none",
-            view === "health-score"
-              ? "w-full px-4 py-6 sm:px-6 lg:px-8 lg:py-8"
-              : "mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10",
-          )}
+          className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 animate-in fade-in-0 duration-300 motion-reduce:animate-none sm:px-6 lg:px-8 lg:py-8"
         >
+          <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+            {view === "overview" ? (
+              <div className="w-full sm:w-72">
+                <p className="mb-1.5 text-xs font-medium text-muted-foreground">Empresa analizada</p>
+                <EntityCombobox
+                  ariaLabel="Empresa analizada"
+                  options={data.companies.map((candidate) => ({
+                    value: candidate.companyId,
+                    label: candidate.companyId,
+                    detail: `${candidate.score.toFixed(0)} pts`,
+                  }))}
+                  value={companyId}
+                  onChange={(value) => value && selectCompany(value)}
+                  placeholder="Elige una empresa"
+                  searchPlaceholder="Buscar empresa (p. ej. 0462)"
+                />
+              </div>
+            ) : (
+              <span />
+            )}
+            <Segmented options={DEEP_VIEWS} value={view} onChange={setView} ariaLabel="Vista del análisis profundo" />
+          </div>
+
           {view === "health-score" ? (
             <HealthScoreView
               data={data}
               initialCompanyId={company.companyId}
               onSelectionChange={setIndiceCompanies}
+              onExplain={explainRange}
             />
           ) : (
             <>
-          <section id="resumen" className="flex scroll-mt-20 flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-            <div className="min-w-0">
-              <h1 className="font-mono text-2xl font-semibold tracking-tight">{company.companyId}</h1>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {[company.groupId ?? "Sin grupo", company.country, company.erp].filter(Boolean).join(" · ")}
-              </p>
-            </div>
-            <nav aria-label="Ir a otras vistas de esta empresa" className="flex flex-wrap gap-2">
-              {company.groupId ? (
-                <Button asChild variant="outline" size="sm">
-                  <Link href={`/grupos${queryFor({ group: company.groupId, company: company.companyId })}`}>
-                    <Layers data-icon="inline-start" />
-                    Ver grupo
-                  </Link>
-                </Button>
-              ) : null}
-              <Button variant="outline" size="sm" onClick={() => setView("health-score")}>
-                <ChartNoAxesCombined data-icon="inline-start" />
-                Comparar
-              </Button>
-              <Button variant="outline" size="sm" onClick={goVigilancia}>
-                <Eye data-icon="inline-start" />
-                Vigilancia
-              </Button>
-            </nav>
-          </section>
+              <section id="resumen" className="flex scroll-mt-20 flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+                <div className="min-w-0">
+                  <h1 className="font-mono text-2xl font-semibold tracking-tight">{company.companyId}</h1>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {[company.groupId ?? "Sin grupo", company.country, company.erp].filter(Boolean).join(" · ")}
+                  </p>
+                </div>
+                {company.groupId ? (
+                  <nav aria-label="Ir a otras vistas de esta empresa" className="flex flex-wrap gap-2">
+                    <Button asChild variant="outline" size="sm">
+                      <Link href={`/grupos${queryFor({ group: company.groupId, company: company.companyId })}`}>
+                        <Layers data-icon="inline-start" />
+                        Ver grupo
+                      </Link>
+                    </Button>
+                  </nav>
+                ) : null}
+              </section>
 
-        <section className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xs font-medium text-muted-foreground">Índice de salud</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-baseline gap-2">
-                <span
-                  className="size-2.5 self-center rounded-full"
-                  style={{ background: scoreColor(company.score) }}
-                  aria-hidden="true"
-                />
-                <span className="font-mono text-4xl font-medium tracking-tight tabular-nums">{company.score.toFixed(0)}</span>
-                <span className="text-sm text-muted-foreground">/ 100</span>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xs font-medium text-muted-foreground">Cambio mensual</CardTitle>
-            </CardHeader>
-            <CardContent className="flex h-11 items-center">
-              <Delta value={company.delta1m} />
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xs font-medium text-muted-foreground">Trayectoria</CardTitle>
-            </CardHeader>
-            <CardContent className="flex h-11 items-center">
-              <Badge variant="secondary">{trajectoryLabels[company.trajectory]}</Badge>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xs font-medium text-muted-foreground">Confianza</CardTitle>
-            </CardHeader>
-            <CardContent className="flex h-11 items-center justify-between gap-3">
-              <span className="font-medium">{confidenceLabels[company.confidence]}</span>
-              <span className="font-mono text-xs text-muted-foreground">{Math.round(company.coverage * 100)}% cobertura</span>
-            </CardContent>
-          </Card>
-        </section>
+              <section className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                      Índice de salud
+                      <HealthIndexHelp />
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div
+                          tabIndex={0}
+                          className="flex w-fit cursor-help items-baseline gap-2 rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+                        >
+                          <span
+                            className="size-2.5 self-center rounded-full"
+                            style={{ background: scoreColor(company.score) }}
+                            aria-hidden="true"
+                          />
+                          <span className="font-mono text-4xl font-medium tracking-tight tabular-nums underline decoration-muted-foreground/40 decoration-dotted underline-offset-[6px]">
+                            {company.score.toFixed(0)}
+                          </span>
+                          <span className="text-sm text-muted-foreground">/ 100</span>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" align="start" className="min-w-60 flex-col items-stretch gap-2 p-3">
+                        <p className="text-[11px] font-medium opacity-70">Puntuación por categoría</p>
+                        <ul className="space-y-1.5">
+                          {company.categories.map((category) => (
+                            <li key={category.id}>
+                              <div className="flex items-baseline justify-between gap-4">
+                                <span>{category.label}</span>
+                                <span className="font-mono tabular-nums">
+                                  {category.score === null ? "—" : category.score.toFixed(0)}
+                                </span>
+                              </div>
+                              <div className="mt-1 h-1 rounded-full bg-background/25">
+                                <div
+                                  className="h-full rounded-full bg-background"
+                                  style={{ width: `${Math.max(0, Math.min(100, category.score ?? 0))}%` }}
+                                />
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      </TooltipContent>
+                    </Tooltip>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-xs font-medium text-muted-foreground">Cambio mensual</CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex h-11 items-center">
+                    <Delta value={company.delta1m} />
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-xs font-medium text-muted-foreground">Trayectoria</CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex h-11 items-center">
+                    <Badge variant="secondary">{trajectoryLabels[company.trajectory]}</Badge>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-xs font-medium text-muted-foreground">Confianza</CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex h-11 items-center justify-between gap-3">
+                    <span className="font-medium">{confidenceLabels[company.confidence]}</span>
+                    <span className="font-mono text-xs text-muted-foreground">{Math.round(company.coverage * 100)}% cobertura</span>
+                  </CardContent>
+                </Card>
+              </section>
 
-        <section
-          id="senales"
-          aria-label="Principal señal a revisar"
-          className="mt-4 flex scroll-mt-20 items-start gap-3 rounded-xl border bg-card px-4 py-3"
-        >
-          <TriangleAlert className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-          <div className="min-w-0">
-            <p className="text-xs font-medium text-muted-foreground">Principal señal a revisar</p>
-            <p className="mt-1 text-sm leading-6">
-              {company.topReason ?? "No hay una señal dominante para este periodo."}
-            </p>
-          </div>
-        </section>
+              <section
+                id="senales"
+                aria-label="Principal señal a revisar"
+                className="mt-4 flex scroll-mt-20 items-start gap-3 rounded-xl border bg-card px-4 py-3"
+              >
+                <TriangleAlert className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+                <div className="min-w-0">
+                  <p className="text-xs font-medium text-muted-foreground">Principal señal a revisar</p>
+                  <p className="mt-1 text-sm leading-6">
+                    {company.topReason ?? "No hay una señal dominante para este periodo."}
+                  </p>
+                </div>
+              </section>
 
-        <section className="mt-4 grid gap-4 xl:grid-cols-[1.6fr_1fr]">
-          <Card id="evolucion" className="scroll-mt-20">
-            <CardHeader className="gap-1">
-              <div className="flex items-center justify-between gap-4">
-                <CardTitle className="text-base">Evolución de la puntuación</CardTitle>
-                <Badge variant="outline" className="gap-1.5 font-normal text-muted-foreground">
-                  <CalendarDays className="size-3" />
-                  hasta {formatMonth(data.asOfMonth)}
-                </Badge>
-              </div>
-              <p className="text-sm text-muted-foreground">La dirección y persistencia importan tanto como el nivel actual.</p>
-            </CardHeader>
-            <CardContent>
-              <ClientOnly fallback={<div className="h-[300px] w-full" />}>
-              <ChartContainer config={scoreChartConfig} className="h-[300px] w-full aspect-auto">
-                <LineChart data={scoreHistory} margin={{ top: 12, right: 8, left: -20, bottom: 0 }}>
-                  <CartesianGrid vertical={false} strokeDasharray="3 3" />
-                  <XAxis dataKey="label" tickLine={false} axisLine={false} minTickGap={28} />
-                  <YAxis domain={[0, 100]} tickLine={false} axisLine={false} ticks={[0, 25, 50, 75, 100]} />
-                  <ReferenceLine y={50} stroke="var(--border)" strokeDasharray="4 4" />
-                  <ChartTooltip
-                    cursor={false}
-                    content={<ChartTooltipContent indicator="line" />}
-                  />
-                  <Line
-                    dataKey="score"
-                    type="monotone"
-                    stroke="var(--color-score)"
-                    strokeWidth={2.5}
-                    dot={false}
-                    activeDot={{ r: 5 }}
-                  />
-                </LineChart>
-              </ChartContainer>
-              </ClientOnly>
-            </CardContent>
-          </Card>
+              <section className="mt-4 grid items-start gap-4 xl:grid-cols-[1.6fr_1fr]">
+                <MonitorPlot company={company} companies={data.companies} asOfMonth={data.asOfMonth} />
+                <CompanyAlerts companyId={company.companyId} />
+              </section>
 
-          <Card id="categorias" className="scroll-mt-20">
-            <CardHeader className="gap-1">
-              <CardTitle className="text-base">Puntuación por categoría</CardTitle>
-              <p className="text-sm text-muted-foreground">Qué dimensiones sostienen o limitan el resultado actual.</p>
-            </CardHeader>
-            <CardContent>
-              <ClientOnly fallback={<div className="h-[300px] w-full" />}>
-              <ChartContainer config={categoryChartConfig} className="h-[300px] w-full aspect-auto">
-                <BarChart data={company.categories} layout="vertical" margin={{ top: 4, right: 8, left: 8, bottom: 0 }}>
-                  <CartesianGrid horizontal={false} strokeDasharray="3 3" />
-                  <XAxis type="number" domain={[0, 100]} hide />
-                  <YAxis
-                    dataKey="label"
-                    type="category"
-                    tickLine={false}
-                    axisLine={false}
-                    width={112}
-                    tick={{ fontSize: 11 }}
-                  />
-                  <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
-                  <Bar dataKey="score" fill="var(--color-score)" radius={[0, 5, 5, 0]} barSize={18} />
-                </BarChart>
-              </ChartContainer>
-              </ClientOnly>
-            </CardContent>
-          </Card>
-        </section>
-
-        <ResumenVigilancia companyId={company.companyId} />
-
-        <ProductCredit className="mt-8" />
+              <ProductCredit className="mt-8" />
             </>
           )}
         </main>
-        )}
-        <HealthScoreChat
-          key={`${mode}:${view}:${chatCompany?.companyId ?? "index"}`}
-          companyId={chatCompany?.companyId}
-          groupId={chatCompany?.groupId ?? undefined}
-          asOf={data.asOfMonth}
-          seedPrompt={seedPrompt}
-          seedKey={seedKey}
-          view={dashboardView}
-          open={chatOpen}
-          onOpenChange={setChatOpen}
-        />
-      </SidebarInset>
-    </SidebarProvider>
+      )}
+      <HealthScoreChat
+        key={`${mode}:${view}:${chatCompany?.companyId ?? "index"}`}
+        companyId={chatCompany?.companyId}
+        groupId={chatCompany?.groupId ?? undefined}
+        asOf={data.asOfMonth}
+        seedPrompt={seedPrompt}
+        seedKey={seedKey}
+        view={dashboardView}
+        open={chatOpen}
+        onOpenChange={setChatOpen}
+      />
+    </div>
   );
 }

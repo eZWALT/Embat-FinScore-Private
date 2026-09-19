@@ -1,15 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { MousePointerClick, Search, TrendingDown, TrendingUp, X, type LucideIcon } from "lucide-react";
+import { Search, TrendingDown, TrendingUp, type LucideIcon } from "lucide-react";
 import { cn } from "cn";
 
 import { ProductCredit } from "@/components/product-credit";
-import { Button } from "@/components/ui/button";
-import { formatPoints } from "@/components/group/labels";
-import { SERIES_COLORS } from "@/components/health-score-view";
-import { QuickChart, type MonthRange } from "@/components/quick/quick-chart";
-import { buildPrompt } from "@/components/quick/quick-explain";
+import { ComparePanel } from "@/components/quick/compare-panel";
+import { type MonthRange } from "@/components/quick/quick-chart";
 import { QuickList } from "@/components/quick/quick-list";
 import type { DashboardCompany, DashboardData } from "@/lib/data/types";
 import { HALF_LIFE_MONTHS, recencyWeightedMean } from "@/lib/quick-ranking";
@@ -42,7 +39,6 @@ export function QuickAnalysis({
   const [tab, setTab] = useState<Tab | null>(null);
   const [picked, setPicked] = useState<string[]>([]);
   const [query, setQuery] = useState("");
-  const [range, setRange] = useState<MonthRange | null>(null);
   const searchRef = useRef<HTMLInputElement>(null);
   const onCompaniesChangeRef = useRef(onCompaniesChange);
   onCompaniesChangeRef.current = onCompaniesChange;
@@ -82,25 +78,14 @@ export function QuickAnalysis({
     onCompaniesChangeRef.current?.(selected);
   }, [selected]);
 
-  function selectRange(next: MonthRange | null) {
-    if (!next || selected.length === 0) {
-      setRange(null);
-      onRangeChange?.(null);
-      return;
-    }
-    setRange(next);
-    onRangeChange?.(next);
-    onExplain?.(buildPrompt(selected, next));
-  }
-
   function choose(next: Tab) {
     if (next === tab) return;
     setTab(next);
-    selectRange(null);
+    onRangeChange?.(null);
   }
 
   function toggle(companyId: string) {
-    selectRange(null);
+    onRangeChange?.(null);
     setPicked((current) =>
       current.includes(companyId)
         ? current.filter((id) => id !== companyId)
@@ -194,68 +179,16 @@ export function QuickAnalysis({
 
       {tab !== null ? (
         <div key={tab} className="mt-5 flex flex-1 flex-col gap-4 animate-in fade-in-0 slide-in-from-bottom-1 duration-300 motion-reduce:animate-none">
-          <div className={cn("grid gap-4", tab === "search" && "lg:grid-cols-[19rem_minmax(0,1fr)]")}>
-            {tab === "search" ? (
-              <QuickList companies={data.companies} query={query} picked={picked} max={MAX_PICKED} onToggle={toggle} />
-            ) : null}
-
-            <div className="min-w-0 space-y-2 max-lg:order-first">
-              {/* Fixed-height line so the hint and the clear button never shift the chart. */}
-              <div className="flex h-8 items-center justify-end">
-                {range ? (
-                  <Button type="button" variant="ghost" size="sm" onClick={() => selectRange(null)}>
-                    <X data-icon="inline-start" />
-                    Quitar selección
-                  </Button>
-                ) : selected.length > 0 ? (
-                  <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                    <MousePointerClick className="size-3.5" aria-hidden="true" />
-                    Arrastra sobre el gráfico para explicar un periodo
-                  </p>
-                ) : null}
-              </div>
-
-              {selected.length === 0 ? (
-                <div className="grid h-[min(52vh,440px)] place-items-center rounded-xl border border-dashed px-4 text-center text-sm text-muted-foreground">
-                  Marca una o más empresas de la lista para ver su evolución.
-                </div>
-              ) : (
-                <>
-                  <QuickChart companies={selected} range={range} onRangeChange={selectRange} />
-                  <ul className="flex flex-wrap gap-2" aria-label="Empresas en el gráfico">
-                    {selected.map((company, index) => (
-                      <li
-                        key={company.companyId}
-                        className="inline-flex h-7 items-center gap-1.5 rounded-full border px-2.5 font-mono text-xs"
-                      >
-                        <span
-                          className="size-1.5 rounded-full"
-                          style={{ background: SERIES_COLORS[index % SERIES_COLORS.length] }}
-                          aria-hidden="true"
-                        />
-                        {company.companyId}
-                        {tab !== "search" && weighted.has(company.companyId) ? (
-                          <span
-                            className="text-muted-foreground tabular-nums"
-                            title={`Media ponderada del índice (vida media ${HALF_LIFE_MONTHS} meses) · último mes ${company.score.toFixed(0)}`}
-                          >
-                            media {weighted.get(company.companyId)!.toFixed(0)} · hoy {company.score.toFixed(0)}
-                          </span>
-                        ) : (
-                          <span className="text-muted-foreground tabular-nums">{company.score.toFixed(0)}</span>
-                        )}
-                        {company.delta3m !== null ? (
-                          <span className="text-muted-foreground tabular-nums" title="Cambio en 3 meses">
-                            {formatPoints(company.delta3m)}
-                          </span>
-                        ) : null}
-                      </li>
-                    ))}
-                  </ul>
-                </>
-              )}
-            </div>
-          </div>
+          <ComparePanel
+            selected={selected}
+            list={
+              tab === "search" ? (
+                <QuickList companies={data.companies} query={query} picked={picked} max={MAX_PICKED} onToggle={toggle} />
+              ) : undefined
+            }
+            onRangeChange={onRangeChange}
+            onExplain={onExplain}
+          />
         </div>
       ) : null}
 

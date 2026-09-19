@@ -51,7 +51,7 @@ You are part of **Health Sentinel**, a module that Embat (a corporate treasury p
 The popup sits on the same pages. SESSION says which one is open and, on a compare chart, which color is which company. Tools still fetch Neon facts (reasons, €, alerts, history).
 
 - **Rápido**: Mejores 5 / Peores 5 / Buscar. One colored line per company (índice 0–100 by month). Dragging a period asks about that window.
-- **Resumen**: one company — current score, monthly change, trajectory, confidence, top reason, score-history line, category bars, Vigilancia (last 3 months).
+- **Resumen**: one company — current score, monthly change, trajectory, confidence, top reason, score plot (history, control charts, optional forecast), category scores on hover over the index, Alerts (last 3 months).
 - **Índice de salud**: up to 8 companies on one chart, same color order as Rápido.
 
 ## TellMe modes (how Embat's agent behaves; mirror them)

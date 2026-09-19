@@ -3,19 +3,16 @@
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useState, useTransition } from "react";
-import { ArrowLeft, Building2, Eye, Layers } from "lucide-react";
+import { Building2 } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EntityCombobox } from "@/components/entity-combobox";
-import { Separator } from "@/components/ui/separator";
+import { AppHeader } from "@/components/app-header";
+import { ModeToggle } from "@/components/mode-toggle";
 import { ProductCredit } from "@/components/product-credit";
-import { ProductNav } from "@/components/product-nav";
-import { ThemeSwitcher } from "@/components/theme-switcher";
 import { AlertList } from "@/components/group/alert-list";
 import { CompanyPanel } from "@/components/group/company-panel";
-import { formatMonth } from "@/components/group/labels";
 import { MemberTable } from "@/components/group/member-table";
 import { HeatmapLegend, ScoreHeatmap } from "@/components/group/score-heatmap";
 import type { GroupMapData } from "@/lib/data/group-service";
@@ -49,120 +46,85 @@ export function GroupHealthMap({ data }: { data: GroupMapData }) {
   };
 
   return (
-    <div className="min-h-screen">
-      <header className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur">
-        <div className="flex h-14 items-center justify-between px-4 sm:px-6">
-          <div className="flex min-w-0 items-center gap-3">
-            <Link
-              href="/"
-              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
-            >
-              <ArrowLeft className="size-3.5" />
-              Panel de empresa
-            </Link>
-            <Separator orientation="vertical" className="h-4" />
-            <div className="min-w-0">
-              <p className="truncate text-sm font-medium">Mapa de salud por grupo</p>
-              <p className="truncate font-mono text-xs text-muted-foreground">{data.group.groupId}</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <Badge variant="outline" className="font-mono text-[11px] font-normal text-muted-foreground">
-              {formatMonth(data.asOfMonth)}
-              {data.isSample ? " · muestra" : ""}
-            </Badge>
-            <ThemeSwitcher />
-          </div>
-        </div>
-        <div className="flex items-center border-t px-4 py-1.5 sm:px-6">
-          <ProductNav current="/grupos" />
-        </div>
-      </header>
+    <div className="flex min-h-svh flex-col">
+      <AppHeader>
+        <ModeToggle
+          mode="deep"
+          onChange={(mode) => router.push(mode === "quick" ? "/" : "/?modo=profundo")}
+        />
+      </AppHeader>
 
       <main
-        className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8"
+        className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-8"
         aria-busy={isPending}
         data-pending={isPending || undefined}
       >
-        <section className="flex flex-col gap-4">
-          <div className="max-w-2xl">
-            <div className="mb-2 flex items-center gap-2 text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
-              <Layers className="size-3.5" />
-              Grupos de empresas
-            </div>
-            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-              Puntuación de cada empresa del grupo, mes a mes.
-            </h1>
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              Índice explicable y monitorizable de 0 a 100. Las filas son las empresas del grupo,
-              ordenadas de menor a mayor puntuación; las columnas, los meses con dato.
+        <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+          <div className="w-full sm:w-72">
+            <p className="mb-1.5 text-xs font-medium text-muted-foreground">Grupo analizado</p>
+            <EntityCombobox
+              ariaLabel="Grupo analizado"
+              options={data.groupOptions.map((option) => ({
+                value: option.groupId,
+                label: option.groupId,
+                detail: `${option.nCompanies} emp. · ${option.meanScore === null ? "sin media" : `media ${option.meanScore.toFixed(0)}`}`,
+              }))}
+              value={data.group.groupId}
+              onChange={(next) => next && selectGroup(next)}
+              placeholder="Elige un grupo"
+              searchPlaceholder="Buscar grupo (p. ej. 0142)"
+            />
+          </div>
+        </div>
+
+        <section className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+          <div className="min-w-0">
+            <h1 className="font-mono text-2xl font-semibold tracking-tight">{data.group.groupId}</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Puntuación de cada empresa del grupo, mes a mes
+              {data.isSample ? " · muestra" : ""}
             </p>
           </div>
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-            <div className="w-full sm:w-80">
-              <p className="mb-1.5 text-xs font-medium text-muted-foreground">Grupo analizado</p>
-              <EntityCombobox
-                ariaLabel="Grupo analizado"
-                options={data.groupOptions.map((option) => ({
-                  value: option.groupId,
-                  label: option.groupId,
-                  detail: `${option.nCompanies} emp. · ${option.meanScore === null ? "sin media" : `media ${option.meanScore.toFixed(0)}`}`,
-                }))}
-                value={data.group.groupId}
-                onChange={(next) => next && selectGroup(next)}
-                placeholder="Elige un grupo"
-                searchPlaceholder="Buscar grupo (p. ej. 0142)"
-              />
-            </div>
+          {data.company ? (
             <nav aria-label="Ir a otras vistas de este grupo" className="flex flex-wrap gap-2">
-              {data.company ? (
-                <>
-                  <Button asChild variant="outline" size="sm">
-                    <Link href={`/?company=${data.company.companyId}`}>
-                      <Building2 data-icon="inline-start" />
-                      Ver {data.company.companyId}
-                    </Link>
-                  </Button>
-                  <Button asChild variant="outline" size="sm">
-                    <Link href={`/?company=${data.company.companyId}#vigilancia`}>
-                      <Eye data-icon="inline-start" />
-                      Vigilancia
-                    </Link>
-                  </Button>
-                </>
-              ) : null}
+              <Button asChild variant="outline" size="sm">
+                <Link href={`/?company=${data.company.companyId}`}>
+                  <Building2 data-icon="inline-start" />
+                  Ver {data.company.companyId}
+                </Link>
+              </Button>
             </nav>
-          </div>
+          ) : null}
         </section>
 
         <section className="mt-6 grid gap-4 sm:grid-cols-3">
-          <Card size="sm">
-            <CardHeader className="pb-1">
+          <Card>
+            <CardHeader className="pb-2">
               <CardTitle className="text-xs font-medium text-muted-foreground">Empresas</CardTitle>
             </CardHeader>
             <CardContent>
-              <span className="font-mono text-2xl font-medium tabular-nums">{data.group.nCompanies}</span>
+              <span className="font-mono text-4xl font-medium tracking-tight tabular-nums">{data.group.nCompanies}</span>
               {data.members.length !== data.group.nCompanies && (
                 <span className="ml-2 text-xs text-muted-foreground">{data.members.length} con puntuación</span>
               )}
             </CardContent>
           </Card>
-          <Card size="sm">
-            <CardHeader className="pb-1">
+          <Card>
+            <CardHeader className="pb-2">
               <CardTitle className="text-xs font-medium text-muted-foreground">Media del grupo</CardTitle>
             </CardHeader>
             <CardContent>
-              <span className="font-mono text-2xl font-medium tabular-nums">
+              <span className="font-mono text-4xl font-medium tracking-tight tabular-nums">
                 {data.group.meanScore === null ? "—" : data.group.meanScore.toFixed(0)}
               </span>
             </CardContent>
           </Card>
-          <Card size="sm">
-            <CardHeader className="pb-1">
+          <Card>
+            <CardHeader className="pb-2">
               <CardTitle className="text-xs font-medium text-muted-foreground">Mínimo del grupo</CardTitle>
             </CardHeader>
             <CardContent className="flex items-baseline gap-2">
-              <span className="font-mono text-2xl font-medium tabular-nums">
+              <span className="font-mono text-4xl font-medium tracking-tight tabular-nums">
                 {data.group.minScore === null ? "—" : data.group.minScore.toFixed(0)}
               </span>
               {data.group.minCompanyId && (
@@ -213,11 +175,11 @@ export function GroupHealthMap({ data }: { data: GroupMapData }) {
 
         <Card className="mt-4">
           <CardHeader className="gap-1">
-            <CardTitle className="text-base">Señales del grupo</CardTitle>
+            <CardTitle className="text-base">Alerts del grupo</CardTitle>
             <p className="text-sm text-muted-foreground">
               {data.group.limitsAvailable
                 ? "Este grupo tiene límites tipo embudo: su media se vigila frente a su propio histórico y frente a otros grupos de tamaño similar."
-                : "Grupo pequeño: solo media, sin límites ni alertas de grupo."}
+                : "Grupo pequeño: solo media, sin límites ni alerts de grupo."}
             </p>
           </CardHeader>
           <CardContent>
@@ -226,8 +188,8 @@ export function GroupHealthMap({ data }: { data: GroupMapData }) {
               showEntity
               emptyText={
                 data.group.limitsAvailable
-                  ? "Sin alertas de grupo en la ventana de detalle."
-                  : "Las alertas de grupo requieren al menos 3 empresas con puntuación."
+                  ? "Sin alerts de grupo en la ventana de detalle."
+                  : "Las alerts de grupo requieren al menos 3 empresas con puntuación."
               }
             />
           </CardContent>
