@@ -37,7 +37,7 @@ export function QuickAnalysis({
   onRangeChange?: (range: MonthRange | null) => void;
   onExplain?: (prompt: string) => void;
 }) {
-  const [tab, setTab] = useState<Tab | null>(null);
+  const [tab, setTab] = useState<Tab | null>("search");
   const [picked, setPicked] = useState<string[]>([]);
   const [query, setQuery] = useState("");
   const searchRef = useRef<HTMLInputElement>(null);
@@ -78,6 +78,11 @@ export function QuickAnalysis({
   useEffect(() => {
     onCompaniesChangeRef.current?.(selected);
   }, [selected]);
+
+  // Opens as if Buscar had been clicked: the search box is ready to type in.
+  useEffect(() => {
+    searchRef.current?.focus();
+  }, []);
 
   function choose(next: Tab) {
     if (next === tab) return;
