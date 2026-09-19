@@ -3,8 +3,10 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 
 import type {
+  AlertFeed,
   CompanyDetail,
   CompanyIndex,
+  GroupIndex,
   Manifest,
   ScoreRepository,
 } from "./types";
@@ -42,6 +44,15 @@ export class LocalBundleRepository implements ScoreRepository {
     }
 
     return this.readJson<CompanyDetail>(path.join("companies", `${companyId}.json`));
+  }
+
+  async listGroups() {
+    const index = await this.readJson<GroupIndex>("groups.json");
+    return index.groups;
+  }
+
+  getAlerts(): Promise<AlertFeed> {
+    return this.readJson<AlertFeed>("alerts.json");
   }
 
   private async readJson<T>(relativePath: string): Promise<T> {
