@@ -1,7 +1,6 @@
 # AGENTS
 
-Private working repo for **HackSpain 2026 · X Ray (Embat)**.
-Public face (late sync only): `../Embat-FinScore`.
+The one repo for **HackSpain 2026 · X Ray (Embat)**. Private now; it will be made public as is at the end. The former public sibling `eZWALT/Embat-FinScore` is retired: do not sync to it.
 
 Build in this repo. Do not grow this file with live status.
 
@@ -46,8 +45,6 @@ Guardrails: holdout `analysis/splits/holdout_companies.csv` is never fit on. Y i
 | App folder | `product/README.md` — Docker/runtime still empty |
 | Feature store / Y / models | `analysis/` + plan `.agents/persistent-memory/2026-09-18-2350-feature-store-and-y-plan.md` |
 | Night run status | `overnight/README.md` + `overnight/CONTRACT.md` |
-| Public sibling | `../Embat-FinScore` (GitHub: `eZWALT/Embat-FinScore`) |
-
 ## What goes to the web app's storage
 
 Port **only two things** to the storage of the web app (and of any agent that explains the data): the **export bundle** and the **clean-only DuckDB**. Nothing else: not the raw CSVs (647 MB), not `data/embat.duckdb` (420 MB, holds the raw `main` copy too), not the feature store, not the repo's `analysis/` outputs.

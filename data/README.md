@@ -18,7 +18,7 @@ curl -L -o data/raw/output_hackspain_data.zip \
 unzip -n data/raw/output_hackspain_data.zip -d data/raw
 ```
 
-On this laptop an extract already exists at `../Embat-FinScore/data/raw/output/` (public sibling, local only). Copy from there if you do not want to download again.
+The CSVs sit directly in `data/` on the team laptops (gitignored). Download the zip above if they are missing.
 
 ## Layout
 

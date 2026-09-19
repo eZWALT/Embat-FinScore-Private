@@ -44,8 +44,6 @@ Decisions live in [`.agents/persistent-memory/`](.agents/persistent-memory/). No
 | [`data/`](data/) | Track dump + dictionary |
 | [`analysis/`](analysis/) | Goal 1 (empty) |
 | [`product/`](product/) | Goals 2–4 (empty). `Dockerfile` is empty |
-| Public sibling | `eZWALT/Embat-FinScore` — publish at the end |
-
 Brief: [X Ray artifact](https://claude.ai/artifact/8N8Q7QMjprCUWxGAiJaWoP?sk=5wYke4E8ukAw6afs6TrG1g).  
 Dataset: [output_hackspain_data.zip](https://f5xe6kyx7jpysotw.public.blob.vercel-storage.com/output_hackspain_data.zip).
 
