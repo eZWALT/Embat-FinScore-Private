@@ -233,6 +233,86 @@ body {
   }
 }
 
+@keyframes landing-portrait-in {
+  from {
+    opacity: 0;
+    filter: blur(16px);
+    transform: translateY(28px) scale(1.06);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: none;
+  }
+}
+
+@keyframes landing-portrait-drift {
+  0% {
+    transform: scale(1.08) translate3d(0, 0, 0);
+  }
+  50% {
+    transform: scale(1.14) translate3d(0, -2.5%, 0);
+  }
+  100% {
+    transform: scale(1.08) translate3d(0, 0, 0);
+  }
+}
+
+.landing-hero,
+.landing-team-screen {
+  transition: opacity 700ms ease-out;
+}
+
+.landing-team-screen {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.landing-team-screen li {
+  opacity: 0;
+}
+
+html[data-landing="team"] .landing-hero,
+.landing-root:has(#team:target) .landing-hero {
+  opacity: 0;
+  pointer-events: none;
+}
+
+html[data-landing="team"] .landing-team-screen,
+.landing-root:has(#team:target) .landing-team-screen {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+html[data-landing="team"] .landing-team-nav,
+.landing-root:has(#team:target) .landing-team-nav {
+  color: #000;
+}
+
+html[data-landing="team"] .landing-team-screen li,
+.landing-root:has(#team:target) .landing-team-screen li {
+  animation: landing-portrait-in 1.15s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+html[data-landing="team"] .landing-team-screen li:nth-child(1),
+.landing-root:has(#team:target) .landing-team-screen li:nth-child(1) {
+  animation-delay: 180ms;
+}
+
+html[data-landing="team"] .landing-team-screen li:nth-child(2),
+.landing-root:has(#team:target) .landing-team-screen li:nth-child(2) {
+  animation-delay: 340ms;
+}
+
+html[data-landing="team"] .landing-team-screen li:nth-child(3),
+.landing-root:has(#team:target) .landing-team-screen li:nth-child(3) {
+  animation-delay: 500ms;
+}
+
+.landing-portrait-drift {
+  animation: landing-portrait-drift 14s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .agent-md-streaming :where(p, li, strong, em, a) {
     animation: none;
@@ -247,5 +327,14 @@ body {
     animation: none;
     background: var(--muted-foreground);
     opacity: 0.45;
+  }
+
+  .landing-portrait-drift,
+  html[data-landing="team"] .landing-team-screen li,
+  .landing-root:has(#team:target) .landing-team-screen li {
+    animation: none;
+    opacity: 1;
+    filter: none;
+    transform: none;
   }
 }
