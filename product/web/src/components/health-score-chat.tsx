@@ -33,6 +33,10 @@ export function HealthScoreChat({
   open,
   onOpenChange,
   defaultOpen = false,
+  seedPrompt,
+  seedKey,
+  suggestions,
+  description,
 }: {
   companyId?: string;
   groupId?: string;
@@ -40,6 +44,10 @@ export function HealthScoreChat({
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   defaultOpen?: boolean;
+  seedPrompt?: string;
+  seedKey?: number;
+  suggestions?: readonly string[];
+  description?: string;
 }) {
   const [internal, setInternal] = useState(defaultOpen);
   const isOpen = open ?? internal;
@@ -49,11 +57,21 @@ export function HealthScoreChat({
     if (defaultOpen) setOpen(true);
   }, [defaultOpen, setOpen]);
 
-  const suggestions = companyId ? [...COMPANY_QUESTIONS] : [...INDEX_QUESTIONS];
+  useEffect(() => {
+    if (seedPrompt) setOpen(true);
+  }, [seedPrompt, setOpen]);
+
+  const chips = suggestions
+    ? [...suggestions]
+    : companyId
+      ? [...COMPANY_QUESTIONS]
+      : [...INDEX_QUESTIONS];
   const when = asOf ? formatMonth(asOf) : null;
-  const description = companyId
-    ? `Por qué este índice${when ? ` en ${when}` : ""}, qué ha cambiado y qué hay que revisar.`
-    : "Qué empresas se han alejado de su normalidad.";
+  const subtitle =
+    description ??
+    (companyId
+      ? `Por qué este índice${when ? ` en ${when}` : ""}, qué ha cambiado y qué hay que revisar.`
+      : "Qué empresas se han alejado de su normalidad.");
 
   return (
     <div className="pointer-events-none fixed right-4 bottom-4 z-50 flex flex-col items-end gap-3 sm:right-6 sm:bottom-6">
@@ -61,7 +79,7 @@ export function HealthScoreChat({
         <Card className="pointer-events-auto flex h-[min(82vh,720px)] w-[min(calc(100vw-2rem),36rem)] flex-col shadow-lg">
           <CardHeader className="border-b pb-3">
             <CardTitle>Pregunta</CardTitle>
-            <CardDescription>{description}</CardDescription>
+            <CardDescription>{subtitle}</CardDescription>
             <CardAction>
               <Button
                 type="button"
@@ -82,12 +100,14 @@ export function HealthScoreChat({
               groupId={groupId}
               asOf={asOf}
               layout="sheet"
+              seedPrompt={seedPrompt}
+              seedKey={seedKey}
               placeholder={
                 companyId
                   ? "Ej. ¿Por qué bajó el índice este mes?"
                   : "Ej. ¿Quién necesita atención este mes?"
               }
-              suggestions={suggestions}
+              suggestions={chips}
             />
           </CardContent>
         </Card>

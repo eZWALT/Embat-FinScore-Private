@@ -33,6 +33,7 @@ Add a new dated file after meaningful work. Do not rewrite old ones. If the new 
 | `persistent-memory/2026-09-19-1710-ask-scope-guardrails.md` | SCOPE layer: refuse off-topic / jailbreak. |
 | `persistent-memory/2026-09-19-1715-consultas-design-b.md` | Consultas: interleaved tools + shimmer text. |
 | `persistent-memory/2026-09-19-1720-prompt-map-and-tool-bench.md` | Prompt layers + Helmcode time-to-first-tool. |
+| `persistent-memory/2026-09-19-1750-quick-same-chat.md` | Rápido and Profundo share the Pregunta popup. |
 
 Plain-language method (not a journal file): `product/score/METHOD.md`.
 

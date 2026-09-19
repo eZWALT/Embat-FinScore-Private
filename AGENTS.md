@@ -62,7 +62,7 @@ The bundle alone cannot answer questions about individual records; recomputing s
 
 ## Agents (Vercel app)
 
-Build Watcher and the chat **inside the existing product**, not as extra tabs. There is no Consultas item. Vigilancia is a section of Resumen (`#vigilancia`). The chat is the floating button on Resumen and Índice de salud. `/watcher` and `/ask` redirect. Prompts live as separate files under `product/web/src/lib/agent/prompts/`. Assemble them at runtime (`prompt-loader.ts`). Do not paste system prompts into `.ts` / `.tsx`. Alert copy is Javi’s Spanish production text (`language: es`); the Watcher formatter does not invent English.
+Build Watcher and the chat **inside the existing product**, not as extra tabs. There is no Consultas item. Vigilancia is a section of Resumen (`#vigilancia`). The chat is the same floating button on Rápido, Resumen and Índice de salud. Dragging a period in Rápido opens that chat with the period question. `/watcher` and `/ask` redirect. Prompts live as separate files under `product/web/src/lib/agent/prompts/`. Assemble them at runtime (`prompt-loader.ts`). Do not paste system prompts into `.ts` / `.tsx`. Alert copy is Javi’s Spanish production text (`language: es`); the Watcher formatter does not invent English.
 
 | File | Layer | One job |
 |---|---|---|

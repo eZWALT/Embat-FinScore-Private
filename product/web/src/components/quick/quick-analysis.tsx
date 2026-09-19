@@ -1,11 +1,10 @@
 "use client";
 
-import { Chat } from "@ai-sdk/react";
-import { DefaultChatTransport, type UIMessage } from "ai";
 import { useMemo, useState } from "react";
 import { Activity, MousePointerClick, Search, TrendingDown, TrendingUp, X, type LucideIcon } from "lucide-react";
 import { cn } from "cn";
 
+import { HealthScoreChat } from "@/components/health-score-chat";
 import { ModeToggle, type AnalysisMode } from "@/components/mode-toggle";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { formatPoints } from "@/components/group/labels";
 import { SERIES_COLORS } from "@/components/health-score-view";
 import { QuickChart, type MonthRange } from "@/components/quick/quick-chart";
-import { buildPrompt, QuickExplain } from "@/components/quick/quick-explain";
+import { buildPrompt } from "@/components/quick/quick-explain";
 import { QuickList } from "@/components/quick/quick-list";
 import { formatMonth } from "@/lib/format-month";
 import type { DashboardCompany, DashboardData } from "@/lib/data/types";
@@ -41,7 +40,9 @@ export function QuickAnalysis({
   const [tab, setTab] = useState<Tab | null>(null);
   const [picked, setPicked] = useState<string[]>([]);
   const [range, setRange] = useState<MonthRange | null>(null);
-  const [chat, setChat] = useState<Chat<UIMessage> | null>(null);
+  const [chatOpen, setChatOpen] = useState(false);
+  const [seedPrompt, setSeedPrompt] = useState<string | undefined>();
+  const [seedKey, setSeedKey] = useState(0);
 
   const byScore = useMemo(
     () => data.companies.slice().sort((a, b) => b.score - a.score || a.companyId.localeCompare(b.companyId)),
@@ -59,20 +60,16 @@ export function QuickAnalysis({
     return [];
   }, [tab, byScore, picked, data.companies]);
 
-  // A new selection starts a fresh explanation; clearing it stops the one in flight.
   function selectRange(next: MonthRange | null) {
-    chat?.stop().catch(() => undefined);
     if (!next || selected.length === 0) {
       setRange(null);
-      setChat(null);
+      setSeedPrompt(undefined);
       return;
     }
-    const fresh = new Chat<UIMessage>({
-      transport: new DefaultChatTransport({ api: "/api/explain", body: { asOf: data.asOfMonth } }),
-    });
-    void fresh.sendMessage({ text: buildPrompt(selected, next) });
     setRange(next);
-    setChat(fresh);
+    setSeedPrompt(buildPrompt(selected, next));
+    setSeedKey((key) => key + 1);
+    setChatOpen(true);
   }
 
   function choose(next: Tab) {
@@ -109,7 +106,7 @@ export function QuickAnalysis({
         </div>
       </header>
 
-      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-4 px-4 py-6 sm:px-6 lg:py-8">
+      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-4 px-4 py-6 pb-24 sm:px-6 lg:py-8">
         {tab === null ? (
           <section
             aria-label="Elige qué quieres ver"
@@ -205,20 +202,21 @@ export function QuickAnalysis({
               </div>
             </div>
 
-            {range && chat ? (
-              <QuickExplain
-                key={chat.id}
-                chat={chat}
-                companies={selected}
-                range={range}
-                onClose={() => selectRange(null)}
-              />
-            ) : null}
           </>
         )}
 
         <p className="text-xs leading-5 text-muted-foreground">{data.disclaimer}</p>
       </main>
+
+      <HealthScoreChat
+        companyId={selected.length === 1 ? selected[0].companyId : undefined}
+        groupId={selected.length === 1 ? (selected[0].groupId ?? undefined) : undefined}
+        asOf={data.asOfMonth}
+        seedPrompt={seedPrompt}
+        seedKey={seedKey}
+        open={chatOpen}
+        onOpenChange={setChatOpen}
+      />
     </div>
   );
 }

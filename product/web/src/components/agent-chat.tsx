@@ -11,7 +11,7 @@ import {
   type UIMessage,
 } from "ai";
 import { ArrowUp } from "lucide-react";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { AgentMarkdown } from "@/components/agent-markdown";
 import { AgentPlot } from "@/components/agent-plot";
@@ -59,6 +59,8 @@ export function AgentChat({
   placeholder,
   emptyHint,
   suggestions,
+  seedPrompt,
+  seedKey,
   layout = "page",
 }: {
   api: "/api/ask" | "/api/watcher/reply";
@@ -68,6 +70,8 @@ export function AgentChat({
   placeholder: string;
   emptyHint?: string;
   suggestions?: string[];
+  seedPrompt?: string;
+  seedKey?: number;
   layout?: "page" | "sheet";
 }) {
   const ctxRef = useRef<AgentContext>({ companyId, groupId, asOf });
@@ -95,6 +99,16 @@ export function AgentChat({
 
   const [input, setInput] = useState("");
   const busy = status === "submitted" || status === "streaming";
+  const lastSeed = useRef<string | null>(null);
+
+  useEffect(() => {
+    const text = seedPrompt?.trim();
+    if (!text || busy) return;
+    const token = `${seedKey ?? 0}:${text}`;
+    if (lastSeed.current === token) return;
+    lastSeed.current = token;
+    void sendMessage({ text }, { body: contextBody(ctxRef.current) });
+  }, [seedPrompt, seedKey, busy, sendMessage]);
 
   function submit(text: string) {
     const trimmed = text.trim();
