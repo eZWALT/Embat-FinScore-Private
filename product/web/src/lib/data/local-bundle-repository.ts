@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 
@@ -10,12 +11,21 @@ import type {
 
 const COMPANY_ID = /^COMP_[0-9]{4}$/;
 
+function defaultBundleDirectory(): string {
+  if (process.env.SCORE_BUNDLE_DIR) return process.env.SCORE_BUNDLE_DIR;
+  const candidates = [
+    path.resolve(process.cwd(), "../score/sample_bundle"),
+    path.resolve(process.cwd(), "../../product/score/sample_bundle"),
+    path.resolve(process.cwd(), "sample_bundle"),
+  ];
+  for (const dir of candidates) {
+    if (existsSync(path.join(dir, "manifest.json"))) return dir;
+  }
+  return candidates[0];
+}
+
 export class LocalBundleRepository implements ScoreRepository {
-  constructor(
-    private readonly bundleDirectory =
-      process.env.SCORE_BUNDLE_DIR ??
-      path.resolve(process.cwd(), "../score/sample_bundle"),
-  ) {}
+  constructor(private readonly bundleDirectory = defaultBundleDirectory()) {}
 
   getManifest(): Promise<Manifest> {
     return this.readJson<Manifest>("manifest.json");

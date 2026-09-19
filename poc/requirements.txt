@@ -1,4 +1,10 @@
 streamlit>=1.50
+streamlit-autorefresh
 duckdb
 pandas
 pyarrow
+altair
+langchain>=1.0
+langchain-core>=1.0
+langchain-openai>=1.0
+openai

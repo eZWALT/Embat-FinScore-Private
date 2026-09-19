@@ -1,29 +1,32 @@
 import streamlit as st
 
-from poc import data
+from poc import llm
+from poc.bundle import load
 
 
 def render() -> None:
-    st.title("Embat X Ray")
+    st.title("Health Sentinel")
     st.write(
         "Company health from the treasury trail: a 0–100 score with its trajectory, "
-        "the reasons behind each move, and an alert when a move is material and persistent. "
-        "Built for the finance team of a group that already runs on Embat."
+        "the reasons behind each move with the € behind them, and an alert when a move is material and persistent. "
+        "For the finance team of a group that already runs on Embat."
     )
 
-    st.subheader("What this POC is")
-    st.write(
-        "A place to iterate on two things before they move to `product/`: "
-        "the assistant (**Sentinel**) and the group view (**Portfolio**)."
-    )
+    st.subheader("Three parts")
+    st.write("**Portfolio** — group health map: groups, members, one company in depth.")
+    st.write("**Watcher** — push: novelties on a chosen set of companies and groups, on a schedule, with a digest.")
+    st.write("**Ask** — pull: questions about a company or group, answered from the bundle and the cleaned records.")
 
     st.subheader("Status")
-    if data.store_available():
-        st.write("Feature store found. Portfolio shows runway and cash flows per company and group.")
-    else:
-        st.write("Feature store not built. Run `python -m analysis.features.build_feature_store`.")
-    if data.scores_available():
-        st.write("Health score 0–100: v0 dummy card loaded (`product/score/`). Train-only percentiles, not validated.")
-    else:
-        st.write("Health score 0–100: run `PYTHONPATH=. python -m product.score`.")
-    st.write("Sentinel behaviour: not defined yet.")
+    try:
+        b = load()
+        m = b.manifest
+        st.write(
+            f"Bundle: `{b.root}` · scorecard {m['scorecard_version']} · as-of {m['as_of_month']} · "
+            f"{m['counts']['companies']} companies · {len(b.alerts)} alerts in the feed"
+            + (" · sample" if m.get("is_sample") else "")
+        )
+        st.caption(m["disclaimer"])
+    except FileNotFoundError as e:
+        st.write(str(e))
+    st.write(f"LLM: `{llm.model_name()}` via Helmcode" + ("" if llm.api_key() else " · **no key set** (HELMCODE_API_KEY)"))

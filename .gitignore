@@ -267,3 +267,8 @@ node_modules/
 .next/
 .pnpm-store/
 *.tsbuildinfo
+
+# POC local state and full bundle
+poc/.state/
+data/bundle/
+data/bundle_work/
