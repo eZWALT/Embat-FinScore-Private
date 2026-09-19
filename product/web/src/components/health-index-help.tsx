@@ -17,115 +17,115 @@ interface MethodCategory {
   items: MethodItem[];
 }
 
-/** Mirrors product/score/METHOD.md §3.1 and spec.py. Update all three together. */
+/** Mirrors product/score/METHOD.md §3.1 and spec.py (Spanish copy). Update all three together. */
 const METHOD: MethodCategory[] = [
   {
-    category: "Payment History",
+    category: "Historial de pagos",
     weight: "35%",
     items: [
       {
-        item: "Days paid after due date (Suppliers)",
-        calculation: "Amount-weighted days between due date and invoice payment, 3-mo",
-        rationale: "Direct analogue to payment history: how reliably the company pays its obligations.",
+        item: "Días de retraso al pagar (proveedores)",
+        calculation: "Días entre el vencimiento y el pago de la factura, ponderados por importe, 3 meses",
+        rationale: "Análogo directo al historial de pagos: con qué fiabilidad la empresa paga sus obligaciones.",
       },
       {
-        item: "Days customers pay after due date",
-        calculation: "Same calculation, applied to issued invoices",
-        rationale: "Late collection is a primary driver of liquidity stress.",
+        item: "Días de retraso al cobrar (clientes)",
+        calculation: "Mismo cálculo, aplicado a las facturas emitidas",
+        rationale: "El cobro tardío es uno de los principales motores de tensión de liquidez.",
       },
       {
-        item: "Payables > 30 days overdue",
-        calculation: "Share of open payables > 30 days past due, 3-mo",
-        rationale: "Banque de France threshold: lateness beyond 30 days significantly increases default risk.",
+        item: "Pagos pendientes > 30 días vencidos",
+        calculation: "Porcentaje de facturas a pagar abiertas con más de 30 días de vencimiento, 3 meses",
+        rationale: "Umbral del Banque de France: un retraso superior a 30 días aumenta de forma significativa el riesgo de impago.",
       },
       {
-        item: "Receivables > 30 days overdue",
-        calculation: "Share of open receivables > 30 days past due, 3-mo",
-        rationale: "Same risk indicator applied to incoming cash flow.",
+        item: "Cobros pendientes > 30 días vencidos",
+        calculation: "Porcentaje de facturas a cobrar abiertas con más de 30 días de vencimiento, 3 meses",
+        rationale: "El mismo indicador de riesgo aplicado a la entrada de caja.",
       },
     ],
   },
   {
-    category: "Amounts Owed & Liquidity",
+    category: "Deuda y liquidez",
     weight: "30%",
     items: [
       {
-        item: "Months of outflows covered by cash",
-        calculation: "Month-end cash ÷ mean monthly operating outflow (6-mo window, clipped -6 to 24), 3-mo",
-        rationale: "Measures runway without income (analogue of amounts owed).",
+        item: "Meses de salidas cubiertos por la caja",
+        calculation: "Caja a fin de mes ÷ salida operativa mensual media (ventana de 6 meses, acotado entre -6 y 24), 3 meses",
+        rationale: "Mide la autonomía sin ingresos (análogo a la deuda pendiente).",
       },
       {
-        item: "Month-ends with negative cash",
-        calculation: "Share of last 3 month-ends where cash < 0",
-        rationale: "Direct operational stress signal.",
+        item: "Cierres de mes con caja negativa",
+        calculation: "Porcentaje de los últimos 3 cierres de mes con caja < 0",
+        rationale: "Señal directa de tensión operativa.",
       },
       {
-        item: "Times cash turned negative",
-        calculation: "Onsets of negative cash over the last 6 month-ends",
-        rationale: "Distinguishes a single isolated deficit from a recurring structural issue.",
+        item: "Veces que la caja se volvió negativa",
+        calculation: "Inicios de caja negativa en los últimos 6 cierres de mes",
+        rationale: "Distingue un déficit aislado de un problema estructural recurrente.",
       },
       {
-        item: "Debt service / inflows",
-        calculation: "3-month debt repayment ÷ 3-month operating inflow, 3-mo",
-        rationale: "Evaluates overall debt burden against inflow capacity.",
+        item: "Servicio de la deuda / entradas",
+        calculation: "Amortización de deuda de 3 meses ÷ entradas operativas de 3 meses, 3 meses",
+        rationale: "Evalúa la carga total de deuda frente a la capacidad de entrada de caja.",
       },
       {
-        item: "Bank fees & interest / inflows",
-        calculation: "Fees + interest ÷ operating inflow, 3-mo",
-        rationale: "Evaluates cost of funding strain.",
+        item: "Comisiones e intereses bancarios / entradas",
+        calculation: "Comisiones + intereses ÷ entradas operativas, 3 meses",
+        rationale: "Evalúa la tensión del coste de financiación.",
       },
     ],
   },
   {
-    category: "Length & Stability",
+    category: "Antigüedad y estabilidad",
     weight: "15%",
     items: [
       {
-        item: "Months of history",
-        calculation: "Fixed: 100 × min(months, 12) ÷ 12",
-        rationale: "Shorter histories carry higher uncertainty (see the confidence flag).",
+        item: "Meses de historial",
+        calculation: "Fijo: 100 × min(meses, 12) ÷ 12",
+        rationale: "Los historiales cortos implican más incertidumbre (véase el indicador de confianza).",
       },
       {
-        item: "Months with incoming money",
-        calculation: "Fixed: 100 × share of the last 6 months with positive inflow",
-        rationale: "Safety guard: companies losing inflow velocity lose health points.",
+        item: "Meses con entrada de dinero",
+        calculation: "Fijo: 100 × porcentaje de los últimos 6 meses con entradas positivas",
+        rationale: "Salvaguarda: las empresas que pierden velocidad de entradas pierden puntos de salud.",
       },
       {
-        item: "Outflow volatility",
-        calculation: "Standard deviation ÷ mean of monthly operating outflows over 6 months (capped at 3)",
-        rationale: "Irregular spending spikes complicate financial planning.",
+        item: "Volatilidad de las salidas",
+        calculation: "Desviación típica ÷ media de las salidas operativas mensuales en 6 meses (limitado a 3)",
+        rationale: "Los picos irregulares de gasto complican la planificación financiera.",
       },
     ],
   },
   {
-    category: "New Credit",
-    weight: "10% → effective 5%",
+    category: "Crédito nuevo",
+    weight: "10% → efectivo 5%",
     items: [
       {
-        item: "Debt service rising",
-        calculation: "Rise of (debt service ÷ inflows) vs. the same window 6 months prior (0 if it fell)",
-        rationale: "Operational proxy for taking on new debt exposure.",
+        item: "Servicio de la deuda al alza",
+        calculation: "Aumento de (servicio de la deuda ÷ entradas) frente a la misma ventana de hace 6 meses (0 si bajó)",
+        rationale: "Aproximación operativa a la asunción de nueva deuda.",
       },
       {
-        item: "Fees and interest rising",
-        calculation: "Rise of (fees + interest ÷ inflows) vs. the same window 6 months prior",
-        rationale: "Proxy for expanding credit usage or penalty escalation.",
+        item: "Comisiones e intereses al alza",
+        calculation: "Aumento de (comisiones + intereses ÷ entradas) frente a la misma ventana de hace 6 meses",
+        rationale: "Aproximación a la expansión del uso de crédito o a la escalada de penalizaciones.",
       },
     ],
   },
   {
-    category: "Customer Mix",
+    category: "Mix de clientes",
     weight: "10%",
     items: [
       {
-        item: "Dependence on a single customer",
-        calculation: "Customer concentration (HHI), counting only the part above 0.975, 3-mo",
-        rationale: "Focuses strictly on the extreme tail (“single buyer” risk).",
+        item: "Dependencia de un solo cliente",
+        calculation: "Concentración de clientes (HHI), contando solo la parte por encima de 0,975, 3 meses",
+        rationale: "Se centra estrictamente en la cola extrema (riesgo de «comprador único»).",
       },
       {
-        item: "Credit notes / billing",
-        calculation: "Share of total billing reversed by credit notes, 3-mo",
-        rationale: "High reversal rates indicate customer disputes or billing errors.",
+        item: "Abonos / facturación",
+        calculation: "Porcentaje de la facturación total revertido por notas de abono, 3 meses",
+        rationale: "Tasas altas de reversión indican disputas con clientes o errores de facturación.",
       },
     ],
   },
@@ -153,12 +153,12 @@ export function HealthIndexHelp({ className }: { className?: string }) {
           <div className="flex items-start justify-between gap-4 border-b p-5">
             <div className="min-w-0">
               <Dialog.Title className="text-base font-semibold tracking-tight">
-                How the Health Index is calculated
+                Cómo se calcula el Índice de salud
               </Dialog.Title>
               <Dialog.Description className="mt-1 text-sm leading-6 text-muted-foreground">
-                A FICO-inspired framework. Item values are computed looking back from each month (“3-mo” is the mean of
-                the last three monthly values). Definitions and category weights are fixed in <code className="font-mono text-xs">spec.py</code>;
-                nothing is fitted.
+                Un marco inspirado en FICO. Los valores de cada indicador se calculan mirando hacia atrás desde cada mes
+                («3 meses» es la media de los tres últimos valores mensuales). Las definiciones y los pesos de las
+                categorías están fijados en <code className="font-mono text-xs">spec.py</code>; nada se ajusta con datos.
               </Dialog.Description>
             </div>
             <Dialog.Close asChild>
@@ -173,10 +173,10 @@ export function HealthIndexHelp({ className }: { className?: string }) {
               <table className="w-full min-w-[46rem] border-collapse text-left text-sm">
                 <thead className="bg-muted/50 text-xs text-muted-foreground">
                   <tr>
-                    <th scope="col" className="w-40 px-3 py-2 font-medium">Category (weight)</th>
-                    <th scope="col" className="w-52 px-3 py-2 font-medium">Metric item</th>
-                    <th scope="col" className="px-3 py-2 font-medium">Calculation</th>
-                    <th scope="col" className="px-3 py-2 font-medium">Rationale / FICO analogue</th>
+                    <th scope="col" className="w-40 px-3 py-2 font-medium">Categoría (peso)</th>
+                    <th scope="col" className="w-52 px-3 py-2 font-medium">Indicador</th>
+                    <th scope="col" className="px-3 py-2 font-medium">Cálculo</th>
+                    <th scope="col" className="px-3 py-2 font-medium">Justificación / análogo FICO</th>
                   </tr>
                 </thead>
                 {METHOD.map((group) => (
@@ -199,8 +199,9 @@ export function HealthIndexHelp({ className }: { className?: string }) {
               </table>
             </div>
             <p className="mt-3 text-xs leading-5 text-muted-foreground">
-              New Credit is thin (the trail barely observes it), so its weight is halved and the 5 points are spread over
-              the other categories. The index is a monitoring aid, not an insolvency predictor.
+              Crédito nuevo aporta poca información (el rastro bancario apenas lo observa), así que su peso se reduce a
+              la mitad y esos 5 puntos se reparten entre el resto de categorías. El índice es una ayuda de seguimiento,
+              no un predictor de insolvencia.
             </p>
           </div>
         </Dialog.Content>
