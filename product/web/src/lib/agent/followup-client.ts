@@ -3,14 +3,8 @@ import type { UIMessage } from "ai";
 import { contextBody, type AgentContext } from "./chat-parts";
 import { extractFollowups } from "./suggestions";
 
-function transcript(messages: UIMessage[]): { role: string; content: string }[] {
-  return messages.slice(-6).map((message) => ({
-    role: message.role,
-    content: message.parts
-      .map((part) => ("text" in part && typeof part.text === "string" ? part.text : ""))
-      .join("")
-      .trim(),
-  }));
+function lastTurns(messages: UIMessage[]): UIMessage[] {
+  return messages.slice(-6);
 }
 
 /** Start after the main answer so the chips sit above the composer. */
@@ -24,7 +18,7 @@ export async function streamFollowupChips(input: {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      messages: transcript(input.messages),
+      messages: lastTurns(input.messages),
       ...contextBody(input.context),
     }),
     signal: input.signal,

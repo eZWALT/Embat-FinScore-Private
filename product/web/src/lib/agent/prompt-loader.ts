@@ -27,7 +27,7 @@ async function readPrompt(name: string) {
   return readFile(path.join(promptsDir(), name), "utf8");
 }
 
-export async function loadSystemPrompt(role: AgentRole, extra?: string) {
+export async function loadSystemPrompt(role: AgentRole, extra?: string, options?: { thinking?: boolean }) {
   const parts = [
     await readPrompt(FILES.map),
     await readPrompt(FILES[role]),
@@ -41,6 +41,8 @@ export async function loadSystemPrompt(role: AgentRole, extra?: string) {
   if (role === "chat") parts.push(await readPrompt(FILES.schema));
   if (extra) parts.push(extra);
   // Last on purpose (needle): length rules after the long stack so they are not forgotten.
-  if (role === "chat") parts.push(await readPrompt(FILES.brevity));
+  if (role === "chat") {
+    parts.push(await readPrompt(options?.thinking ? "thinking.md" : FILES.brevity));
+  }
   return parts.join("\n\n---\n\n");
 }

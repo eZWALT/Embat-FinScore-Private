@@ -11,6 +11,7 @@ export async function POST(request: Request) {
     companyId?: string;
     groupId?: string;
     asOf?: string;
+    thinking?: boolean;
   };
   return streamAgentResponse({
     role: "sentinel",
@@ -18,5 +19,7 @@ export async function POST(request: Request) {
     companyId: body.companyId,
     groupId: body.groupId,
     asOf: body.asOf,
+    abortSignal: request.signal,
+    thinking: body.thinking === true,
   });
 }

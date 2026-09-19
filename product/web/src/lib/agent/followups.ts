@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { smoothStream, streamText } from "ai";
+import { getToolName, isToolUIPart, smoothStream, streamText, type UIMessage } from "ai";
 
 import { textFromParts } from "./chat-parts";
 import { createHelmcodeModel, helmcodeApiKey, helmcodeTemperature } from "./llm";
@@ -8,14 +8,32 @@ import { coerceUiMessages } from "./messages";
 
 const MAX_TURNS = 6;
 
+function clip(value: string, max: number) {
+  return value.length > max ? `${value.slice(0, max)}…` : value;
+}
+
+function toolLines(parts: UIMessage["parts"]): string {
+  return parts
+    .filter(isToolUIPart)
+    .map((part) => {
+      const name = getToolName(part);
+      const input = "input" in part && part.input != null ? clip(JSON.stringify(part.input), 400) : "";
+      const output = "output" in part && part.output != null ? clip(JSON.stringify(part.output), 1200) : "";
+      return `  herramienta ${name}${input ? ` entrada=${input}` : ""}${output ? ` salida=${output}` : ""}`;
+    })
+    .join("\n");
+}
+
 function transcriptOf(messages: unknown): string {
   return coerceUiMessages(messages)
     .slice(-MAX_TURNS)
     .map((message) => {
       const who = message.role === "assistant" ? "Sentinel" : message.role === "user" ? "Usuario" : message.role;
-      return `${who}: ${textFromParts(message.parts).trim()}`;
+      const text = textFromParts(message.parts).trim();
+      const tools = toolLines(message.parts);
+      return [text ? `${who}: ${text}` : "", tools].filter(Boolean).join("\n");
     })
-    .filter((line) => !line.endsWith(":"))
+    .filter(Boolean)
     .join("\n\n");
 }
 

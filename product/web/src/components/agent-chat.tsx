@@ -4,14 +4,17 @@ import { useChat } from "@ai-sdk/react";
 import {
   DefaultChatTransport,
   getToolName,
+  isReasoningUIPart,
   isTextUIPart,
   isToolUIPart,
   type DynamicToolUIPart,
   type ToolUIPart,
   type UIMessage,
 } from "ai";
-import { ArrowUp } from "lucide-react";
+import { ArrowUp, Brain, Square } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
+
+import { cn } from "cn";
 
 import { AgentBusy, AgentPulse } from "@/components/agent-busy";
 import { AgentMarkdown } from "@/components/agent-markdown";
@@ -33,6 +36,7 @@ type ChatSegment =
 function segmentsInStreamOrder(messageId: string, parts: UIMessage["parts"]): ChatSegment[] {
   const segments: ChatSegment[] = [];
   parts.forEach((part, partIndex) => {
+    if (isReasoningUIPart(part)) return;
     if (isToolUIPart(part)) {
       const prev = segments.at(-1);
       const item = {
@@ -108,11 +112,19 @@ export function AgentChat({
   const ctxRef = useRef<AgentContext>({ companyId, groupId, asOf, view });
   ctxRef.current = { companyId, groupId, asOf, view };
 
+  const [thinking, setThinking] = useState(false);
+  const thinkingRef = useRef(false);
+  thinkingRef.current = thinking;
+
+  function requestBody() {
+    return { ...contextBody(ctxRef.current), thinking: thinkingRef.current };
+  }
+
   const transport = useMemo(
     () =>
       new DefaultChatTransport({
         api,
-        body: () => contextBody(ctxRef.current),
+        body: () => requestBody(),
         prepareSendMessagesRequest: ({ messages, body }) => ({
           body: {
             messages,
@@ -123,7 +135,7 @@ export function AgentChat({
     [api],
   );
 
-  const { messages, sendMessage, status, error } = useChat({
+  const { messages, sendMessage, setMessages, stop, status, error, clearError } = useChat({
     id: `${api}:${companyId ?? ""}:${groupId ?? ""}:${asOf ?? ""}`,
     transport,
   });
@@ -151,15 +163,27 @@ export function AgentChat({
     if (lastSeed.current === token) return;
     lastSeed.current = token;
     resetFollowups();
-    void sendMessage({ text }, { body: contextBody(ctxRef.current) });
+    void sendMessage({ text }, { body: requestBody() });
   }, [seedPrompt, seedKey, busy, sendMessage]);
 
   function submit(text: string) {
     const trimmed = text.trim();
     if (!trimmed || busy) return;
     resetFollowups();
-    void sendMessage({ text: trimmed }, { body: contextBody(ctxRef.current) });
+    void sendMessage({ text: trimmed }, { body: requestBody() });
     setInput("");
+  }
+
+  function cancelTurn() {
+    if (!busy) return;
+    stop();
+    resetFollowups();
+    clearError();
+    setMessages((prev) => {
+      const next = [...prev];
+      if (next.at(-1)?.role === "assistant") next.pop();
+      return next;
+    });
   }
 
   const last = messages.at(-1);
@@ -168,7 +192,7 @@ export function AgentChat({
   messagesRef.current = messages;
 
   useEffect(() => {
-    if (api !== "/api/ask") return;
+    if (api !== "/api/ask" || busy) return;
     const id = lastAssistant?.id;
     if (!id || followupFor.current === id) return;
     followupFor.current = id;
@@ -193,11 +217,10 @@ export function AgentChat({
       .catch((caught) => {
         if (caught instanceof DOMException && caught.name === "AbortError") return;
       });
-  }, [api, lastAssistant?.id]);
+  }, [api, lastAssistant?.id, busy]);
 
-  const waitingOnSend = busy && messages.at(-1)?.role !== "assistant";
   const chips =
-    api !== "/api/ask" || waitingOnSend
+    api !== "/api/ask" || busy
       ? []
       : lastAssistant
         ? (followups.length ? followups : fallbackFollowups()).slice(0, 2)
@@ -296,20 +319,45 @@ export function AgentChat({
         className="flex shrink-0 items-center gap-2"
         onSubmit={(event) => {
           event.preventDefault();
+          if (busy) {
+            cancelTurn();
+            return;
+          }
           submit(input);
         }}
       >
+        <button
+          type="button"
+          aria-pressed={thinking}
+          aria-label={thinking ? "Pensamiento profundo activado" : "Activar pensamiento profundo"}
+          onClick={() => setThinking((on) => !on)}
+          className={cn(
+            "inline-flex size-8 shrink-0 items-center justify-center rounded-lg transition-colors",
+            thinking ? "bg-violet-50 text-violet-600" : "text-neutral-400 hover:text-neutral-700",
+          )}
+        >
+          <Brain className="size-4" strokeWidth={thinking ? 2.25 : 1.75} />
+        </button>
         <Input
           value={input}
           onChange={(event) => setInput(event.currentTarget.value)}
           placeholder={placeholder}
-          disabled={busy}
           autoComplete="off"
           aria-label={placeholder}
         />
-        <Button type="submit" size="sm" disabled={busy || !input.trim()}>
-          {busy ? <AgentBusy className="size-3.5" /> : <ArrowUp data-icon="inline-start" />}
-          Enviar
+        <Button
+          type="submit"
+          size="sm"
+          disabled={!busy && !input.trim()}
+          aria-label={busy ? "Detener" : "Enviar"}
+          className="min-w-[5.75rem]"
+        >
+          {busy ? (
+            <Square data-icon="inline-start" className="size-3 fill-current" />
+          ) : (
+            <ArrowUp data-icon="inline-start" />
+          )}
+          {busy ? "Detener" : "Enviar"}
         </Button>
       </form>
     </div>

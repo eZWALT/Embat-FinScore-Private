@@ -13,6 +13,8 @@ export async function streamAgentResponse({
   groupId,
   asOf,
   view,
+  abortSignal,
+  thinking = false,
 }: {
   role: AgentRole;
   messages: unknown;
@@ -20,6 +22,8 @@ export async function streamAgentResponse({
   groupId?: string;
   asOf?: string;
   view?: DashboardView;
+  abortSignal?: AbortSignal;
+  thinking?: boolean;
 }): Promise<Response> {
   if (!helmcodeApiKey()) {
     return Response.json({ error: "HELMCODE_API_KEY is not set" }, { status: 503 });
@@ -30,17 +34,18 @@ export async function streamAgentResponse({
     return Response.json({ error: "messages is required" }, { status: 400 });
   }
 
-  const system = await loadSystemPrompt(role, sessionExtra({ companyId, groupId, asOf, view }));
+  const system = await loadSystemPrompt(role, sessionExtra({ companyId, groupId, asOf, view }), { thinking });
   const modelMessages = await convertToModelMessages(uiMessages);
   const tools = role === "sentinel" ? sentinelTools() : role === "quick" ? quickTools() : chatTools();
 
   const started = Date.now();
   const result = streamText({
-    model: createHelmcodeModel(),
+    model: createHelmcodeModel({ thinking }),
     system,
     messages: modelMessages,
     tools,
     stopWhen: isStepCount(8),
+    abortSignal,
     temperature: helmcodeTemperature(),
     experimental_transform: smoothStream({
       delayInMs: 16,

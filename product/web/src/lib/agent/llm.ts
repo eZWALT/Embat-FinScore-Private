@@ -26,7 +26,23 @@ export function helmcodeTemperature(): number {
  * In `@ai-sdk/openai` v4, `createOpenAI()(modelId)` uses the Responses API (`/responses`).
  * There is no provider `stream` flag: `streamText` is what sends `stream: true`.
  */
-export function createHelmcodeModel() {
+function withThinkingBody(thinking: boolean): typeof fetch {
+  return async (input, init) => {
+    if (init?.body && typeof init.body === "string") {
+      try {
+        const body = JSON.parse(init.body) as Record<string, unknown>;
+        body.thinking = { type: thinking ? "enabled" : "disabled" };
+        if (thinking) body.reasoning_effort = "high";
+        init = { ...init, body: JSON.stringify(body) };
+      } catch {
+        /* leave the provider body as-is */
+      }
+    }
+    return fetch(input, init);
+  };
+}
+
+export function createHelmcodeModel(options?: { thinking?: boolean }) {
   const apiKey = helmcodeApiKey();
   if (!apiKey) {
     throw new Error("HELMCODE_API_KEY is not set");
@@ -36,6 +52,7 @@ export function createHelmcodeModel() {
     name: "helmcode",
     baseURL: process.env.HELMCODE_BASE_URL?.trim() || DEFAULT_BASE_URL,
     apiKey,
+    fetch: withThinkingBody(Boolean(options?.thinking)),
   });
 
   return helmcode.chat(helmcodeModelId());

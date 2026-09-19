@@ -12,6 +12,7 @@ export async function POST(request: Request) {
     groupId?: string;
     asOf?: string;
     view?: unknown;
+    thinking?: boolean;
   };
   return streamAgentResponse({
     role: "chat",
@@ -20,5 +21,7 @@ export async function POST(request: Request) {
     groupId: body.groupId,
     asOf: body.asOf,
     view: parseDashboardView(body.view),
+    abortSignal: request.signal,
+    thinking: body.thinking === true,
   });
 }
