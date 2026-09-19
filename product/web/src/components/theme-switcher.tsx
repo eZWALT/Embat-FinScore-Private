@@ -17,15 +17,15 @@ const getTheme = (): Theme =>
 
 const getServerTheme = (): Theme => "light";
 
+function applyTheme(nextTheme: Theme) {
+  document.documentElement.classList.toggle("dark", nextTheme === "dark");
+  document.documentElement.style.colorScheme = nextTheme;
+  window.localStorage.setItem("theme", nextTheme);
+  window.dispatchEvent(new Event("theme-change"));
+}
+
 export function ThemeSwitcher() {
   const theme = useSyncExternalStore(subscribe, getTheme, getServerTheme);
-
-  const chooseTheme = (nextTheme: Theme) => {
-    document.documentElement.classList.toggle("dark", nextTheme === "dark");
-    document.documentElement.style.colorScheme = nextTheme;
-    window.localStorage.setItem("theme", nextTheme);
-    window.dispatchEvent(new Event("theme-change"));
-  };
 
   return (
     <div
@@ -39,7 +39,7 @@ export function ThemeSwitcher() {
         className="h-7 gap-1.5 px-2 sm:px-2.5"
         aria-label="Usar tema claro"
         aria-pressed={theme === "light"}
-        onClick={() => chooseTheme("light")}
+        onClick={() => applyTheme("light")}
       >
         <Sun className="size-3.5" />
         <span className="text-xs">Claro</span>
@@ -51,11 +51,29 @@ export function ThemeSwitcher() {
         className="h-7 gap-1.5 px-2 sm:px-2.5"
         aria-label="Usar tema oscuro"
         aria-pressed={theme === "dark"}
-        onClick={() => chooseTheme("dark")}
+        onClick={() => applyTheme("dark")}
       >
         <Moon className="size-3.5" />
         <span className="text-xs">Oscuro</span>
       </Button>
     </div>
+  );
+}
+
+/** One-button theme switch for tight headers. */
+export function ThemeIconToggle() {
+  const theme = useSyncExternalStore(subscribe, getTheme, getServerTheme);
+  const next: Theme = theme === "dark" ? "light" : "dark";
+
+  return (
+    <Button
+      type="button"
+      variant="ghost"
+      size="icon-sm"
+      aria-label={next === "light" ? "Usar tema claro" : "Usar tema oscuro"}
+      onClick={() => applyTheme(next)}
+    >
+      {theme === "dark" ? <Sun /> : <Moon />}
+    </Button>
   );
 }

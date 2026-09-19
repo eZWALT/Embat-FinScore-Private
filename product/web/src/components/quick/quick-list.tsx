@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ArrowDown, ArrowUp, Check, Search } from "lucide-react";
+import { ArrowDown, ArrowUp, Check } from "lucide-react";
 import { cn } from "cn";
 
 import { Button } from "@/components/ui/button";
@@ -26,19 +26,20 @@ function sortValue(company: DashboardCompany, key: SortKey) {
   return company.companyId;
 }
 
-/** Searchable, sortable list of every company. Picking rows draws them on the chart. */
+/** Sortable list of the companies matching `query`. Picking rows draws them on the chart. */
 export function QuickList({
   companies,
+  query,
   picked,
   max,
   onToggle,
 }: {
   companies: DashboardCompany[];
+  query: string;
   picked: string[];
   max: number;
   onToggle: (companyId: string) => void;
 }) {
-  const [query, setQuery] = useState("");
   const [sort, setSort] = useState<{ key: SortKey; dir: "asc" | "desc" }>({ key: "score", dir: "desc" });
   const [shown, setShown] = useState(PAGE);
 
@@ -73,21 +74,6 @@ export function QuickList({
 
   return (
     <div className="flex min-h-0 flex-col gap-3">
-      <div className="relative">
-        <Search className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
-        <input
-          value={query}
-          onChange={(event) => {
-            setQuery(event.target.value);
-            setShown(PAGE);
-          }}
-          placeholder="Buscar por nombre o grupo"
-          aria-label="Buscar empresa por nombre o grupo"
-          autoComplete="off"
-          className="h-9 w-full rounded-lg border border-input bg-transparent pr-2.5 pl-8 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30"
-        />
-      </div>
-
       <div className="flex flex-wrap items-center gap-1" role="group" aria-label="Ordenar por">
         {SORTS.map((option) => {
           const active = sort.key === option.key;
@@ -108,17 +94,14 @@ export function QuickList({
         })}
       </div>
 
-      <div className="flex items-center justify-between px-2.5 text-[11px] font-medium text-muted-foreground" aria-hidden="true">
+      <div className="-mb-1.5 flex items-center justify-between px-2.5 text-[11px] font-medium text-muted-foreground" aria-hidden="true">
         <span className="pl-6">Empresa</span>
         <span className="flex gap-4">
           <span>Δ 3 m</span>
           <span className="w-10 text-right">Índice</span>
         </span>
       </div>
-      <ul
-        aria-label="Empresas"
-        className="-mt-1.5 max-h-[min(46vh,420px)] divide-y overflow-y-auto rounded-lg border"
-      >
+      <ul aria-label="Empresas" className="max-h-[min(46vh,420px)] divide-y overflow-y-auto rounded-lg border">
         {rows.slice(0, shown).map((company) => {
           const isPicked = picked.includes(company.companyId);
           const disabled = !isPicked && atCap;
@@ -130,13 +113,13 @@ export function QuickList({
                 aria-pressed={isPicked}
                 onClick={() => onToggle(company.companyId)}
                 className={cn(
-                  "flex w-full items-center gap-2.5 px-2.5 py-2 text-left text-sm transition-colors hover:bg-muted/60 disabled:cursor-not-allowed disabled:opacity-40",
+                  "flex w-full items-center gap-2.5 px-2.5 py-2 text-left text-sm transition-colors duration-150 hover:bg-muted/60 disabled:cursor-not-allowed disabled:opacity-40",
                   isPicked && "bg-muted",
                 )}
               >
                 <span
                   className={cn(
-                    "grid size-4 shrink-0 place-items-center rounded border",
+                    "grid size-4 shrink-0 place-items-center rounded border transition-colors duration-150",
                     isPicked ? "border-foreground bg-foreground text-background" : "border-input",
                   )}
                   aria-hidden="true"

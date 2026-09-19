@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
+  Activity,
   ArrowDownRight,
   ArrowUpRight,
   CalendarDays,
@@ -23,12 +24,15 @@ import {
   YAxis,
 } from "recharts";
 
+import { cn } from "cn";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ClientOnly } from "@/components/client-only";
 import { ModeToggle, type AnalysisMode } from "@/components/mode-toggle";
 import { QuickAnalysis } from "@/components/quick/quick-analysis";
+import { ThemeIconToggle } from "@/components/theme-switcher";
 import { confidenceLabels, scoreColor, trajectoryLabels } from "@/components/group/labels";
 import { HealthScoreChat } from "@/components/health-score-chat";
 import { HealthScoreView } from "@/components/health-score-view";
@@ -89,6 +93,10 @@ export function HealthDashboard({
   const [view, setView] = useState<AppView>("overview");
   const [chatOpen, setChatOpen] = useState(openChat);
   const [mode, setMode] = useState<AnalysisMode>(initialMode);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [quickCompanies, setQuickCompanies] = useState<DashboardData["companies"]>([]);
+  const [seedPrompt, setSeedPrompt] = useState<string | undefined>();
+  const [seedKey, setSeedKey] = useState(0);
   const company =
     data.companies.find((candidate) => candidate.companyId === companyId) ?? defaultCompany;
 
@@ -108,8 +116,24 @@ export function HealthDashboard({
 
   function changeMode(next: AnalysisMode) {
     setMode(next);
+    setSeedPrompt(undefined);
     window.history.replaceState(null, "", next === "quick" ? "/" : `/${queryFor({ modo: "profundo", company: companyId })}`);
   }
+
+  function explainRange(prompt: string) {
+    setSeedPrompt(prompt);
+    setSeedKey((key) => key + 1);
+    setChatOpen(true);
+  }
+
+  const chatCompany =
+    mode === "deep"
+      ? view === "overview"
+        ? company
+        : undefined
+      : quickCompanies.length === 1
+        ? quickCompanies[0]
+        : undefined;
 
   function goVigilancia() {
     setView("overview");
@@ -123,13 +147,16 @@ export function HealthDashboard({
     label: formatMonth(point.month),
   }));
 
-  if (mode === "quick") {
-    return <QuickAnalysis data={data} mode={mode} onModeChange={changeMode} />;
-  }
-
+  // One shell for both modes: the header and the frame stay put, only the sidebar slides in and the body cross-fades.
   return (
-    <SidebarProvider>
+    <SidebarProvider
+      open={mode === "deep" && sidebarOpen}
+      onOpenChange={(next) => {
+        if (mode === "deep") setSidebarOpen(next);
+      }}
+    >
       <HealthSidebar
+        hidden={mode === "quick"}
         data={data}
         companyId={companyId}
         onCompanyChange={selectCompany}
@@ -139,34 +166,51 @@ export function HealthDashboard({
       />
       <SidebarInset>
         <header className="sticky top-0 z-10 flex h-14 items-center justify-between border-b bg-background/95 px-4 backdrop-blur sm:px-6">
-          <div className="flex min-w-0 items-center gap-3">
-            <SidebarTrigger />
-            <Separator orientation="vertical" className="h-4" />
-            <div className="min-w-0">
-              <p className="truncate font-mono text-sm font-medium">
-                {view === "health-score" ? "Índice de salud" : company.companyId}
-              </p>
-              <p className="truncate text-xs text-muted-foreground">
-                {view === "health-score"
-                  ? `${data.companies.length} empresas`
-                  : (company.groupId ?? "Sin grupo")}
-              </p>
+          {mode === "deep" ? (
+            <div key="deep" className="flex min-w-0 items-center gap-3 animate-in fade-in-0 duration-300 motion-reduce:animate-none">
+              <SidebarTrigger />
+              <Separator orientation="vertical" className="h-4" />
+              <div className="min-w-0">
+                <p className="truncate font-mono text-sm font-medium">
+                  {view === "health-score" ? "Índice de salud" : company.companyId}
+                </p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {view === "health-score"
+                    ? `${data.companies.length} empresas`
+                    : (company.groupId ?? "Sin grupo")}
+                </p>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div key="quick" className="flex items-center gap-2.5 animate-in fade-in-0 duration-300 motion-reduce:animate-none">
+              <div className="grid size-8 shrink-0 place-items-center rounded-lg border bg-background">
+                <Activity className="size-4" aria-hidden="true" />
+              </div>
+              <span className="hidden text-sm font-semibold sm:inline">Centinela de salud</span>
+            </div>
+          )}
           <div className="flex items-center gap-3">
             <ModeToggle mode={mode} onChange={changeMode} />
             <Badge variant="outline" className="hidden font-mono text-[11px] font-normal text-muted-foreground sm:inline-flex">
               {formatMonth(data.asOfMonth)}
             </Badge>
+            <ThemeIconToggle />
           </div>
         </header>
 
+        {mode === "quick" ? (
+          <div key="quick" className="flex flex-1 flex-col animate-in fade-in-0 duration-300 motion-reduce:animate-none">
+            <QuickAnalysis data={data} onCompaniesChange={setQuickCompanies} onExplain={explainRange} />
+          </div>
+        ) : (
         <main
-          className={
+          key="deep"
+          className={cn(
+            "animate-in fade-in-0 duration-300 motion-reduce:animate-none",
             view === "health-score"
               ? "w-full px-4 py-6 sm:px-6 lg:px-8 lg:py-8"
-              : "mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10"
-          }
+              : "mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10",
+          )}
         >
           {view === "health-score" ? (
             <HealthScoreView data={data} initialCompanyId={company.companyId} />
@@ -331,11 +375,14 @@ export function HealthDashboard({
             </>
           )}
         </main>
+        )}
         <HealthScoreChat
-          key={`${view}:${view === "overview" ? company.companyId : "indice"}`}
-          companyId={view === "overview" ? company.companyId : undefined}
-          groupId={view === "overview" ? company.groupId ?? undefined : undefined}
+          key={`${mode}:${view}:${chatCompany?.companyId ?? "index"}`}
+          companyId={chatCompany?.companyId}
+          groupId={chatCompany?.groupId ?? undefined}
           asOf={data.asOfMonth}
+          seedPrompt={seedPrompt}
+          seedKey={seedKey}
           open={chatOpen}
           onOpenChange={setChatOpen}
         />
