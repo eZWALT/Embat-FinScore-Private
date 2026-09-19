@@ -19,6 +19,7 @@ export function AgentChat({
   placeholder,
   emptyHint,
   suggestions,
+  layout = "page",
 }: {
   api: "/api/ask" | "/api/watcher/reply";
   companyId?: string;
@@ -27,6 +28,7 @@ export function AgentChat({
   placeholder: string;
   emptyHint?: string;
   suggestions?: string[];
+  layout?: "page" | "sheet";
 }) {
   const ctxRef = useRef<AgentContext>({ companyId, groupId, asOf });
   ctxRef.current = { companyId, groupId, asOf };
@@ -63,9 +65,11 @@ export function AgentChat({
 
   const showSuggestions = Boolean(suggestions?.length) && messages.length === 0 && !busy;
 
+  const sheet = layout === "sheet";
+
   return (
-    <div className="flex flex-col gap-3">
-      <ol className="space-y-3" aria-live="polite">
+    <div className={sheet ? "flex h-full min-h-0 flex-col gap-3" : "flex flex-col gap-3"}>
+      <ol className={sheet ? "min-h-0 flex-1 space-y-3 overflow-y-auto" : "space-y-3"} aria-live="polite">
         {messages.length === 0 && emptyHint ? (
           <li className="text-sm text-muted-foreground">{emptyHint}</li>
         ) : null}
@@ -79,7 +83,7 @@ export function AgentChat({
             }
           >
             <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-              {message.role === "user" ? "You" : "Sentinel"}
+              {message.role === "user" ? "Tú" : "Centinela"}
             </p>
             {message.role === "assistant"
               ? message.parts
@@ -109,14 +113,14 @@ export function AgentChat({
           </li>
         ))}
         {busy && messages.at(-1)?.role !== "assistant" ? (
-          <li className="text-xs text-muted-foreground">Looking up…</li>
+          <li className="text-xs text-muted-foreground">Consultando…</li>
         ) : null}
       </ol>
 
       {showSuggestions ? (
         <div className="flex flex-col gap-2">
           <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-            Suggested
+            Sugeridas
           </p>
           <div className="flex flex-col gap-2 sm:flex-row">
             {suggestions!.map((question) => (
@@ -157,7 +161,7 @@ export function AgentChat({
         />
         <Button type="submit" size="sm" disabled={busy || !input.trim()}>
           <ArrowUp data-icon="inline-start" />
-          Send
+          Enviar
         </Button>
       </form>
     </div>

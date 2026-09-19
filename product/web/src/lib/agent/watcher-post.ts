@@ -5,13 +5,14 @@ import type {
   GroupRow,
   MonthRecord,
   Owner,
+  Trajectory,
 } from "@/lib/data/types";
 
 export type BulletSeverity = "act" | "watch" | "opportunity" | "follow";
 
 export interface WatcherBullet {
   severity: BulletSeverity;
-  owner: "Treasurer" | "CFO" | "Collections";
+  owner: "Tesorero" | "CFO" | "Cobros";
   entity: string;
   text: string;
 }
@@ -32,18 +33,33 @@ export interface WatcherPost {
 }
 
 const OWNER: Record<Owner, WatcherBullet["owner"]> = {
-  treasurer: "Treasurer",
+  treasurer: "Tesorero",
   cfo: "CFO",
-  collections: "Collections",
+  collections: "Cobros",
 };
 
-export function fmtEur(value: number | null | undefined, currency = "€"): string {
+const TRAJECTORY: Record<Trajectory, string> = {
+  improving: "mejorando",
+  stable: "estable",
+  dip: "caída",
+  deteriorating: "deteriorándose",
+  "insufficient history": "historial corto",
+};
+
+const GUARD_PREFIX = { dark: "inactiva · ", fading: "desvaneciéndose · " } as const;
+
+/** Javi's `explain.eur`: 14 k€, 1,2 M€, 164 €. */
+export function fmtEur(value: number | null | undefined): string {
   if (value == null || Number.isNaN(value)) return "";
   const abs = Math.abs(value);
   const sign = value < 0 ? "-" : "";
-  if (abs >= 1e6) return `${sign}${currency}${(abs / 1e6).toFixed(1)}M`;
-  if (abs >= 1e3) return `${sign}${currency}${Math.round(abs / 1e3)}k`;
-  return `${sign}${currency}${Math.round(abs)}`;
+  if (abs >= 1e6) return `${sign}${esNum(abs / 1e6, 1)} M€`;
+  if (abs >= 1e3) return `${sign}${Math.round(abs / 1e3)} k€`;
+  return `${sign}${Math.round(abs)} €`;
+}
+
+function esNum(value: number, digits: number): string {
+  return value.toFixed(digits).replace(".", ",");
 }
 
 export function monthAdd(month: string, k: number): string {
@@ -63,11 +79,11 @@ function signed(n: number | null | undefined, digits = 0): string | null {
   return `${v > 0 ? "+" : ""}${v}`;
 }
 
-function groupState(delta: number | null): "up" | "down" | "held" {
-  if (delta == null) return "held";
-  if (delta >= 2) return "up";
-  if (delta <= -2) return "down";
-  return "held";
+function groupState(delta: number | null): "al alza" | "a la baja" | "estable" {
+  if (delta == null) return "estable";
+  if (delta >= 2) return "al alza";
+  if (delta <= -2) return "a la baja";
+  return "estable";
 }
 
 function firstMoney(reasons: { label: string; eur: number | null; sentence: string }[] | undefined): string | null {
@@ -94,19 +110,32 @@ function clip(text: string, max: number): string {
   return `${text.slice(0, max - 1).trimEnd()}…`;
 }
 
-/** One line per Javi monitor rule. Same string for line 2 and for bullets. */
+function trajectoryLabel(value: string | undefined): string {
+  if (!value) return "estable";
+  return TRAJECTORY[value as Trajectory] ?? value;
+}
+
+/**
+ * One fact line per Javi monitor rule. Same template every time:
+ * `{kind} · {título en español} · {cifra}`
+ * Titles and € come from the export (`language: es`). Never invent English.
+ */
 export function formatRuleAlert(alert: Alert): string {
   const ev = alert.evidence;
+  const title = alert.title.trim();
   const money = firstMoney(alert.reasons);
 
   if (alert.kind === "top_customer_quiet") {
-    const open = evNum(ev, "open_receivable_eur");
-    const billed = evNum(ev, "last_quarter_amount");
     const share = evNum(ev, "share_last_quarter");
-    const parts = ["top_customer_quiet · top customer stopped billing, review exposure and collections"];
-    if (share != null && billed != null) parts.push(`${Math.round(share * 100)}% last quarter · ${fmtEur(billed)}`);
-    else if (billed != null) parts.push(fmtEur(billed));
-    if (open != null) parts.push(`${fmtEur(open)} open`);
+    const billed = evNum(ev, "last_quarter_amount");
+    const open = evNum(ev, "open_receivable_eur");
+    const parts = [`${alert.kind} · ${title}`];
+    if (share != null && billed != null) {
+      parts.push(`${Math.round(share * 100)} % último trimestre · ${fmtEur(billed)}`);
+    } else if (billed != null) {
+      parts.push(fmtEur(billed));
+    }
+    if (open != null) parts.push(`${fmtEur(open)} abiertos`);
     return parts.join(" · ");
   }
 
@@ -115,37 +144,26 @@ export function formatRuleAlert(alert: Alert): string {
     const score = evNum(ev, "score");
     const cap =
       pre != null && score != null
-        ? `capped ${Math.round(score)} (uncapped ${Math.round(pre)}) · `
+        ? `tope ${Math.round(score)} (sin tope ${Math.round(pre)})`
         : pre != null
-          ? `capped 30 (uncapped ${Math.round(pre)}) · `
-          : "";
-    return `going_dark · ${cap}no bank booking 60d`;
+          ? `tope 30 (sin tope ${Math.round(pre)})`
+          : "60 días sin movimiento bancario";
+    return `${alert.kind} · ${title} · ${cap}`;
   }
 
-  if (alert.kind === "category_drop") {
-    const cat = typeof ev.category === "string" ? ev.category : "category";
-    const score = evNum(ev, "category_score");
-    const base = evNum(ev, "baseline");
-    const gap = evNum(ev, "gap_points");
-    const head =
-      score != null && base != null
-        ? `${cat} ${Math.round(score)} vs usual ${Math.round(base)}${gap != null ? ` (${signed(gap)})` : ""}`
-        : cat;
-    return money ? `category_drop · ${head} · ${money}` : `category_drop · ${head}`;
-  }
-
-  const score = evNum(ev, "score") ?? evNum(ev, "mean_score");
+  const score = evNum(ev, "score") ?? evNum(ev, "mean_score") ?? evNum(ev, "category_score");
   const base = evNum(ev, "baseline");
   const gap = evNum(ev, "gap_points");
   const members = typeof ev.members_moving_most === "string" && ev.members_moving_most ? ev.members_moving_most : "";
-  const head =
+  const vs =
     score != null && base != null
-      ? `${Math.round(score)} vs usual ${Math.round(base)}${gap != null ? ` (${signed(gap)} pts)` : ""}`
-      : money || alert.action || alert.title;
-  const bits = [`${alert.kind} · ${head}`];
-  if (money && head !== money) bits.push(money);
-  if (members) bits.push(members);
-  return bits.join(" · ");
+      ? `${Math.round(score)} frente a ${Math.round(base)}${gap != null ? ` (${signed(gap)} pts)` : ""}`
+      : "";
+  const parts = [`${alert.kind} · ${title}`];
+  if (vs) parts.push(vs);
+  if (money) parts.push(money);
+  if (members) parts.push(members);
+  return parts.join(" · ");
 }
 
 function monthOf(detail: CompanyDetail, month: string): MonthRecord | undefined {
@@ -218,9 +236,9 @@ export function buildWatcherPost(input: {
   let line1: string;
   if (companyIds.length === 1 && groupIds.length === 0) {
     const c = companySnaps.find((x) => x.id === companyIds[0]) ?? focus;
-    const guard = c?.guard ? `${c.guard} · ` : "";
+    const guard = c?.guard ? GUARD_PREFIX[c.guard] : "";
     const d = signed(c?.delta);
-    line1 = `${guard}${c?.id ?? companyIds[0]} · ${Math.round(c?.score ?? 0)}  ${c?.trajectory ?? "stable"}${d ? `  (${d})` : ""}`;
+    line1 = `${guard}${c?.id ?? companyIds[0]} · ${Math.round(c?.score ?? 0)}  ${trajectoryLabel(c?.trajectory)}${d ? `  (${d})` : ""}`;
   } else if (groupIds.length === 1 && companyIds.length === 0) {
     const g = watchedGroups[0];
     const i = asOfMonths.indexOf(month);
@@ -235,24 +253,25 @@ export function buildWatcherPost(input: {
     const deltas = companySnaps.map((c) => c.delta).filter((n): n is number => n != null);
     const dMean = deltas.length ? deltas.reduce((a, b) => a + b, 0) / deltas.length : null;
     const n = companyIds.length + groupIds.length;
-    line1 = `${n} entities · mean ${Math.round(mean)}  ${groupState(dMean)}${signed(dMean) ? `  (${signed(dMean)})` : ""}`;
+    line1 = `${n} entidades · media ${Math.round(mean)}  ${groupState(dMean)}${signed(dMean) ? `  (${signed(dMean)})` : ""}`;
   }
 
-  let line2 = "no material move";
+  let line2 = "sin movimiento material";
   const topAlert = actWatch[0] ?? opportunities[0];
   if (focus?.guard && focus.pre != null) {
-    line2 = `capped ${Math.round(focus.score ?? 0)} (uncapped ${Math.round(focus.pre)}) · ${
-      focus.guard === "dark" ? "no bank booking 60d" : "inflows faded vs own history"
-    }`;
+    line2 =
+      focus.guard === "dark"
+        ? `tope ${Math.round(focus.score ?? 0)} (sin tope ${Math.round(focus.pre)}) · 60 días sin movimiento bancario`
+        : `tope ${Math.round(focus.score ?? 0)} (sin tope ${Math.round(focus.pre)}) · entradas hundidas frente a su histórico`;
   } else if (topAlert) {
     line2 = clip(formatRuleAlert(topAlert), 120);
   } else if (focus?.rec) {
     const fact = firstMoney(focus.rec.change_reasons) ?? firstMoney(focus.rec.reasons);
-    const noInv = /no invoice/i.test(focus.note ?? "");
-    const prefix = noInv ? "no invoices · " : focus.confidence === "low" ? "low confidence · " : "";
+    const noInv = /sin pagos de facturas|no invoice/i.test(focus.note ?? "");
+    const prefix = noInv ? "sin facturas · " : focus.confidence === "low" ? "confianza baja · " : "";
     line2 = fact
-      ? `${prefix}${focus.id} ${focus.trajectory} · ${fact}`
-      : `${prefix}${focus.id} ${focus.trajectory}`;
+      ? `${prefix}${focus.id} ${trajectoryLabel(focus.trajectory)} · ${fact}`
+      : `${prefix}${focus.id} ${trajectoryLabel(focus.trajectory)}`;
   }
 
   const bullets: WatcherBullet[] = [];
@@ -264,18 +283,18 @@ export function buildWatcherPost(input: {
       severity,
       owner: ownerOf(a),
       entity: a.entity.id,
-      text: formatRuleAlert(a),
+      text: clip(a.action.trim() || formatRuleAlert(a), 180),
     });
   }
   if (bullets.length === 0 && focus) {
     const fact = firstMoney(focus.rec?.change_reasons) ?? firstMoney(focus.rec?.reasons);
     const owner: WatcherBullet["owner"] =
-      /receivable|customer|collect/i.test(fact ?? "") ? "Collections" : "Treasurer";
+      /cobro|cliente|retraso|factur|receivable|customer|collect/i.test(fact ?? "") ? "Cobros" : "Tesorero";
     bullets.push({
       severity: "follow",
       owner,
       entity: focus.id,
-      text: fact ?? `${focus.trajectory} · ${Math.round(focus.score ?? 0)}`,
+      text: fact ?? `${trajectoryLabel(focus.trajectory)} · ${Math.round(focus.score ?? 0)}`,
     });
     const second = companySnaps.find((c) => c.id !== focus.id && (c.trajectory === "deteriorating" || c.trajectory === "dip"));
     if (second && bullets.length < 4) {
@@ -283,7 +302,7 @@ export function buildWatcherPost(input: {
         severity: "follow",
         owner: "CFO",
         entity: second.id,
-        text: `${second.trajectory} · ${Math.round(second.score ?? 0)}`,
+        text: `${trajectoryLabel(second.trajectory)} · ${Math.round(second.score ?? 0)}`,
       });
     }
   }

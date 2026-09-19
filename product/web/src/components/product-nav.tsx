@@ -3,11 +3,9 @@ import Link from "next/link";
 const LINKS = [
   { href: "/", label: "Empresa" },
   { href: "/grupos", label: "Grupos" },
-  { href: "/watcher", label: "Vigilancia" },
-  { href: "/ask", label: "Consultas" },
 ] as const;
 
-export function ProductNav({ current }: { current: (typeof LINKS)[number]["href"] }) {
+export function ProductNav({ current }: { current: string }) {
   return (
     <nav className="flex flex-wrap items-center gap-1 text-sm">
       {LINKS.map((link) => (

@@ -38,7 +38,6 @@ Guardrails: holdout `analysis/splits/holdout_companies.csv` is never fit on. Y i
 | Dataset notes | `data/README.md` |
 | 1. Signals | `analysis/` |
 | 2–3. Score 0–100 + explain | `product/score/` (v0 dummy card: `PYTHONPATH=. python -m product.score`) |
-<<<<<<< HEAD
 | 4. Web + LLM (company user) | `product/web/` on Vercel. Reads Neon. `poc/` (Streamlit) is frozen — do not add features there. |
 | Neon (app Postgres) | `infra/neon/` |
 | **Method, in plain language (cleaning, 17 items, score, monitor, decisions, limits)** | `product/score/METHOD.md` |
@@ -62,7 +61,7 @@ The bundle alone cannot answer questions about individual records; recomputing s
 
 ## Agents (Vercel app)
 
-Build the Watcher and Ask **in `product/web/`**. Prompts live as separate files under `product/web/src/lib/agent/prompts/`. Assemble them at runtime (`prompt-loader.ts`). Do not paste system prompts into `.ts` / `.tsx`.
+Build Watcher and Ask **inside the existing product**, not as extra tabs. Vigilancia is a section of Resumen (`#vigilancia`). Consultas is the floating chat on Resumen and Índice de salud. `/watcher` and `/ask` redirect. Prompts live as separate files under `product/web/src/lib/agent/prompts/`. Assemble them at runtime (`prompt-loader.ts`). Do not paste system prompts into `.ts` / `.tsx`. Alert copy is Javi’s Spanish production text (`language: es`); the Watcher formatter does not invent English.
 
 | File | Role |
 |---|---|
@@ -75,7 +74,7 @@ Build the Watcher and Ask **in `product/web/`**. Prompts live as separate files 
 
 Tools read **Neon** at runtime: `api` / `analytics` for scores, reasons, alerts (never recompute a score). Record questions go to `core` (invoices, transactions, balances, debt) through a guarded `SELECT` + `LIMIT` 200. DuckDB is a load/audit artifact, not the app's database. The same SQL guard applies if a local clean DuckDB is used in development.
 
-Watcher opening: last **3 calendar months**, one `WatcherPost` each, built by `watcher-post.ts` (deterministic). Same object is what production precomputes **offline** per company and per group when the monthly bundle is exported — first paint must not call the LLM. Live model = thread replies. UI shows tool calls as a tools icon plus `(tool_name)`.
+Watcher opening: last **3 calendar months**, one `WatcherPost` each, built by `watcher-post.ts` (deterministic, same template every time from the five monitor rules). Same object is what production precomputes **offline** per company and per group when the monthly bundle is exported — first paint must not call the LLM. Live model = thread replies. UI shows tool calls as a tools icon plus `(tool_name)`.
 
 ## Memory (three teammates)
 

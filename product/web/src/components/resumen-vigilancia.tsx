@@ -6,13 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { WatcherPostView } from "@/components/watcher-post-view";
 import type { WatcherPost } from "@/lib/agent/watcher-post";
 
-export function ResumenVigilancia({
-  companyId,
-  groupId,
-}: {
-  companyId: string;
-  groupId: string | null;
-}) {
+export function ResumenVigilancia({ companyId }: { companyId: string }) {
   const [posts, setPosts] = useState<WatcherPost[]>([]);
   const [asOf, setAsOf] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -21,7 +15,6 @@ export function ResumenVigilancia({
     let cancelled = false;
     const q = new URLSearchParams();
     if (companyId) q.set("company", companyId);
-    if (groupId) q.set("group", groupId);
     setPosts([]);
     setError(null);
     fetch(`/api/watcher/feed?${q}`)
@@ -39,7 +32,7 @@ export function ResumenVigilancia({
     return () => {
       cancelled = true;
     };
-  }, [companyId, groupId]);
+  }, [companyId]);
 
   return (
     <section id="vigilancia" className="mt-8 scroll-mt-20 space-y-3">
@@ -56,7 +49,9 @@ export function ResumenVigilancia({
             <CardTitle className="text-sm">Sin fichas aún</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-muted-foreground">Cuando Neon responde, aparecen aquí las reglas del mes.</p>
+            <p className="text-sm text-muted-foreground">
+              Las tres fichas del mes (las cinco reglas de vigilancia) aparecen aquí cuando Neon responde.
+            </p>
           </CardContent>
         </Card>
       ) : (

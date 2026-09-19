@@ -22,7 +22,6 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { Input } from "@/components/ui/input";
-import { HealthScoreChat } from "@/components/health-score-chat";
 import { formatMonth } from "@/lib/format-month";
 import type { DashboardCompany, DashboardData } from "@/lib/data/types";
 
@@ -354,8 +353,6 @@ export function HealthScoreView({ data }: { data: DashboardData }) {
           )}
         </CardContent>
       </Card>
-
-      <HealthScoreChat />
     </div>
   );
 }

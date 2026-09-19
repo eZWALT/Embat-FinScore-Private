@@ -4,10 +4,10 @@ import { WatcherSpark } from "@/components/agent-plot";
 import type { WatcherBullet, WatcherPost } from "@/lib/agent/watcher-post";
 
 const SEVERITY: Record<WatcherBullet["severity"], string> = {
-  act: "ACT",
-  watch: "WATCH",
-  opportunity: "OPP",
-  follow: "FOLLOW",
+  act: "ACTUAR",
+  watch: "VIGILAR",
+  opportunity: "OPORTUNIDAD",
+  follow: "SEGUIR",
 };
 
 export function WatcherPostView({ post }: { post: WatcherPost }) {
@@ -36,7 +36,9 @@ export function WatcherPostView({ post }: { post: WatcherPost }) {
       ) : null}
       {post.spark ? <WatcherSpark id={post.spark.id} points={post.spark.points} /> : null}
       {post.n_info > 0 ? (
-        <p className="text-xs text-muted-foreground">{post.n_info} quieter info flag{post.n_info === 1 ? "" : "s"}</p>
+        <p className="text-xs text-muted-foreground">
+          {post.n_info} aviso{post.n_info === 1 ? "" : "s"} informativo{post.n_info === 1 ? "" : "s"}
+        </p>
       ) : null}
     </article>
   );

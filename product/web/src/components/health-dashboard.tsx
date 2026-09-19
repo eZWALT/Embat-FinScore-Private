@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ArrowDownRight,
   ArrowUpRight,
@@ -23,8 +23,10 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ClientOnly } from "@/components/client-only";
+import { HealthScoreChat } from "@/components/health-score-chat";
 import { HealthScoreView } from "@/components/health-score-view";
 import { HealthSidebar, type AppView } from "@/components/health-sidebar";
+import { ResumenVigilancia } from "@/components/resumen-vigilancia";
 import {
   ChartConfig,
   ChartContainer,
@@ -65,13 +67,29 @@ function Delta({ value }: { value: number | null }) {
   );
 }
 
-export function HealthDashboard({ data }: { data: DashboardData }) {
+export function HealthDashboard({ data, openChat = false }: { data: DashboardData; openChat?: boolean }) {
   const defaultCompany =
     data.companies.find((company) => company.trajectory === "improving") ?? data.companies[0];
   const [companyId, setCompanyId] = useState(defaultCompany.companyId);
   const [view, setView] = useState<AppView>("overview");
+  const [chatOpen, setChatOpen] = useState(openChat);
   const company =
     data.companies.find((candidate) => candidate.companyId === companyId) ?? defaultCompany;
+
+  useEffect(() => {
+    if (openChat) setChatOpen(true);
+  }, [openChat]);
+
+  useEffect(() => {
+    if (window.location.hash === "#vigilancia") setView("overview");
+  }, []);
+
+  function goVigilancia() {
+    setView("overview");
+    requestAnimationFrame(() => {
+      document.getElementById("vigilancia")?.scrollIntoView({ behavior: "smooth" });
+    });
+  }
 
   const scoreHistory = company.scoreHistory.map((point) => ({
     ...point,
@@ -86,6 +104,8 @@ export function HealthDashboard({ data }: { data: DashboardData }) {
         onCompanyChange={setCompanyId}
         view={view}
         onViewChange={setView}
+        onOpenChat={() => setChatOpen(true)}
+        onVigilancia={goVigilancia}
       />
       <SidebarInset>
         <header className="sticky top-0 z-10 flex h-14 items-center justify-between border-b bg-background/95 px-4 backdrop-blur sm:px-6">
@@ -267,12 +287,22 @@ export function HealthDashboard({ data }: { data: DashboardData }) {
           </Card>
         </section>
 
+        <ResumenVigilancia companyId={company.companyId} />
+
         <p className="mt-8 max-w-4xl text-xs leading-5 text-muted-foreground">
           {data.disclaimer}
         </p>
             </>
           )}
         </main>
+        <HealthScoreChat
+          key={`${view}:${view === "overview" ? company.companyId : "indice"}`}
+          companyId={view === "overview" ? company.companyId : undefined}
+          groupId={view === "overview" ? company.groupId ?? undefined : undefined}
+          asOf={data.asOfMonth}
+          open={chatOpen}
+          onOpenChange={setChatOpen}
+        />
       </SidebarInset>
     </SidebarProvider>
   );

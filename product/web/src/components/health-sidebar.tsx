@@ -1,16 +1,13 @@
 "use client";
 
-import Link from "next/link";
 import {
   Activity,
-  Building2,
   ChartNoAxesCombined,
   Database,
   Eye,
   LayoutDashboard,
   MessageSquare,
 } from "lucide-react";
-import { usePathname } from "next/navigation";
 
 import {
   Select,
@@ -44,27 +41,24 @@ const views = [
   { id: "health-score" as const, label: "Índice de salud", icon: ChartNoAxesCombined },
 ];
 
-const productLinks = [
-  { href: "/", label: "Empresa", icon: Building2 },
-  { href: "/watcher", label: "Vigilancia", icon: Eye },
-  { href: "/ask", label: "Consultas", icon: MessageSquare },
-] as const;
-
 export function HealthSidebar({
   data,
   companyId,
   onCompanyChange,
   view,
   onViewChange,
+  onOpenChat,
+  onVigilancia,
 }: {
   data: DashboardData;
   companyId: string;
   onCompanyChange: (companyId: string) => void;
   view: AppView;
   onViewChange: (view: AppView) => void;
+  onOpenChat?: () => void;
+  onVigilancia?: () => void;
 }) {
   const { setOpenMobile } = useSidebar();
-  const pathname = usePathname();
 
   return (
     <Sidebar variant="inset" collapsible="icon">
@@ -128,30 +122,31 @@ export function HealthSidebar({
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        <SidebarSeparator />
-
-        <SidebarGroup>
-          <SidebarGroupLabel>Producto</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {productLinks.map((item) => (
-                <SidebarMenuItem key={item.href}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={pathname === item.href}
-                    tooltip={item.label}
-                  >
-                    <Link href={item.href} onClick={() => setOpenMobile(false)}>
-                      <item.icon />
-                      <span>{item.label}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  isActive={view === "overview"}
+                  tooltip="Vigilancia"
+                  onClick={() => {
+                    onVigilancia?.();
+                    setOpenMobile(false);
+                  }}
+                >
+                  <Eye />
+                  <span>Vigilancia</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  tooltip="Consultas"
+                  onClick={() => {
+                    onOpenChat?.();
+                    setOpenMobile(false);
+                  }}
+                >
+                  <MessageSquare />
+                  <span>Consultas</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
