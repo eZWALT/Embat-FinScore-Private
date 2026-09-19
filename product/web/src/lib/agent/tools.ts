@@ -657,6 +657,14 @@ export function totalToolCalls(steps: { toolCalls?: { toolName: string }[] }[]):
   return steps.reduce((sum, step) => sum + (step.toolCalls?.length ?? 0), 0);
 }
 
+/** Completed steps / calls after which the next step must write, not call again. */
+export const TOOL_STEP_BUDGET = 6;
+export const TOOL_CALL_BUDGET = 8;
+
+export function shouldForceTextStep(steps: { toolCalls?: { toolName: string }[] }[]): boolean {
+  return steps.length >= TOOL_STEP_BUDGET || totalToolCalls(steps) >= TOOL_CALL_BUDGET;
+}
+
 function withMemoize<T extends Record<string, { execute?: (...args: never[]) => unknown }>>(tools: T): T {
   const cache = new Map<string, Promise<unknown>>();
   return Object.fromEntries(

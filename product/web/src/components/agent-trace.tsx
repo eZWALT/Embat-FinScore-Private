@@ -2,10 +2,40 @@
 
 import { getToolName, isToolUIPart, type UIMessage } from "ai";
 import { Brain, ChevronRight } from "lucide-react";
+import { useEffect, useState } from "react";
 
 import { AgentBusy } from "@/components/agent-busy";
 import { toolIcon, toolInputSummary, toolLabel, toolOutputSummary, toolTimingMs } from "@/lib/agent/tool-catalog";
 import { formatDecimal } from "@/lib/display";
+
+const COUNT_TICK_MS = 140;
+
+/** Parallel same-kind calls often land in one parts update. Tick ×1 → ×n so the row does not jump. */
+function useTickingCount(target: number): number {
+  const [shown, setShown] = useState(target > 0 ? 1 : 0);
+
+  useEffect(() => {
+    if (target <= 0) {
+      setShown(0);
+      return;
+    }
+    setShown((n) => (n < 1 ? 1 : Math.min(n, target)));
+    if (target <= 1) return;
+    const id = window.setInterval(() => {
+      setShown((n) => {
+        if (n >= target) {
+          window.clearInterval(id);
+          return target;
+        }
+        return n + 1;
+      });
+    }, COUNT_TICK_MS);
+    return () => window.clearInterval(id);
+  }, [target]);
+
+  if (target <= 0) return 0;
+  return Math.min(Math.max(shown, 1), target);
+}
 
 type ToolPart = Extract<UIMessage["parts"][number], { type: string }>;
 
@@ -68,11 +98,13 @@ export function AgentTrace({
   keepBusy?: boolean;
 }) {
   const calls = parts.filter(isToolUIPart);
+  const count = useTickingCount(calls.length);
   if (!calls.length) return null;
   const name = getToolName(calls[0]);
   const Icon = toolIcon(name);
   const states = calls.map(toolState);
-  const showSpinner = states.some((state) => state === "running") || keepBusy;
+  const ticking = count < calls.length;
+  const showSpinner = states.some((state) => state === "running") || keepBusy || ticking;
   const errored = !keepBusy && states.some((state) => state === "error");
   const allDone = states.every((state) => state === "done");
   const ms = calls.reduce((sum, part) => {
@@ -88,7 +120,7 @@ export function AgentTrace({
         <Icon className="size-3 shrink-0" aria-hidden="true" />
         <span className="min-w-0 truncate font-medium text-foreground">
           {toolLabel(name)}
-          <span className="tabular-nums text-muted-foreground"> ×{calls.length}</span>
+          <span className="tabular-nums text-muted-foreground"> ×{count}</span>
         </span>
         <ChevronRight className="size-3 shrink-0 transition-transform group-open:rotate-90" />
         {showSpinner ? <AgentBusy /> : null}

@@ -22,7 +22,7 @@ import { AgentPlot } from "@/components/agent-plot";
 import { AgentThinking, AgentTrace } from "@/components/agent-trace";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { contextBody, plotFromPart, type AgentContext } from "@/lib/agent/chat-parts";
+import { contextBody, plotFromPart, textFromParts, type AgentContext } from "@/lib/agent/chat-parts";
 import { streamFollowupChips } from "@/lib/agent/followup-client";
 import { fallbackFollowups } from "@/lib/agent/suggestions";
 
@@ -204,6 +204,7 @@ export function AgentChat({
     if (api !== "/api/ask" || busy) return;
     const id = lastAssistant?.id;
     if (!id || followupFor.current === id) return;
+    if (!textFromParts(lastAssistant.parts).trim()) return;
     followupFor.current = id;
     followupAbort.current?.abort();
     const ac = new AbortController();
@@ -228,12 +229,15 @@ export function AgentChat({
       });
   }, [api, lastAssistant?.id, busy]);
 
+  const answerText = lastAssistant ? textFromParts(lastAssistant.parts).trim() : "";
   const chips =
     api !== "/api/ask" || busy
       ? []
-      : lastAssistant
+      : lastAssistant && answerText
         ? (followups.length ? followups : fallbackFollowups()).slice(0, 2)
-        : (suggestions ?? []).slice(0, 2);
+        : lastAssistant
+          ? []
+          : (suggestions ?? []).slice(0, 2);
   const sheet = layout === "sheet";
 
   return (

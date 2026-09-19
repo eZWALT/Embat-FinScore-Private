@@ -47,7 +47,8 @@ Add a new dated file after meaningful work. Do not rewrite old ones. If the new 
 | `persistent-memory/2026-09-19-2115-spanish-only-guardrails.md` | Pregunta / Sentinel / recusa: only Spanish, even if the user writes in another language. |
 | `persistent-memory/2026-09-20-0025-landing-team-screen.md` | Landing Team is `#team`: same-viewport fade to portraits + CEO/CTO/CSO, not a scroll. |
 | `persistent-memory/2026-09-20-0100-thinking-brain-followups.md` | Pregunta chips after the answer + tools. Brain = DeepSeek `thinking` on. |
-| `persistent-memory/2026-09-20-0112-tool-call-caps.md` | Same tool catalog. Cap 2 calls/tool/turn; stop at 6 steps or 8 calls. |
+| `persistent-memory/2026-09-20-0112-tool-call-caps.md` | Same tool catalog. Cap 2 calls/tool/turn. Identical replay is memoized. Stop-the-stream-at-8 is superseded. |
+| `persistent-memory/2026-09-20-0148-tools-then-text.md` | After 6 steps or 8 calls, strip tools and write. Do not stop the stream on call count. ×n ticks. |
 | `persistent-memory/2026-09-20-0115-thinking-no-verbose.md` | Brain on: drop the length cap. Do not ask for a longer reply. |
 | `persistent-memory/2026-09-20-0120-thinking-max-exa.md` | Exa + `max` superseded. |
 | `persistent-memory/2026-09-20-0130-drop-exa.md` | No Exa. No `search_web`. No `EXA_API_KEY`. |
