@@ -124,3 +124,12 @@ OUTCOME_FORBIDDEN_FAMILIES = {
     "y9_fee_r_ownp80": {"f"},
     "y9_fee_spike": {"f"},
 }
+
+# unit of the "value" reported next to an item (what the number in the reason sentence means)
+UNITS = {
+    "delay_paid": "days", "delay_coll": "days", "ap_overdue30": "share", "ar_overdue30": "share",
+    "runway": "months", "neg_liq": "share", "neg_episodes": "count", "ds_ratio": "share_of_inflows",
+    "fc_ratio": "share_of_inflows", "months_observed": "months", "active_share": "months_of_6",
+    "out_vol": "ratio", "ds_increase": "share_of_inflows", "fc_increase": "share_of_inflows",
+    "cust_tail": "share", "credit_note": "share",
+}

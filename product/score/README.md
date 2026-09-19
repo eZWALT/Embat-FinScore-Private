@@ -109,6 +109,7 @@ Set `PYTHONUTF8=1` and `PYTHONPATH=<repo>/.venv/Lib/site-packages:<repo>` (syste
 | Validation, group-fold, size baseline, weight sensitivity, holdout once | `python -m product.score.validate [--holdout]` (~8 min) |
 | Going-dark and no-look-ahead tests | `python -m product.score.guard_test` |
 | `score_new` on a subset folder with short trails and no invoices | `python -m product.score.score_new_check` |
+| **Static JSON bundle for the web app** (Next.js on Vercel), contract in [DATA_CONTRACT.md](DATA_CONTRACT.md), sample in [sample_bundle/](sample_bundle/) | `python -m product.score.export --csv-folder <dir> --out <bundle>` |
 
 `score_new` writes `scores.csv` (`company_id, month, score, trajectory, confidence`) and `scores_detail.parquet` (categories, per-item points and contributions, month-on-month attribution `d_*`, `reasons`, `change_reasons`). The output format is ours; the organizers' submission format is still unknown.
 
