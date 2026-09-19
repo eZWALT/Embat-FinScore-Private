@@ -38,12 +38,12 @@ Guardrails: holdout `analysis/splits/holdout_companies.csv` is never fit on. Y i
 | Dataset notes | `data/README.md` |
 | 1. Signals | `analysis/` |
 | 2–3. Score 0–100 + explain | `product/score/` (v0 dummy card: `PYTHONPATH=. python -m product.score`) |
-| 4. Web + LLM (company user) | `product/web/` (Next.js on Vercel; reads Neon) |
+<<<<<<< HEAD
+| 4. Web + LLM (company user) | `product/web/` on Vercel. Reads Neon. `poc/` (Streamlit) is frozen — do not add features there. |
 | Neon (app Postgres) | `infra/neon/` |
 | **Method, in plain language (cleaning, 17 items, score, monitor, decisions, limits)** | `product/score/METHOD.md` |
 | Bundle inspector (visual check of an export bundle) | `product/score/inspector/` |
-| Streamlit POC (Watcher, Ask, Portfolio on the bundle; agent prompts in `poc/agent/prompts/`) | `poc/README.md` |
-| App folder | `product/README.md` |
+| **Agents (prompts, tools, retrieval)** | `product/web/src/lib/agent/` — prompts are markdown files, never strings in source. Watcher format: `prompts/watcher_format.md`. |
 | Feature store / Y / models | `analysis/` + plan `.agents/persistent-memory/2026-09-18-2350-feature-store-and-y-plan.md` |
 | Night run status | `overnight/README.md` + `overnight/CONTRACT.md` |
 
@@ -59,6 +59,23 @@ Two **immutable source artifacts** still feed a load. A new CSV drop is a new bu
 | Clean-only DuckDB | Schema `clean` only: cleaned tables plus `clean.dq_log` | `python -m product.score.clean_db --work-dir <pipeline work dir> --out <file.duckdb>` | Schema `core` when those facts are loaded | Questions about the records behind a number (invoices, transactions, balances, debt). Query `core` / `clean`, never a raw copy |
 
 The bundle alone cannot answer questions about individual records; recomputing scores from `core` instead of reading `analytics` is wrong. Load path: `infra/neon/` (transform + migrations + load). The app reads `api` (current score run), not files. DuckDB is a pipeline/audit artifact, not production runtime. What is actually loaded on which branch is status: journal and `infra/neon/README.md`, not this file.
+
+## Agents (Vercel app)
+
+Build the Watcher and Ask **in `product/web/`**. Prompts live as separate files under `product/web/src/lib/agent/prompts/`. Assemble them at runtime (`prompt-loader.ts`). Do not paste system prompts into `.ts` / `.tsx`.
+
+| File | Role |
+|---|---|
+| `prompts/product_context.md` | Score, monitor, data facts, TellMe modes |
+| `prompts/wording_rules.md` | Fixed claims and wording |
+| `prompts/watcher_format.md` | **The** month-post shape: 1 line + 1 line + ≤4 bullets. Not free prose. |
+| `prompts/sentinel_system.md` | Watcher: replies only in live; opening posts are formatted |
+| `prompts/chat_system.md` | Ask: scores/alerts from Neon `api`/`analytics` first, then records |
+| `prompts/clean_schema.md` | Record tables (pipeline `clean.*`; hosted as Neon `core`) |
+
+Tools read **Neon** at runtime: `api` / `analytics` for scores, reasons, alerts (never recompute a score). Record questions go to `core` (invoices, transactions, balances, debt) through a guarded `SELECT` + `LIMIT` 200. DuckDB is a load/audit artifact, not the app's database. The same SQL guard applies if a local clean DuckDB is used in development.
+
+Watcher opening: last **3 calendar months**, one `WatcherPost` each, built by `watcher-post.ts` (deterministic). Same object is what production precomputes **offline** per company and per group when the monthly bundle is exported — first paint must not call the LLM. Live model = thread replies. UI shows tool calls as a tools icon plus `(tool_name)`.
 
 ## Memory (three teammates)
 
