@@ -5,9 +5,8 @@
     python -m product.score.export --validate <bundle_dir>
 
 Contract: product/score/DATA_CONTRACT.md, types: product/score/contract/types.ts (copied into the bundle).
-Only what exists today is written (manifest.sections says which); planned sections (control charts, clusters,
-alerts, forecast, owners/actions, non-company entities) have their shapes in types.ts and are added later
-without changing what is here.
+Sections (manifest.sections says which exist): scores, groups, control charts, clusters, alerts with owners and actions, forecast.
+Customers/suppliers as entities stay blocked (counterparty IDs do not map to company IDs). Steps 3-4 live in analysis/monitor/.
 """
 from __future__ import annotations
 
@@ -27,7 +26,7 @@ from .explain import PERSIST_MONTHS, SLOPE3_MATERIAL, SLOPE6_MATERIAL
 from .fit import load_reference
 from .run import score_folder
 
-SCHEMA_VERSION = "1.0.0"
+SCHEMA_VERSION = "1.1.0"
 SCORECARD_VERSION = "v1"
 CONTRACT_DIR = Path(__file__).resolve().parent / "contract"
 ITEM_NAMES = [i.name for i in spec.ITEMS]
@@ -46,9 +45,19 @@ def _f(x, nd=2):
     return round(x, nd) + 0.0 if np.isfinite(x) else None  # + 0.0 turns -0.0 into 0.0
 
 
+def _np_default(o):
+    if isinstance(o, np.integer):
+        return int(o)
+    if isinstance(o, np.floating):
+        return None if not np.isfinite(o) else float(o)
+    if isinstance(o, np.bool_):
+        return bool(o)
+    raise TypeError(f"not JSON serialisable: {type(o)}")
+
+
 def _write(path: Path, obj) -> dict:
     path.parent.mkdir(parents=True, exist_ok=True)
-    data = json.dumps(obj, ensure_ascii=False, separators=(",", ":"), allow_nan=False).encode("utf8")
+    data = json.dumps(obj, ensure_ascii=False, separators=(",", ":"), allow_nan=False, default=_np_default).encode("utf8")
     path.write_bytes(data)
     return {"bytes": len(data), "sha256": hashlib.sha256(data).hexdigest()}
 
@@ -120,7 +129,39 @@ def manifest_spec() -> dict:
     }
 
 
-def pick_sample(detail: pd.DataFrame, n: int) -> list[str]:
+def run_monitor_and_forecast(work_dir: Path, detail: pd.DataFrame, items: pd.DataFrame, companies: pd.DataFrame):
+    """Steps 3-4 on the full scored panel: control charts, clusters, alerts (analysis/monitor) and the score fan. Returns (monitor, forecast rows, params)."""
+    import duckdb
+
+    from analysis.monitor import engine, forecast as fc, fit as mfit
+
+    store = pd.read_parquet(Path(work_dir) / "feature_store" / "monthly.parquet")
+    store["company_id"] = store["company_id"].astype(str)
+    store["period"] = pd.to_datetime(store["period"])
+    con = duckdb.connect(str(Path(work_dir) / "embat.duckdb"), read_only=True)
+    con.execute("SET search_path = 'clean,main'")
+    try:
+        params = mfit.load()
+        group_of = companies.assign(company_id=companies["company_id"].astype(str)).set_index("company_id")["group_id"]
+        mon = engine.run_monitor(detail, items, store, con, group_of, params)
+    finally:
+        con.close()
+    fparams = json.loads(fc.PARAMS_PATH.read_text(encoding="utf8"))
+    S = mfit.wide(detail, "score", mon.grid)
+    rows = dict(zip(S.index, fc.forecast_rows(S.to_numpy(dtype=float), fparams, params["control"]["floors"]["score"])))
+    return mon, rows, {**params, "material": engine.MATERIAL}, fparams
+
+
+def forecast_json(row: dict, grid, fparams: dict) -> dict:
+    origin = grid[row["origin_index"]]
+    pts = [{"month": f"{origin + pd.DateOffset(months=p['h']):%Y-%m}", "median": _f(p["median"], 1), "lo50": _f(p["lo50"], 1), "hi50": _f(p["hi50"], 1),
+            "lo80": _f(p["lo80"], 1), "hi80": _f(p["hi80"], 1)} for p in row["points"]]
+    return {"metric": "score", "method": fparams["method"], "origin_month": f"{origin:%Y-%m}", "horizon_months": fparams["horizon"], "points": pts,
+            "naive_last": _f(row["naive_last"], 1), "skill_vs_naive": _f(fparams["skill_h3"], 3),
+            "note": "skill_vs_naive: CV skill of the smoothed level against the naive last value at 3 months; " + fparams["why"] + ". A persistence fan, not a prediction of outcomes."}
+
+
+def pick_sample(detail: pd.DataFrame, n: int, alert_companies: dict[str, list[str]] | None = None) -> list[str]:
     """A varied handful: high/low score, each trajectory and guard state, no invoices, short trail."""
     last = detail[detail["score"].notna()].sort_values("period").groupby("company_id").tail(1).set_index("company_id")
     picks: list[str] = []
@@ -133,6 +174,10 @@ def pick_sample(detail: pd.DataFrame, n: int) -> list[str]:
                 if k == 0:
                     return
 
+    for kind in ("top_customer_quiet", "score_deterioration", "score_improvement", "going_dark", "category_drop"):
+        cands = [c for c in (alert_companies or {}).get(kind, []) if c in last.index and c not in picks]
+        if cands and len(picks) < n:
+            picks.append(cands[0])
     hi = last[(last["confidence"] == "high")]
     take(last.index.isin(hi.sort_values("score", ascending=False).index[:3]), 2)
     take(last.index.isin(hi.sort_values("score").index[:3]), 2)
@@ -167,14 +212,31 @@ def build_bundle(csv_folder: Path, out: Path, work_dir: Path | None = None, deta
     first_month = detail.groupby("company_id")["period"].min()
     keep_detail_from = pd.Timestamp(as_of + "-01") - pd.DateOffset(months=detail_months - 1)
 
+    mon, fc_rows, mparams, fparams = run_monitor_and_forecast(work_dir, detail, items, companies)
+    feed_from = keep_detail_from
+    alerts_all = mon.alerts[mon.alerts["period"] >= feed_from]
     if sample:
-        ids = set(pick_sample(detail, sample))
+        by_kind = {k: list(g["company_id"]) for k, g in alerts_all[alerts_all["alert"].map(lambda a: a["entity"]["type"] == "company")].groupby("kind")}
+        ids = set(pick_sample(detail, sample, by_kind))
         detail, items = detail[detail["company_id"].isin(ids)], items.loc[detail["company_id"].isin(ids)]
 
     if out.exists():
         shutil.rmtree(out)
     files: dict[str, dict] = {}
     index_rows, group_members = [], {}
+    alert_list = [a for a in alerts_all["alert"]]
+    if sample:
+        keep_entities = {("company", c) for c in ids} | {("group", str(meta.loc[c, "group_id"])) for c in ids if pd.notna(meta.loc[c, "group_id"])}
+        alert_list = [a for a in alert_list if (a["entity"]["type"], a["entity"]["id"]) in keep_entities]
+    ids_by_entity: dict[tuple[str, str], list[str]] = {}
+    for a in alert_list:
+        ids_by_entity.setdefault((a["entity"]["type"], a["entity"]["id"]), []).append(a["alert_id"])
+    sev_rank = {"act": 3, "watch": 2, "info": 1}
+    max_sev: dict[tuple[str, str], str] = {}
+    for a in alert_list:
+        k = (a["entity"]["type"], a["entity"]["id"])
+        if sev_rank[a["severity"]] > sev_rank.get(max_sev.get(k, ""), 0):
+            max_sev[k] = a["severity"]
     comp_hashes = hashlib.sha256()
     n_scored_companies = 0
     n_rows = 0
@@ -194,6 +256,13 @@ def build_bundle(csv_folder: Path, out: Path, work_dir: Path | None = None, deta
                "country": None if pd.isna(m["country"]) else str(m["country"]), "currency": None if pd.isna(m["currency"]) else str(m["currency"]),
                "erp": None if pd.isna(m["erp"]) else str(m["erp"]),
                "first_month": f"{first_month[cid]:%Y-%m}", "latest_month": recs[-1]["month"], "months": recs}
+        if cid in mon.vs_cluster:
+            doc["cluster"] = mon.vs_cluster[cid]
+        if mon.charts.get(cid):
+            doc["control"] = mon.charts[cid]
+        if fc_rows.get(cid):
+            doc["forecast"] = forecast_json(fc_rows[cid], mon.grid, fparams)
+        doc["alert_ids"] = ids_by_entity.get(("company", cid), [])
         n_rows += len(recs)
         h = _write(out / "companies" / f"{cid}.json", doc)
         comp_hashes.update(f"{cid}:{h['sha256']}".encode())
@@ -203,7 +272,8 @@ def build_bundle(csv_folder: Path, out: Path, work_dir: Path | None = None, deta
         index_rows.append({
             "company_id": cid, "group_id": gid, "latest_month": last["month"], "score": last["score"], "trajectory": last["trajectory"],
             "confidence": last["confidence"], "guard": last["guard"], "delta_1m": _f(dlast["delta_1m"], 1), "delta_3m": _f(dlast["delta_3m"], 1),
-            "top_reason": top, "scores": [series.get(mo) for mo in months]})
+            "top_reason": top, "cluster_id": doc["cluster"]["cluster_id"] if "cluster" in doc else None,
+            "n_alerts": len(doc["alert_ids"]), "max_alert_severity": max_sev.get(("company", cid)), "scores": [series.get(mo) for mo in months]})
         group_members.setdefault(gid, []).append((cid, last["score"], series))
     files["companies_dir"] = {"count": n_scored_companies, "sha256": comp_hashes.hexdigest()}
 
@@ -221,8 +291,28 @@ def build_bundle(csv_folder: Path, out: Path, work_dir: Path | None = None, deta
         groups.append({"group_id": gid, "company_ids": sorted(c for c, _, _ in mem), "n_companies": len(mem),
                        "latest_mean_score": _f(np.mean([s for s, _ in latest]), 1) if latest else None,
                        "latest_min_score": _f(min(latest)[0], 1) if latest else None,
-                       "latest_min_company_id": min(latest)[1] if latest else None, "mean_scores": means})
+                       "latest_min_company_id": min(latest)[1] if latest else None, "mean_scores": means,
+                       "control": mon.group_charts.get(str(gid)), "alert_ids": ids_by_entity.get(("group", str(gid)), []),
+                       "limits_available": str(gid) in mon.group_charts})
     files["groups.json"] = _write(out / "groups.json", {"schema_version": SCHEMA_VERSION, "as_of_month": as_of, "months": months, "groups": groups})
+
+    clusters = {"schema_version": SCHEMA_VERSION, "clusters": mon.clusters,
+                "quality": {"silhouette": mparams["clusters"]["model"]["silhouette_by_k"], "chosen_k": mparams["clusters"]["model"]["k"],
+                            "note": "weak structure (silhouette below 0.2): use as a peer group for a comparison, not as a segment. Fitted on train; size signal regressed out; "
+                                    "membership is a whole-trail trait, never an alert trigger."}}
+    files["clusters.json"] = _write(out / "clusters.json", clusters)
+    stats = json.loads((Path(__file__).resolve().parents[2] / "analysis" / "monitor" / "monitor_stats.json").read_text(encoding="utf8"))
+    vol = stats["volume_per_company_year"]
+    feed = {"schema_version": SCHEMA_VERSION, "as_of_month": as_of, "from_month": f"{feed_from:%Y-%m}",
+            "stats": {"false_alarm_rate": _f(stats["headline"]["false_alarm_rate"], 3), "false_alarm_rate_at_chance": _f(stats["headline"]["false_alarm_rate_at_chance"], 3),
+                      "median_lead_time_months": _f(stats["headline"]["median_lead_time_months"], 1),
+                      "top_customer_precision": _f(stats["top_customer"]["onset_only"]["precision"], 3), "top_customer_base_rate": _f(stats["top_customer"]["base_rate"], 3),
+                      "alerts_per_company_year": _f(vol["per_company_year_risk"] + vol["per_company_year_up"], 2),
+                      "note": ("Measured on train companies against the eight accepted outcomes. Score-fall alerts are about as often followed by those outcomes as an alert on a "
+                               "random month (lift 0.7-1.2): they say a company moved away from its own normal, with the reason and the amount, not that it will fail. "
+                               "The top-customer alert is the one with a measured lift (about 2x). Details: analysis/monitor/evaluation.md.")},
+            "alerts": sorted(alert_list, key=lambda a: (a["month"], sev_rank[a["severity"]], a["rank_score"] or 0.0), reverse=True)}
+    files["alerts.json"] = _write(out / "alerts.json", feed)
 
     ref = load_reference()
     manifest = {
@@ -237,14 +327,16 @@ def build_bundle(csv_folder: Path, out: Path, work_dir: Path | None = None, deta
                    "dq_log_rules_with_rows": sum(1 for v in info["dq_log_rows_affected"].values() if v)},
         "sections": {
             "scores": {"status": "available", "files": ["companies.json", "companies/{company_id}.json"]},
-            "groups": {"status": "available", "files": ["groups.json"], "note": "plain mean/min of member scores; funnel limits arrive with control charts"},
-            "control_charts": {"status": "planned", "plan_step": 3},
-            "clusters": {"status": "planned", "plan_step": 3},
-            "alerts": {"status": "planned", "plan_step": 3, "note": "includes 'top customer went quiet' (decided) and two-sided score alerts"},
-            "forecast": {"status": "planned", "plan_step": 4, "note": "first step to be cut if time runs out"},
-            "owners_actions": {"status": "planned", "plan_step": 5},
+            "groups": {"status": "available", "files": ["groups.json"], "note": "mean/min of member scores; charts and funnel limits only for groups of at least 3 scored companies"},
+            "control_charts": {"status": "available", "plan_step": 3, "files": ["companies/{company_id}.json#control", "groups.json#control"]},
+            "clusters": {"status": "available", "plan_step": 3, "files": ["clusters.json", "companies/{company_id}.json#cluster"]},
+            "alerts": {"status": "available", "plan_step": 3, "files": ["alerts.json"], "note": "two-sided score alerts, category drops, going dark, top customer quiet; onsets only"},
+            "forecast": {"status": "available", "plan_step": 4, "files": ["companies/{company_id}.json#forecast"], "note": f"method shipped: {fparams['method']} (a tie with the naive last value)"},
+            "owners_actions": {"status": "available", "plan_step": 5, "note": "Alert.owner and Alert.action are filled by analysis/monitor/routing.py"},
             "counterparty_entities": {"status": "blocked", "note": "customers/suppliers only if counterparty IDs map to company IDs; they do not today"},
         },
+        "monitor": {"params_fitted_on": mparams["fitted_on"], "floors": mparams["control"]["floors"], "method": mparams["control"]["method"],
+                    "material_points": mparams["material"], "forecast_method": fparams["method"]},
         "spec": manifest_spec(), "disclaimer": DISCLAIMER, "files": files,
     }
     files["manifest.json"] = None
@@ -252,6 +344,7 @@ def build_bundle(csv_folder: Path, out: Path, work_dir: Path | None = None, deta
     shutil.copy(CONTRACT_DIR / "types.ts", out / "types.ts")
     if verbose:
         size = sum(p.stat().st_size for p in out.rglob("*") if p.is_file())
+        print(f"alerts in feed: {len(alert_list)}")
         print(f"bundle: {n_scored_companies} companies, {len(groups)} groups, months {months[0]}..{as_of}, {size / 1e6:.1f} MB raw -> {out}")
     return manifest
 
@@ -263,6 +356,25 @@ def validate_bundle(path: Path) -> list[str]:
     man = json.loads((path / "manifest.json").read_text(encoding="utf8"))
     if not man["schema_version"].startswith("1."):
         bad.append(f"unknown schema_version {man['schema_version']}")
+    feed = json.loads((path / "alerts.json").read_text(encoding="utf8"))
+    alert_by_id = {a["alert_id"]: a for a in feed["alerts"]}
+    if len(alert_by_id) != len(feed["alerts"]):
+        bad.append("alert_id is not unique")
+    kinds = {"score_deterioration", "score_improvement", "category_drop", "going_dark", "top_customer_quiet"}
+    for a in feed["alerts"]:
+        if a["kind"] not in kinds or a["severity"] not in ("info", "watch", "act") or a["direction"] not in ("risk", "opportunity"):
+            bad.append(f"{a['alert_id']}: kind/severity/direction")
+        if a["owner"] not in ("treasurer", "cfo", "collections") or not a["action"]:
+            bad.append(f"{a['alert_id']}: owner/action missing")
+        if len(a["reasons"]) > 4 or a["entity"]["type"] not in ("company", "group"):
+            bad.append(f"{a['alert_id']}: reasons or entity type")
+        if a["kind"] == "top_customer_quiet" and ("revenue at risk" in (a["summary"] + a["action"]).lower() or a["persistence"]["months_flagged"] != 1):
+            bad.append(f"{a['alert_id']}: top customer wording or onset")
+        if not a["month"] >= feed["from_month"] or not a["month"] <= man["as_of_month"]:
+            bad.append(f"{a['alert_id']}: month outside the feed window")
+    for name, sec in man["sections"].items():
+        if sec["status"] == "planned":
+            bad.append(f"section {name} is still planned")
     idx = json.loads((path / "companies.json").read_text(encoding="utf8"))
     files = sorted((path / "companies").glob("*.json"))
     if len(files) != len(idx["companies"]) or len(files) != man["counts"]["companies"]:
@@ -270,8 +382,23 @@ def validate_bundle(path: Path) -> list[str]:
     if any(len(r["scores"]) != len(idx["months"]) for r in idx["companies"]):
         bad.append("an index row's scores are not aligned with months")
     n_rows = 0
+    n_linked = 0
     for f in files:
         doc = json.loads(f.read_text(encoding="utf8"))
+        for aid in doc.get("alert_ids", []):
+            n_linked += 1
+            if aid not in alert_by_id or alert_by_id[aid]["entity"]["id"] != doc["company_id"]:
+                bad.append(f"{f.stem}: alert_id {aid} not in alerts.json for this company")
+        for c in doc.get("control", []):
+            ln = len(c["months"])
+            if any(len(c[k]) != ln for k in ("values", "center", "lower", "upper", "signal", "persistent")):
+                bad.append(f"{f.stem}: control chart {c['comparison']}/{c['metric']} arrays differ in length")
+        fc = doc.get("forecast")
+        if fc:
+            for p_ in fc["points"]:
+                v = [p_["lo80"], p_["lo50"], p_["median"], p_["hi50"], p_["hi80"]]
+                if any(x is None for x in v) or v != sorted(v) or not 0 <= v[0] or not v[-1] <= 100:
+                    bad.append(f"{f.stem}: forecast fan not ordered or outside 0-100 at {p_['month']}")
         prev = None
         for r in doc["months"]:
             n_rows += 1
@@ -299,6 +426,9 @@ def validate_bundle(path: Path) -> list[str]:
                 if len(r["reasons"]) > 4 or len(r["change_reasons"]) > 4:
                     bad.append(f"{f.stem} {r['month']}: more than 4 reasons")
             prev = r
+    n_company_alerts = sum(1 for a in feed["alerts"] if a["entity"]["type"] == "company")
+    if n_linked != n_company_alerts and not man["is_sample"]:
+        bad.append(f"company alert links {n_linked} != company alerts in the feed {n_company_alerts}")
     if n_rows != man["counts"]["company_months"]:
         bad.append(f"company_months {n_rows} != manifest {man['counts']['company_months']}")
     for name, meta in man["files"].items():

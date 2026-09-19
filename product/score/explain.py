@@ -92,6 +92,8 @@ def item_sentence(name: str, r) -> tuple[str, float]:
     """
     g = lambda k: float(r[k]) if k in r.index and pd.notna(r[k]) else np.nan
     v = g(name)
+    if name in ("ds_ratio", "fc_ratio", "ds_increase", "fc_increase") and np.isfinite(v):
+        v = max(v, 0.0) + 0.0  # a tiny negative ratio must not print as "-0%"
     if name == "delay_paid":
         e = g("ap_late5")
         return f"Suppliers were paid {v:.0f} days after the due date on average over the last 5 months{_paren(eur(e) + ' paid late' if np.isfinite(e) else '')}.", e
@@ -131,10 +133,10 @@ def item_sentence(name: str, r) -> tuple[str, float]:
         return f"Money came in during {round(v / 100 * 6)} of the last 6 months{_paren(eur(e) + ' received in the last 3')}.", e
     if name == "ds_increase":
         e = v * g("in5") if np.isfinite(g("in5")) else np.nan
-        return f"Debt repayments rose from {g('ds_increase_prior'):.1%} to {g('ds_ratio'):.1%} of inflows compared with 6 months earlier{_paren(eur(e) + ' more over 5 months')}.", e
+        return f"Debt repayments rose from {max(g('ds_increase_prior'), 0.0) + 0.0:.1%} to {max(g('ds_ratio'), 0.0) + 0.0:.1%} of inflows compared with 6 months earlier{_paren(eur(e) + ' more over 5 months')}.", e
     if name == "fc_increase":
         e = v * g("in5") if np.isfinite(g("in5")) else np.nan
-        return f"Fees and interest rose from {g('fc_increase_prior'):.1%} to {g('fc_ratio'):.1%} of inflows compared with 6 months earlier{_paren(eur(e) + ' more over 5 months')}.", e
+        return f"Fees and interest rose from {max(g('fc_increase_prior'), 0.0) + 0.0:.1%} to {max(g('fc_ratio'), 0.0) + 0.0:.1%} of inflows compared with 6 months earlier{_paren(eur(e) + ' more over 5 months')}.", e
     if name == "cust_tail":
         e = g("top1_eur")
         return f"{g('cust_top1'):.0%} of billing comes from one customer{_paren(eur(e) + ' in 3 months')}.", e

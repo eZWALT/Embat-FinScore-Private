@@ -3,14 +3,14 @@
  * consumed by the Next.js app. Prose and rules: product/score/DATA_CONTRACT.md.
  *
  * Rules for consumers
- *  - Ignore unknown fields. Treat every field marked "planned" as absent until manifest.sections says "available".
+ *  - Ignore unknown fields. A section whose manifest.sections status is not "available" is absent (today only counterparty_entities is "blocked").
  *  - Additive changes bump the minor version (1.1.0), breaking ones the major (2.0.0). Check manifest.schema_version.
  *  - Months are "YYYY-MM" strings, sorted ascending. A missing value is `null`, never NaN or "".
  *  - Money is in the invoice / account currency of the company, not converted (see Company.currency).
  *  - Files are static JSON. Nothing here is a live API.
  */
 
-/* ------------------------------------------------------------------ available today (plan step 2) */
+/* ------------------------------------------------------------------ scores (plan step 2) */
 
 export type Trajectory = "improving" | "stable" | "dip" | "deteriorating" | "insufficient history";
 export type Confidence = "high" | "medium" | "low";
@@ -39,6 +39,13 @@ export interface Manifest {
   reference: { fitted_on: string; n_companies: number; n_company_months: number };
   source: { input_files: Record<string, string>; dq_log_rules_with_rows: number };
   sections: Record<SectionId, { status: "available" | "planned" | "blocked"; plan_step?: number; files?: string[]; note?: string }>;
+  monitor: {
+    params_fitted_on: string; // "train companies only"
+    floors: Record<string, number>; // chart floors in score points
+    method: { name: string; params: Record<string, number | string> };
+    material_points: Record<string, number>; // an alert needs the smoothed level this far from the baseline
+    forecast_method: "smoothed_level" | "naive_last";
+  }; // 1.1.0
   spec: Spec;
   disclaimer: string; // show it where the score is shown; the score is not a predictor
   files: Record<string, { bytes?: number; sha256: string; count?: number }>;
@@ -74,6 +81,9 @@ export interface CompanyIndexRow {
   delta_1m: number | null;
   delta_3m: number | null;
   top_reason: string | null; // first "why the score is not higher" sentence
+  cluster_id: string | null; // 1.1.0, key of clusters.json; null when the trail is under 6 months
+  n_alerts: number; // alerts of this company in the feed window (alerts.json)
+  max_alert_severity: AlertSeverity | null;
   scores: (number | null)[]; // aligned with `months`, for sparklines
 }
 
@@ -89,11 +99,11 @@ export interface CompanyDetail {
   first_month: string; // first month with any bank transaction
   latest_month: string;
   months: MonthRecord[]; // scored months only, ascending
-  // planned (see below): cluster?, control?, forecast?, alert_ids?
+  // 1.1.0 (steps 3-4). Absent when there is not enough history (cluster: under 6 months; control: under 7 scored months; forecast: under 4).
   cluster?: ClusterMembership;
-  control?: ControlChart[];
+  control?: ControlChart[]; // own_history for score and three categories, cluster gap for the score
   forecast?: Forecast;
-  alert_ids?: string[];
+  alert_ids: string[]; // keys into alerts.json, in the feed window
 }
 
 export interface MonthRecord {
@@ -124,7 +134,7 @@ export interface ItemResult {
   delta: number | null; // change of contribution since last month
 }
 export interface Reason {
-  item: ItemId | "guard";
+  item: ItemId | "guard" | "top_customer"; // top_customer: only in top_customer_quiet alerts (points 0: not a score input)
   label: string;
   points: number; // reasons: negative = points lost; change_reasons: signed change
   value: number | null;
@@ -146,46 +156,53 @@ export interface GroupIndex {
     latest_min_score: number | null;
     latest_min_company_id: string | null;
     mean_scores: (number | null)[]; // aligned with months
+    limits_available: boolean; // 1.1.0: true from 3 scored members. Below that, draw only the mean, no limits and no alerts
+    control: ControlChart[] | null; // group_own_history (floor grows as the group gets smaller) and group_vs_groups (funnel on the 3-month change)
+    alert_ids: string[];
   }[]; // median group has 2 companies: do not draw limits or clusters for tiny groups
 }
 
-/* ------------------------------------------------------------------ planned (not in bundles yet) */
+/* ------------------------------------------------------------------ monitor and forecast (plan steps 3-5, schema 1.1.0) */
 
 export type EntityType = "company" | "group" | "customer" | "supplier"; // customer/supplier: blocked until counterparty IDs map to companies
 
-/** Plan step 3. clusters.json: behaviour clusters fitted on train (not size). CompanyDetail.cluster points into it. */
+/** clusters.json: behaviour clusters fitted on train, size signal regressed out. CompanyDetail.cluster points into it. */
 export interface ClusterIndex {
   schema_version: string;
-  clusters: { cluster_id: string; label: string; description: string; n_companies: number }[];
+  clusters: { cluster_id: string; label: string; description: string; n_companies: number; n_companies_train_fit: number }[];
+  quality: { silhouette: Record<string, number>; chosen_k: number; note: string }; // weak structure: show as peers, not segments
 }
 export interface ClusterMembership {
   cluster_id: string;
+  month: string; // the month the comparison is for (the company's latest)
+  /** where the company sits among its cluster's train company-months. percentile 100 = healthiest. */
   vs_cluster: { metric: "score" | CategoryId; percentile: number | null; robust_z: number | null }[];
 }
 
 /** Plan step 3. Robust EWMA/CUSUM (median/MAD) on within-company change. Four comparisons. */
 export type Comparison = "own_history" | "cluster" | "group_own_history" | "group_vs_groups";
 export interface ControlChart {
-  comparison: Comparison;
+  comparison: Comparison; // "cluster" charts the company's gap to its cluster median (a change of relative standing)
   metric: "score" | CategoryId;
-  months: string[];
-  values: (number | null)[];
-  center: number | (number | null)[];
+  months: string[]; // trimmed to the months where the chart exists (needs 7 scored months)
+  values: (number | null)[]; // group_vs_groups: the 3-month change of the group mean
+  center: (number | null)[]; // lagged median (own history) or the median change of groups (group_vs_groups)
   lower: (number | null)[];
   upper: (number | null)[]; // funnel-style limits for groups (widen for small n)
-  ewma?: (number | null)[];
+  ewma?: (number | null)[]; // smoothed level, in the units of `values`; the EWMA limit is lower/upper
   cusum_low?: (number | null)[];
   cusum_high?: (number | null)[];
   signal: ("none" | "low" | "high")[]; // raw signal per month
-  persistent: boolean[]; // true when the persistence rule holds (e.g. 3 of the last 4 months)
+  persistent: boolean[]; // true when the persistence rule holds (3 of the last 4 months signal the same way); alerts start here, and only when also material
   method: { name: string; params: Record<string, number | string> };
 }
 
 /**
- * Plan steps 3 and 5. alerts.json: the proactive feed. Two-sided: improving companies alert too (direction "opportunity").
- * Alert wording is fixed by the plan for "top_customer_quiet": "top customer stopped billing, review exposure and collections",
- * never "revenue at risk".
+ * alerts.json: the proactive feed. An alert is the ONSET of a persistent, material move (a company that stays low does not alert every month).
+ * Two-sided: improving companies alert too (direction "opportunity"). Group alerts reuse the score kinds with entity.type "group".
+ * Wording fixed by the plan for "top_customer_quiet": "top customer stopped billing, review exposure and collections", never "revenue at risk".
  */
+export type AlertSeverity = "info" | "watch" | "act";
 export type AlertKind =
   | "score_deterioration" | "score_improvement" | "category_drop" | "going_dark" | "top_customer_quiet";
 export type Owner = "treasurer" | "cfo" | "collections";
@@ -195,30 +212,41 @@ export interface Alert {
   month: string;
   kind: AlertKind;
   direction: "risk" | "opportunity";
-  severity: "info" | "watch" | "act";
+  severity: AlertSeverity; // score/category: distance from the baseline (12 / 20 points); going_dark always act; top_customer_quiet: act = top decile of the ranking model, info = billed in all of the last 3 months
   title: string;
   summary: string;
-  reasons: Reason[]; // same shape as score reasons, with eur
+  reasons: Reason[]; // up to 4. Score alerts: the items that moved most since the baseline (points = change of contribution). Groups: empty, see evidence
   persistence: { rule: string; months_flagged: number }; // dips that do not persist are not alerts
-  owner: Owner | null; // step 5: who gets it
-  action: string | null; // step 5: concrete recommendation
-  evidence: Record<string, number | string | null>; // e.g. top_customer_quiet: counterparty_id, share_last_quarter, months_quiet, open_receivable_eur
-  rank_score: number | null; // ranking only (the night's model score for top_customer_quiet), never shown as a probability
+  owner: Owner; // who gets it (treasurer = tesorero, collections = Cobros)
+  action: string; // concrete recommendation
+  evidence: Record<string, number | string | boolean | null>; // top_customer_quiet: counterparty_id, share_last_quarter, last_quarter_amount, months_billed_of_last_3, months_quiet, open_receivable_eur. Score alerts: score, baseline, gap_points. Groups: n_companies, members_moving_most, outside_funnel_vs_other_groups
+  rank_score: number | null; // top_customer_quiet only: ranking model score, for ordering, never shown as a probability
 }
 export interface AlertFeed {
   schema_version: string;
   as_of_month: string;
-  stats: { false_alarm_rate: number | null; median_lead_time_months: number | null; note: string }; // measured on train, quoted with the alert
-  alerts: Alert[];
+  from_month: string; // the feed covers the detail window (manifest.detail_from_month .. as_of_month)
+  /** Measured on train companies (analysis/monitor/evaluation.md). Quote them next to the alerts; do not round them into claims. */
+  stats: {
+    false_alarm_rate: number | null; // score-fall alerts not followed by an accepted outcome within 6 months, mean over the eight outcomes
+    false_alarm_rate_at_chance: number | null; // the same for an alert on a random month: the two are about equal
+    median_lead_time_months: number | null;
+    top_customer_precision: number | null; // share of top_customer_quiet onsets where the customer was lost in the next months
+    top_customer_base_rate: number | null;
+    alerts_per_company_year: number | null;
+    note: string;
+  };
+  alerts: Alert[]; // newest month first, then severity, then rank_score
 }
 
-/** Plan step 4. Fan chart, not a point estimate. Expect a tie with the naive last value; show the baseline. */
+/** Fan chart, not a point estimate. A tie with the naive last value (method "naive_last" ships today), so show it as "where the score usually goes from here". */
 export interface Forecast {
   metric: "score";
   method: "smoothed_level" | "naive_last";
   origin_month: string;
   horizon_months: number;
+  note: string;
   points: { month: string; median: number; lo50: number; hi50: number; lo80: number; hi80: number }[];
   naive_last: number;
-  skill_vs_naive: number | null; // group-fold CV; ~0 is the expected honest result
+  skill_vs_naive: number | null; // CV skill of the smoothed level over the naive last value at 3 months; ~0 is the honest result
 }

@@ -1,10 +1,10 @@
-# Health Score data contract (schema 1.0.0)
+# Health Score data contract (schema 1.1.0)
 
-For whoever builds the web app (Next.js on Vercel). The score pipeline runs **once** on a folder of CSVs and writes a **static JSON bundle**; the app reads the bundle. There is no live API and no runtime dependency on Python.
+For whoever builds the web app (Next.js on Vercel). The pipeline runs **once** on a folder of CSVs and writes a **static JSON bundle**; the app reads the bundle. There is no live API and no runtime dependency on Python.
 
 - Types: [`contract/types.ts`](contract/types.ts) (also copied into every bundle). Loader example: [`contract/loader.example.ts`](contract/loader.example.ts).
-- **Sample bundle to develop against, committed: [`sample_bundle/`](sample_bundle/)** (12 varied companies, 0.4 MB, real output of the current scorecard on the synthetic data).
-- Method and validation: [README.md](README.md), [validation.md](validation.md). Not a predictor: show `manifest.disclaimer`.
+- **Sample bundle to develop against, committed: [`sample_bundle/`](sample_bundle/)** (12 varied companies picked to include every alert kind, 0.6 MB, real output on the synthetic data). Its `groups.json` lists only the sampled members of each group, so `n_companies` there is smaller than in a full bundle.
+- Method and validation: [README.md](README.md), [validation.md](validation.md). Monitor, clusters and forecast: [`analysis/monitor/`](../../analysis/monitor/README.md). Not a predictor: show `manifest.disclaimer`.
 
 ## Flow
 
@@ -18,16 +18,20 @@ PYTHONUTF8=1 PYTHONPATH=<repo>/.venv/Lib/site-packages:<repo> \
 python -m product.score.export --validate <bundle_dir>      # also run automatically after export
 ```
 
-About 45 s on the full data. Full bundle: 1,286 companies, 41.6 MB raw, about 4 MB gzipped (`--detail-months 6` is smaller). Bundles are immutable: a new run is a new bundle, and `manifest.generated_at` / `scorecard_version` say which. Do not commit the full bundle; the sample is enough for development. Ship the full one with the app build (copy into `data/bundle`) or, if it is too big for the deploy limits of your Vercel plan (check them), host the folder as static files (Vercel Blob, S3) and set `BUNDLE_URL` as in the loader example.
+About 50 s on the full data. Full bundle: 1,286 companies, 52 MB raw, about 6 MB gzipped (`--detail-months 6` is smaller). Bundles are immutable: a new run is a new bundle, and `manifest.generated_at` / `scorecard_version` say which. Do not commit the full bundle; the sample is enough for development. Ship the full one with the app build or host the folder as static files (Vercel Blob, S3) and set `BUNDLE_URL` as in the loader example. One company file is about 40 KB; the two indexes the feed and portfolio need (`companies.json`, `alerts.json`) are 0.6 and 2.7 MB raw.
+
+The monitor's parameters (chart floors, clusters, funnel laws, ranking model) and the measured alert statistics are **fitted on train companies and committed** in `analysis/monitor/` (`monitor_params.json`, `monitor_stats.json`, `y7_rank_model.txt`, `forecast_params.json`). The export applies them, it never re-fits, so a run on new CSVs uses the same rules.
 
 ## Layout
 
 ```text
 bundle/
-├── manifest.json          read first: version, months, counts, section status, spec (labels/weights/units), disclaimer, sha256 of files
-├── companies.json         list/portfolio: one row per company at its latest month + 24-month sparkline (≈0.5 MB)
-├── companies/{id}.json    one company: every scored month (≈31 KB each)
-├── groups.json            250 groups: member ids, latest mean/min score, mean-score series
+├── manifest.json          read first: version, months, counts, section status, spec (labels/weights/units), monitor settings, disclaimer, sha256 of files
+├── companies.json         list/portfolio: one row per company at its latest month + 24-month sparkline + cluster and alert summary (≈0.6 MB)
+├── companies/{id}.json    one company: every scored month, control charts, cluster comparison, forecast, alert ids (≈40 KB each)
+├── groups.json            250 groups: member ids, latest mean/min score, mean-score series, control charts and alert ids (groups of 3+)
+├── alerts.json            the proactive feed, newest month first (≈2.7 MB; the detail window, 12 months)
+├── clusters.json          behaviour clusters: label, description, size, quality
 └── types.ts               the types below
 ```
 
@@ -49,20 +53,34 @@ Use `manifest.spec` for labels, weights, units and tooltips (`why`) instead of h
 
 Rules: months are `YYYY-MM`; missing is `null`, never NaN or `""`; ignore unknown fields; a company file only lists scored months; money is in the company's own currency, not converted; `country` is often null.
 
-## What the web app will grow into (planned sections)
+## Monitor, clusters, forecast, alerts (plan steps 3–4, since 1.1.0)
 
-`manifest.sections` states which sections exist. Everything below has its TypeScript shape in `types.ts` already, so screens can be designed now; the files appear when the plan step is done, without changing what exists.
+`manifest.sections` states which sections exist; all are `available` except `counterparty_entities`, which is `blocked`.
 
-| Section | Plan step | Where it lands | Product surface (Health Sentinel) |
+**Control charts** (`CompanyDetail.control[]`, `groups[].control`). Charts watch *change*, not level: the series is compared with its own median over the 12 months that end 3 months earlier, scaled by a robust MAD (floor fitted on train), smoothed with an EWMA and a CUSUM. `signal` is the raw crossing per month; `persistent` is the 3-of-the-last-4-months rule; a chart starts once it has 7 scored months. Company charts: `own_history` for the score and for payment history, amounts owed and stability, and `cluster` for the score (the company's gap to the median of its behaviour cluster, a change of relative standing). Group charts (groups with 3+ scored members, `limits_available`): `group_own_history`, whose floor grows as the group shrinks, and `group_vs_groups`, the group's 3-month change against funnel limits (`center ± 3·sqrt(a + b/n)`, fitted on train groups) so small groups get wide limits. Groups of 1–2 companies: draw the mean only, no limits, no alerts.
+
+**Clusters** (`clusters.json`, `CompanyDetail.cluster`). Behaviour clusters (volatility, months without inflows, payroll/tax/social-security presence, debt service, collection delay, concentration…), size signal regressed out, fitted on train, k=4. Structure is weak (silhouette 0.19): show them as *peer groups for a comparison*, not as segments. `vs_cluster` is the company's percentile and robust z inside its cluster's train company-months, for the latest month. Companies with fewer than 6 months of trail have no cluster. Membership is a whole-trail trait and never triggers an alert.
+
+**Alerts** (`alerts.json`, `CompanyDetail.alert_ids`, `groups[].alert_ids`). An alert is the *onset* of a persistent and material move (the smoothed level at least 8 points from the baseline for the score, 10 for a category), so a company that stays low does not alert every month and a one-month dip is not an alert. Kinds:
+
+| Kind | Fires when | Owner (default) | Severity |
 |---|---|---|---|
-| `control_charts` | 3 | `CompanyDetail.control[]`, later a group equivalent | Robust EWMA/CUSUM on within-company change; four comparisons (own history, cluster, group vs own history, group vs other groups); `persistent` = the 3-of-4 rule. Two-sided: improvements alert too |
-| `clusters` | 3 | `clusters.json`, `CompanyDetail.cluster` | Behaviour clusters (not size); "vs cluster" percentile on the company page |
-| `alerts` | 3, 5 | `alerts.json` (`AlertFeed`), `CompanyDetail.alert_ids` | The proactive feed. Kinds: score deterioration/improvement, category drop, going dark, **top customer quiet** (decided). `stats` carries the measured false-alarm rate and lead time to quote next to alerts |
-| `owners_actions` | 5 | `Alert.owner` (treasurer / CFO / collections), `Alert.action` | Who gets the alert and the concrete recommendation |
-| `forecast` | 4 | `CompanyDetail.forecast` | Fan chart with the naive last value as baseline. Expect a tie; it is the first step to be cut |
-| `counterparty_entities` | 5 | `EntityType` gets `customer` / `supplier` | **Blocked**: counterparty IDs (`COUNTERPARTY_*`) do not map to company IDs, so customers and suppliers cannot be scored as entities. Design for companies and groups only for now |
+| `score_deterioration` / `score_improvement` | own-history score chart, persistent and material, down / up (two-sided: improvements are `direction: "opportunity"`) | from the biggest mover: payables, cash → treasurer; receivables → collections; debt and fees → CFO | `act` ≥ 20 points from baseline, `watch` ≥ 12, else `info` |
+| `category_drop` | a category chart, persistent and material, when no score alert covers it | as above | as above |
+| `going_dark` | first month with no bank booking for 60 days | treasurer | always `act` |
+| `top_customer_quiet` | last quarter's top customer got no invoice this month (a transparent rule, first month only) | collections | `act` = top decile of the ranking model, `info` = the customer billed in all 3 of the last 3 months, else `watch` |
 
-Wording constraints the UI must keep: "top customer stopped billing, review exposure and collections", never "revenue at risk" or a probability; the score is "explainable and monitorable", never "predicts"; groups have a median of 2 companies, so no limits or clusters for tiny groups.
+Group alerts use the two score kinds with `entity.type = "group"`; their `reasons` are empty and `evidence.members_moving_most` names the members. Every alert carries `owner`, a concrete `action`, up to 4 `reasons` with the € behind them (score alerts: the items that moved most since the baseline month, signed points), `evidence`, and `persistence` (`3 of the last 4 months`). `rank_score` exists only for `top_customer_quiet` and is for ordering: it is not a probability, never show it as one.
+
+`alerts.json` also carries `stats`, measured on train companies against the eight accepted outcomes; quote them next to the alerts (they are in `analysis/monitor/evaluation.md`): score-fall alerts are followed by an accepted outcome within 6 months about as often as an alert on a random month (`false_alarm_rate` ≈ `false_alarm_rate_at_chance`), so they mean "moved away from its own normal, here is why and the amount", not "will fail". The top-customer alert is the one with a measured lift (about 2×).
+
+**Forecast** (`CompanyDetail.forecast`). A fan (median, 50% and 80% intervals) for 1–6 months from the last scored month, with the naive last value as baseline. Group-fold CV shows the smoothed level ties the naive last value (worse at 1–2 months, +1% at 6), so `method` is `naive_last` and the fan says how far the score usually moves, not which way. `skill_vs_naive` is the smoothed level's CV skill at 3 months (≈ 0). Absent for companies with under 4 scored months.
+
+Wording the UI must keep: "top customer stopped billing, review exposure and collections", never "revenue at risk" or a probability; the score is "explainable and monitorable", never "predicts"; TellMe mapping suggestion: `info` alerts Silent (logged), `watch`/`act` Guided (shown with reasons, the owner approves, edits or rejects).
+
+| Section | Status |
+|---|---|
+| `counterparty_entities` | **Blocked**: counterparty IDs (`COUNTERPARTY_*`) do not map to company IDs, so customers and suppliers cannot be scored or watched as entities. Design for companies and groups only |
 
 ## Relation to the v0 dummy card and the Streamlit POC
 
@@ -70,4 +88,4 @@ Wording constraints the UI must keep: "top customer stopped billing, review expo
 
 ## Versioning and checks
 
-Additive change → `1.x.0`, breaking → `2.0.0`; the loader example refuses another major. `export --validate` checks file counts, score range, contribution and attribution sums, at most 4 reasons, and the sha256 recorded in `manifest.files`.
+Additive change → `1.x.0`, breaking → `2.0.0`; the loader example refuses another major. 1.1.0 added `alerts.json`, `clusters.json`, `manifest.monitor`, the company/group control charts, cluster, forecast and alert ids, and made `Alert.owner` / `Alert.action` non-null; it did not change anything a 1.0.0 consumer read. `export --validate` checks file counts, score range, contribution and attribution sums, at most 4 reasons, alert ids unique and linked both ways, owner/action present, control-chart array lengths, forecast fans ordered inside 0–100, no planned sections, and the sha256 recorded in `manifest.files`.

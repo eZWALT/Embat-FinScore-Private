@@ -1,0 +1,119 @@
+{
+ "fitted_on": "train companies only (holdout untouched)",
+ "horizon_months": 6,
+ "material_points": 8.0,
+ "headline": {
+  "false_alarm_rate": 0.7071110583596957,
+  "false_alarm_rate_at_chance": 0.693364218918645,
+  "median_lead_time_months": 2.0,
+  "lift_range": [
+   0.7232664025043206,
+   1.239443378119002
+  ]
+ },
+ "volume_per_company_year": {
+  "deterioration": 362,
+  "going_dark": 165,
+  "improvement": 195,
+  "per_company_year_risk": 0.5479119736614104,
+  "per_company_year_up": 0.2027378270663663
+ },
+ "dips_that_persist": {
+  "one_month_falls_8pts": 848,
+  "became_alert_within_3_months": 397,
+  "share": 0.4681603773584906
+ },
+ "top_customer": {
+  "base_rate": 0.2879153269024652,
+  "every_quiet_month": {
+   "label": "every quiet month",
+   "flagged_rows": 2837,
+   "flag_rate": 0.38009110396570206,
+   "precision": 0.5770179767359888,
+   "ci": [
+    0.5065407407407407,
+    0.6416724013655388
+   ],
+   "lift": 2.004123861497171,
+   "recall": 0.7617496510004653
+  },
+  "onset_only": {
+   "label": "onset only",
+   "flagged_rows": 1617,
+   "flag_rate": 0.21663987138263666,
+   "precision": 0.557204700061843,
+   "ci": [
+    0.4788841934903794,
+    0.6266045209227027
+   ],
+   "lift": 1.9353075296703564,
+   "recall": 0.41926477431363424
+  },
+  "by_severity": [
+   {
+    "severity": "act",
+    "n": 152,
+    "precision": 0.625
+   },
+   {
+    "severity": "info",
+    "n": 246,
+    "precision": 0.32926829268292684
+   },
+   {
+    "severity": "watch",
+    "n": 1219,
+    "precision": 0.5947497949138638
+   }
+  ],
+  "top_decile_cut": 0.6703265316474333
+ },
+ "clusters": {
+  "k": 4,
+  "silhouette_by_k": {
+   "4": 0.1885,
+   "5": 0.1414,
+   "6": 0.1496,
+   "7": 0.1553,
+   "8": 0.1352
+  },
+  "eta2_log_inflow": 0.007489398628705568,
+  "half_split_ari": [
+   0.7764981606197912,
+   0.8155076410725548,
+   0.823208796009164
+  ],
+  "table": [
+   {
+    "cluster": 0.0,
+    "n": 618,
+    "mean_score": 64.24409339433097,
+    "mean_log_inflow": 11.625766314759794
+   },
+   {
+    "cluster": 1.0,
+    "n": 299,
+    "mean_score": 65.76259925906155,
+    "mean_log_inflow": 11.486854859778537
+   },
+   {
+    "cluster": 2.0,
+    "n": 234,
+    "mean_score": 56.35359936460642,
+    "mean_log_inflow": 11.12470123095309
+   },
+   {
+    "cluster": 3.0,
+    "n": 60,
+    "mean_score": 63.00410339165723,
+    "mean_log_inflow": 12.278249424616003
+   }
+  ]
+ },
+ "group_funnel": {
+  "group_months": 1740,
+  "outside_share": 0.023563218390804597,
+  "persistent_share": 0.0028735632183908046
+ },
+ "note": "Measured on train companies against the accepted outcomes (score recomputed without the outcome's own feature families). Lift near 1 means the alert says nothing about that outcome."
+}

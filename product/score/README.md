@@ -148,4 +148,4 @@ Eight accepted outcomes (`y2_neg_2of3`, `y4_ds_r_double`, `y5_*`, `y7_*`, `y9_*`
 - Counterparty IDs are `COUNTERPARTY_*`, company IDs `COMP_*`: no link, so customers and suppliers cannot be scored as entities.
 - Euro amounts are in each invoice's own currency, as in the feature store (no FX conversion).
 - The store's negative-cash flags flip on 1e-10 noise; the score recomputes them from cash rounded to cents.
-- The "top customer went quiet" alert is not in the score (decided, plan step 3).
+- The "top customer went quiet" alert is not in the score (decided, plan step 3). It, the control charts, clusters, alerts with owners and actions, and the score forecast are in [`analysis/monitor/`](../../analysis/monitor/README.md) (plan steps 3-4) and reach the web app through the bundle (schema 1.1.0, [DATA_CONTRACT.md](DATA_CONTRACT.md)).

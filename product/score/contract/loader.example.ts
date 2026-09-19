@@ -7,7 +7,7 @@
  */
 import { promises as fs } from "fs";
 import path from "path";
-import type { CompanyDetail, CompanyIndex, GroupIndex, Manifest } from "./types";
+import type { AlertFeed, ClusterIndex, CompanyDetail, CompanyIndex, GroupIndex, Manifest } from "./types";
 
 async function read<T>(rel: string): Promise<T> {
   const url = process.env.BUNDLE_URL;
@@ -24,6 +24,8 @@ export const getManifest = () => read<Manifest>("manifest.json");
 export const getCompanyIndex = () => read<CompanyIndex>("companies.json");
 export const getGroupIndex = () => read<GroupIndex>("groups.json");
 export const getCompany = (id: string) => read<CompanyDetail>(`companies/${id}.json`);
+export const getAlerts = () => read<AlertFeed>("alerts.json"); // 1.1.0: the Sentinel feed
+export const getClusters = () => read<ClusterIndex>("clusters.json"); // 1.1.0
 
 /** Refuse a bundle from a different major version instead of rendering garbage. */
 export async function assertSchema(): Promise<Manifest> {
