@@ -5,12 +5,16 @@ import Link from "next/link";
 import {
   Activity,
   BarChart3,
+  Building2,
   ChartNoAxesCombined,
   Database,
+  Eye,
   Layers,
   LayoutDashboard,
+  MessageSquare,
   ScanSearch,
 } from "lucide-react";
+import { usePathname } from "next/navigation";
 
 import {
   Select,
@@ -50,6 +54,13 @@ const overviewAnchors = [
   { label: "Señales", href: "#senales", icon: ScanSearch },
 ] as const;
 
+const productLinks = [
+  { href: "/", label: "Company", icon: Building2 },
+  { href: "/grupos", label: "Groups", icon: Layers },
+  { href: "/watcher", label: "Watcher", icon: Eye },
+  { href: "/ask", label: "Ask", icon: MessageSquare },
+] as const;
+
 type OverviewHref = (typeof overviewAnchors)[number]["href"] | "#resumen";
 
 function isOverviewHref(hash: string): hash is OverviewHref {
@@ -70,6 +81,7 @@ export function HealthSidebar({
   onViewChange: (view: AppView) => void;
 }) {
   const { setOpenMobile } = useSidebar();
+  const pathname = usePathname();
   const [activeHref, setActiveHref] = useState<OverviewHref>("#resumen");
 
   useEffect(() => {
@@ -178,6 +190,30 @@ export function HealthSidebar({
                       <item.icon />
                       <span>{item.label}</span>
                     </a>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarSeparator />
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Product</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {productLinks.map((item) => (
+                <SidebarMenuItem key={item.href}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={pathname === item.href}
+                    tooltip={item.label}
+                  >
+                    <Link href={item.href} onClick={() => setOpenMobile(false)}>
+                      <item.icon />
+                      <span>{item.label}</span>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}

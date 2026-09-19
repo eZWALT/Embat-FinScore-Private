@@ -8,6 +8,7 @@ import { ArrowLeft, Layers } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { ProductNav } from "@/components/product-nav";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { AlertList } from "@/components/group/alert-list";
 import { CompanyPanel } from "@/components/group/company-panel";
@@ -47,27 +48,32 @@ export function GroupHealthMap({ data }: { data: GroupMapData }) {
 
   return (
     <div className="min-h-screen">
-      <header className="sticky top-0 z-10 flex h-14 items-center justify-between border-b bg-background/95 px-4 backdrop-blur sm:px-6">
-        <div className="flex min-w-0 items-center gap-3">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
-          >
-            <ArrowLeft className="size-3.5" />
-            Panel de empresa
-          </Link>
-          <Separator orientation="vertical" className="h-4" />
-          <div className="min-w-0">
-            <p className="truncate text-sm font-medium">Mapa de salud por grupo</p>
-            <p className="truncate font-mono text-xs text-muted-foreground">{data.group.groupId}</p>
+      <header className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur">
+        <div className="flex h-14 items-center justify-between px-4 sm:px-6">
+          <div className="flex min-w-0 items-center gap-3">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+            >
+              <ArrowLeft className="size-3.5" />
+              Panel de empresa
+            </Link>
+            <Separator orientation="vertical" className="h-4" />
+            <div className="min-w-0">
+              <p className="truncate text-sm font-medium">Mapa de salud por grupo</p>
+              <p className="truncate font-mono text-xs text-muted-foreground">{data.group.groupId}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <Badge variant="outline" className="font-mono text-[11px] font-normal text-muted-foreground">
+              {formatMonth(data.asOfMonth)}
+              {data.isSample ? " · muestra" : ""}
+            </Badge>
+            <ThemeSwitcher />
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          <Badge variant="outline" className="font-mono text-[11px] font-normal text-muted-foreground">
-            {formatMonth(data.asOfMonth)}
-            {data.isSample ? " · muestra" : ""}
-          </Badge>
-          <ThemeSwitcher />
+        <div className="flex items-center border-t px-4 py-1.5 sm:px-6">
+          <ProductNav current="/grupos" />
         </div>
       </header>
 

@@ -2,24 +2,26 @@
 
 import { useRouter } from "next/navigation";
 
+import { AgentChat } from "@/components/agent-chat";
 import { ProductNav } from "@/components/product-nav";
-import { WatcherPostView } from "@/components/watcher-post-view";
-import { WatcherReply } from "@/components/watcher-reply";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import type { WatcherPost } from "@/lib/agent/watcher-post";
 
-export function WatcherChannel({
-  asOf,
-  disclaimer,
-  posts,
+const COMPANY_QUESTIONS = [
+  "Why is this company's score what it is this month?",
+  "What changed in the last three months, and who owns the action?",
+] as const;
+
+const GROUP_QUESTIONS = [
+  "Which companies in this group need attention this month?",
+  "What group alerts should collections or the treasurer review?",
+] as const;
+
+export function AskChat({
   companies,
   groups,
   companyId,
   groupId,
 }: {
-  asOf: string;
-  disclaimer: string;
-  posts: WatcherPost[];
   companies: { id: string; score: number; trajectory: string }[];
   groups: { id: string; n: number; mean: number | null }[];
   companyId: string;
@@ -31,17 +33,23 @@ export function WatcherChannel({
     const q = new URLSearchParams();
     if (nextCompany) q.set("company", nextCompany);
     if (nextGroup) q.set("group", nextGroup);
-    router.push(`/watcher${q.size ? `?${q}` : ""}`);
+    router.push(`/ask${q.size ? `?${q}` : ""}`);
   }
 
+  const suggestions = [
+    ...(companyId ? COMPANY_QUESTIONS : []),
+    ...(groupId ? GROUP_QUESTIONS : []),
+  ];
+
   return (
-    <div id="sentinel" className="mx-auto flex min-h-svh max-w-2xl flex-col gap-6 px-4 py-6">
+    <div className="mx-auto flex min-h-svh max-w-2xl flex-col gap-6 px-4 py-6">
       <header className="space-y-3">
-        <ProductNav current="/watcher" />
+        <ProductNav current="/ask" />
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">#sentinel</h1>
+          <h1 className="text-xl font-semibold tracking-tight">Ask</h1>
           <p className="text-sm text-muted-foreground">
-            Last three months{asOf ? ` · as-of ${asOf}` : ""}. Same shape every time.
+            Questions about a company or group. Scores and alerts from Neon; records if core is
+            mounted.
           </p>
         </div>
         <div className="grid gap-2 sm:grid-cols-2">
@@ -74,23 +82,19 @@ export function WatcherChannel({
         </div>
       </header>
 
-      {!companyId && !groupId ? (
-        <p className="text-sm text-muted-foreground">Pick a company or a group.</p>
-      ) : (
-        <ol className="space-y-3">
-          {posts.map((post) => (
-            <li key={post.month}>
-              <WatcherPostView post={post} />
-            </li>
-          ))}
-        </ol>
-      )}
-
-      {companyId || groupId ? (
-        <WatcherReply companyId={companyId} groupId={groupId} asOf={asOf} />
-      ) : null}
-
-      {disclaimer ? <p className="text-xs text-muted-foreground">{disclaimer}</p> : null}
+      <AgentChat
+        key={`${companyId}:${groupId}`}
+        api="/api/ask"
+        companyId={companyId || undefined}
+        groupId={groupId || undefined}
+        placeholder="Ask about this company or group"
+        emptyHint={
+          companyId || groupId
+            ? undefined
+            : "Pick a company or a group, or name one in the question."
+        }
+        suggestions={suggestions}
+      />
     </div>
   );
 }
