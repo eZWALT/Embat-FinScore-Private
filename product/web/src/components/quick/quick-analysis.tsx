@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { MousePointerClick, Search, TrendingDown, TrendingUp, X, type LucideIcon } from "lucide-react";
 import { cn } from "cn";
 
+import { ProductCredit } from "@/components/product-credit";
 import { Button } from "@/components/ui/button";
 import { formatPoints } from "@/components/group/labels";
 import { SERIES_COLORS } from "@/components/health-score-view";
@@ -235,7 +236,7 @@ export function QuickAnalysis({
         </div>
       ) : null}
 
-      <p className="mt-auto pt-8 text-xs leading-5 text-muted-foreground">{data.disclaimer}</p>
+      <ProductCredit className="mt-auto pt-8" />
     </div>
   );
 }

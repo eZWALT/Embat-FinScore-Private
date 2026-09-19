@@ -10,7 +10,6 @@ import type { WatcherPost } from "@/lib/agent/watcher-post";
 
 export function WatcherChannel({
   asOf,
-  disclaimer,
   posts,
   companies,
   groups,
@@ -18,7 +17,6 @@ export function WatcherChannel({
   groupId,
 }: {
   asOf: string;
-  disclaimer: string;
   posts: WatcherPost[];
   companies: { id: string; score: number; trajectory: string }[];
   groups: { id: string; n: number; mean: number | null }[];
@@ -90,7 +88,6 @@ export function WatcherChannel({
         <WatcherReply companyId={companyId} groupId={groupId} asOf={asOf} />
       ) : null}
 
-      {disclaimer ? <p className="text-xs text-muted-foreground">{disclaimer}</p> : null}
     </div>
   );
 }

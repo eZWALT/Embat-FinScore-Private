@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EntityCombobox } from "@/components/entity-combobox";
 import { Separator } from "@/components/ui/separator";
+import { ProductCredit } from "@/components/product-credit";
 import { ProductNav } from "@/components/product-nav";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { AlertList } from "@/components/group/alert-list";
@@ -232,7 +233,7 @@ export function GroupHealthMap({ data }: { data: GroupMapData }) {
           </CardContent>
         </Card>
 
-        <p className="mt-8 max-w-4xl text-xs leading-5 text-muted-foreground">{data.disclaimer}</p>
+        <ProductCredit className="mt-8" />
       </main>
     </div>
   );

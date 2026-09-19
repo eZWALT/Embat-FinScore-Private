@@ -35,6 +35,7 @@ import { QuickAnalysis } from "@/components/quick/quick-analysis";
 import { ThemeIconToggle } from "@/components/theme-switcher";
 import { confidenceLabels, scoreColor, trajectoryLabels } from "@/components/group/labels";
 import { HealthScoreChat } from "@/components/health-score-chat";
+import { ProductCredit } from "@/components/product-credit";
 import { HealthScoreView, SERIES_COLOR_LABELS } from "@/components/health-score-view";
 import { type MonthRange } from "@/components/quick/quick-chart";
 import { HealthSidebar, type AppView } from "@/components/health-sidebar";
@@ -429,9 +430,7 @@ export function HealthDashboard({
 
         <ResumenVigilancia companyId={company.companyId} />
 
-        <p className="mt-8 max-w-4xl text-xs leading-5 text-muted-foreground">
-          {data.disclaimer}
-        </p>
+        <ProductCredit className="mt-8" />
             </>
           )}
         </main>
