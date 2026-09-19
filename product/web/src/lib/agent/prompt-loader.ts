@@ -6,6 +6,7 @@ export type AgentRole = "sentinel" | "chat";
 const FILES = {
   sentinel: "sentinel_system.md",
   chat: "chat_system.md",
+  scope: "scope.md",
   product: "product_context.md",
   wording: "wording_rules.md",
   format: "watcher_format.md",
@@ -24,6 +25,7 @@ async function readPrompt(name: string) {
 export async function loadSystemPrompt(role: AgentRole, extra?: string) {
   const parts = [
     await readPrompt(FILES[role]),
+    await readPrompt(FILES.scope),
     await readPrompt(FILES.product),
     await readPrompt(FILES.wording),
     await readPrompt(FILES.format),

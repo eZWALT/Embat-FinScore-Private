@@ -1,15 +1,55 @@
 "use client";
 
 import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport, getToolName, isToolUIPart } from "ai";
+import {
+  DefaultChatTransport,
+  getToolName,
+  isTextUIPart,
+  isToolUIPart,
+  type DynamicToolUIPart,
+  type ToolUIPart,
+  type UIMessage,
+} from "ai";
 import { ArrowUp } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { AgentMarkdown } from "@/components/agent-markdown";
 import { AgentPlot } from "@/components/agent-plot";
 import { AgentTrace } from "@/components/agent-trace";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { contextBody, plotFromPart, type AgentContext } from "@/lib/agent/chat-parts";
+
+type AgentToolPart = ToolUIPart | DynamicToolUIPart;
+
+type ChatSegment =
+  | { kind: "text"; key: string; text: string }
+  | { kind: "tools"; key: string; items: { part: AgentToolPart; runIndex: number; key: string }[] };
+
+/** Consecutive tools in place; a text part starts a new run. Never regroups tools to the top. */
+function segmentsInStreamOrder(messageId: string, parts: UIMessage["parts"]): ChatSegment[] {
+  const segments: ChatSegment[] = [];
+  parts.forEach((part, partIndex) => {
+    if (isToolUIPart(part)) {
+      const prev = segments.at(-1);
+      const item = {
+        part,
+        runIndex: prev?.kind === "tools" ? prev.items.length + 1 : 1,
+        key: `${messageId}-tool-${part.toolCallId || partIndex}`,
+      };
+      if (prev?.kind === "tools") {
+        prev.items.push(item);
+        return;
+      }
+      segments.push({ kind: "tools", key: `${messageId}-tools-${partIndex}`, items: [item] });
+      return;
+    }
+    if (isTextUIPart(part) && part.text) {
+      segments.push({ kind: "text", key: `${messageId}-t-${partIndex}`, text: part.text });
+    }
+  });
+  return segments;
+}
 
 export function AgentChat({
   api,
@@ -68,44 +108,63 @@ export function AgentChat({
   const sheet = layout === "sheet";
 
   return (
-    <div className={sheet ? "flex h-full min-h-0 flex-col gap-3" : "flex flex-col gap-3"}>
-      <ol className={sheet ? "min-h-0 flex-1 space-y-3 overflow-y-auto" : "space-y-3"} aria-live="polite">
+    <div className={sheet ? "flex h-full min-h-0 min-w-0 flex-col gap-3" : "flex min-w-0 flex-col gap-3"}>
+      <ol className={sheet ? "min-h-0 min-w-0 flex-1 space-y-3 overflow-y-auto" : "min-w-0 space-y-3"} aria-live="polite">
         {messages.length === 0 && emptyHint ? (
           <li className="text-sm text-muted-foreground">{emptyHint}</li>
         ) : null}
-        {messages.map((message) => (
-          <li
-            key={message.id}
-            className={
-              message.role === "user"
-                ? "ml-auto max-w-[85%] space-y-1.5 rounded-xl bg-muted px-4 py-3"
-                : "space-y-1.5 rounded-xl border bg-background px-4 py-3"
-            }
-          >
-            <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-              {message.role === "user" ? "Tú" : "Centinela"}
-            </p>
-            {message.parts.map((part, index) => {
-              if (message.role === "assistant" && isToolUIPart(part)) {
-                const plot = getToolName(part) === "plot_series" ? plotFromPart(part) : null;
-                return (
-                  <div key={`${message.id}-tool-${part.toolCallId || index}`} className="space-y-2">
-                    <AgentTrace part={part} />
-                    {plot ? <AgentPlot spec={plot} /> : null}
-                  </div>
-                );
+        {messages.map((message) => {
+          const segments = segmentsInStreamOrder(message.id, message.parts);
+          const lastSegment = segments.at(-1);
+          const streamingMessage = busy && message.role === "assistant" && message.id === messages.at(-1)?.id;
+
+          return (
+            <li
+              key={message.id}
+              className={
+                message.role === "user"
+                  ? "ml-auto max-w-[85%] min-w-0 space-y-1.5 rounded-xl bg-muted px-4 py-3"
+                  : "min-w-0 max-w-full space-y-1.5 overflow-hidden rounded-xl border bg-background px-4 py-3"
               }
-              if (part.type === "text" && part.text) {
-                return (
-                  <p key={`${message.id}-t-${index}`} className="whitespace-pre-wrap text-sm leading-snug">
-                    {part.text}
-                  </p>
-                );
-              }
-              return null;
-            })}
-          </li>
-        ))}
+            >
+              <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                {message.role === "user" ? "Tú" : "Centinela"}
+              </p>
+              {message.role === "user"
+                ? segments.map((segment) =>
+                    segment.kind === "text" ? (
+                      <p key={segment.key} className="whitespace-pre-wrap text-sm leading-snug wrap-break-word">
+                        {segment.text}
+                      </p>
+                    ) : null,
+                  )
+                : segments.map((segment) => {
+                    if (segment.kind === "text") {
+                      return (
+                        <AgentMarkdown
+                          key={segment.key}
+                          text={segment.text}
+                          streaming={streamingMessage && lastSegment?.kind === "text" && lastSegment.key === segment.key}
+                        />
+                      );
+                    }
+                    return (
+                      <div key={segment.key} className="flex min-w-0 flex-col gap-0.5">
+                        {segment.items.map((item) => {
+                          const plot = getToolName(item.part) === "plot_series" ? plotFromPart(item.part) : null;
+                          return (
+                            <div key={item.key} className="min-w-0 space-y-1">
+                              <AgentTrace part={item.part} index={item.runIndex} />
+                              {plot ? <AgentPlot spec={plot} /> : null}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })}
+            </li>
+          );
+        })}
         {busy && messages.at(-1)?.role !== "assistant" ? (
           <li className="text-xs text-muted-foreground">Consultando…</li>
         ) : null}

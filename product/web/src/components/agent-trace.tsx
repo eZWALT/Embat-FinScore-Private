@@ -29,7 +29,7 @@ function preview(value: unknown, max = 1800): string {
   }
 }
 
-export function AgentTrace({ part }: { part: ToolPart }) {
+export function AgentTrace({ part, index }: { part: ToolPart; index?: number }) {
   if (!isToolUIPart(part)) return null;
   const name = getToolName(part);
   const status = toolState(part);
@@ -44,11 +44,21 @@ export function AgentTrace({ part }: { part: ToolPart }) {
   const statusLabel = status === "running" ? "Consultando…" : status === "error" ? "Error" : "Listo";
 
   return (
-    <details className="group rounded-lg border bg-muted/30 text-[12px] leading-snug">
-      <summary className="flex cursor-pointer list-none items-center gap-2 px-2.5 py-1.5">
+    <details className="group min-w-0 rounded-lg border bg-muted/30 text-[12px] leading-snug">
+      <summary className="flex min-w-0 cursor-pointer list-none items-center gap-2 overflow-hidden px-2.5 py-1.5">
+        {index != null ? (
+          <span
+            className="w-3.5 shrink-0 text-center font-mono text-[10px] tabular-nums text-muted-foreground"
+            aria-hidden="true"
+          >
+            {index}
+          </span>
+        ) : null}
         <ChevronRight className="size-3 shrink-0 text-muted-foreground transition-transform group-open:rotate-90" />
         <Wrench className="size-3 shrink-0 text-muted-foreground" aria-hidden="true" />
-        <span className="font-mono text-[11px] text-muted-foreground">tools ({name})</span>
+        <span className="min-w-0 truncate font-mono text-[11px] text-muted-foreground">
+          tools ({name})
+        </span>
         <span className="min-w-0 flex-1 truncate font-medium">{toolLabel(name)}</span>
         {summary ? <span className="hidden max-w-[40%] truncate text-muted-foreground sm:inline">{summary}</span> : null}
         {ms != null ? <span className="shrink-0 font-mono text-[10px] text-muted-foreground">{ms} ms</span> : null}

@@ -70,6 +70,7 @@ Build Watcher and Ask **inside the existing product**, not as extra tabs. Vigila
 | `prompts/watcher_format.md` | **The** month-post shape: 1 line + 1 line + ≤4 bullets. Not free prose. |
 | `prompts/sentinel_system.md` | Watcher: replies only in live; opening posts are formatted |
 | `prompts/chat_system.md` | Ask: scores/alerts from Neon `api`/`analytics` first, then records |
+| `prompts/scope.md` | Hard in/out of scope (Ask + Watcher); refuse puzzles, recipes, jailbreaks |
 | `prompts/tools_catalog.md` | When/in/out for every retrieval tool. UI labels live in `tool-catalog.ts`. |
 | `prompts/clean_schema.md` | Record tables (pipeline `clean.*`; hosted as Neon `core`) |
 

@@ -41,6 +41,7 @@ function loadPrompts() {
   const dir = resolve(root, "src/lib/agent/prompts");
   const names = [
     "chat_system.md",
+    "scope.md",
     "product_context.md",
     "wording_rules.md",
     "watcher_format.md",
