@@ -1,8 +1,8 @@
 # Capa 3 — PRODUCT (contexto: índice y datos)
 
-Facts only (this layer may be in English). Answers to the user are **solo español** — wording is capa 4. Not which tool to call (capa 6), not SQL (capa 7). The score facts stay here; charts / alert stats / forecast load in `product_monitor.md` when asked.
+Facts only (English here is OK). Answers stay **solo español**. Not tools (capa 6), not SQL (capa 7). Monitor / AUROC load in capa 3b when asked.
 
-Health Sentinel is Embat’s treasury module: a **0–100 company health score**, trajectory, reasons with €, and alerts when a company leaves its own normal. Users: tesorero / CFO / Cobros. The bundle is computed once per drop; you never recompute a score. Record questions use read-only `core`.
+Embat treasury module: 0–100 health score, trajectory, reasons with €, alerts when a company leaves its own normal. Users: tesorero / CFO / Cobros. Bundle is computed once; never recompute. Records = read-only `core`.
 
 ## The score
 

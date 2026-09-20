@@ -102,6 +102,7 @@ Add a new dated file after meaningful work. Do not rewrite old ones. If the new 
 | `persistent-memory/2026-09-20-0650-slim-alert-reasons.md` | Overnight: alert payloads keep two reasons; no volume lecture. |
 | `persistent-memory/2026-09-20-0652-peers-not-company-only.md` | Overnight: pares/grupo questions are not company-only. |
 | `persistent-memory/2026-09-20-0654-period-no-summary.md` | Overnight: period has no closing summary; SCOPE omits `COMP_*`. |
+| `persistent-memory/2026-09-20-0656-followups-owner-if-alert.md` | Overnight: follow-up owner chips only after `get_alerts`. |
 | `persistent-memory/2026-09-20-0115-thinking-no-verbose.md` | Brain on: drop the length cap. Do not ask for a longer reply. |
 | `persistent-memory/2026-09-20-0120-thinking-max-exa.md` | Exa + `max` superseded. |
 | `persistent-memory/2026-09-20-0130-drop-exa.md` | No Exa. No `search_web`. No `EXA_API_KEY`. |

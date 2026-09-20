@@ -608,4 +608,10 @@ Keep vs main sample suite (`--ignore-latency`).
 
 What landed: no period summary paragraph (707 chars). SCOPE opening no longer says `COMP_*`.
 
+## Tick 54 — 2026-09-20 06:56 +02
+
+Keep vs main sample suite (`--ignore-latency`).
+
+What landed: follow-up chips mention dueño only after `get_alerts`; PRODUCT intro is two sentences.
+
 Do not merge. Past min 4h; loop until 08:55.
