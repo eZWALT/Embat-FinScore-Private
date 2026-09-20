@@ -130,7 +130,7 @@ export function MonitorPlot({
   onExplain?: (prompt: string) => void;
 }) {
   const [view, setView] = useState<PlotView>("score");
-  const [showForecast, setShowForecast] = useState(true);
+  const [showForecast, setShowForecast] = useState(false);
   const [loaded, setLoaded] = useState<{ companyId: string; monitor: CompanyMonitor } | null>(null);
   const [failure, setFailure] = useState<{ companyId: string; message: string } | null>(null);
 
