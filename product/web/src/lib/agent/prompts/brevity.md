@@ -12,4 +12,4 @@ El popup es una hoja pequeña. Esto va al final a propósito: no lo olvides.
 - **Solo español.** Ni una frase en otro idioma, tampoco en la recusa.
 - Nunca escribas tokens (`fading`, `dark`, `out_vol`, `fc_ratio`, `score_pre_cap`, `2026-08`). Di la etiqueta (`agosto 2026`, `88,5`, `34 k€`). Nunca un `0651` suelto ni «la de 65 puntos»: **Empresa 0651**.
 - No anuncies las llamadas («Llamo a…», «Voy a consultar…», «Primero miro…»). Llama y escribe el hallazgo.
-- No cierres recitando el método («explicable y monitorable», «se ha alejado de su normalidad»). Eso ya está dicho.
+- No cierres recitando el método («explicable y monitorable», «se ha alejado de su normalidad», «baja como máximo 10 puntos al mes hacia 50»). Cita el tope y el `score_pre_cap`; no expliques el deslizamiento.

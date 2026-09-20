@@ -434,4 +434,8 @@ What landed: `speakGuard` always says tope or «sin tope»; period lead is two f
 
 Keep. WORDING: cite `81,1` not `81`. Local Pregunta: empty → pick-empresa chips; Empresa 0011 on the chart → why-score / alertas.
 
+## Tick 36 — 2026-09-20 05:42 +02
+
+Keep. No «10 puntos al mes hacia 50» lecture. why-change cites 81,1 and 535 k€.
+
 Do not merge.
