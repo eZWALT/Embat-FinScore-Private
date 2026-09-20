@@ -1,6 +1,6 @@
 # Capa 7 — RECORDS (`clean.*` / Neon `core`; solo Ask)
 
-DuckDB. Query only these tables, with `clean.` prefix. `SELECT` only. Always filter by `company_id` (or a list of them) and add a `LIMIT`. Money is in each row's `currency`. Dates are timestamps; use `date_trunc('month', col)` for monthly views. Window: 2024-09-01 → 2026-09-01.
+Solo estas tablas, prefijo `clean.`. Solo `SELECT`. Siempre `WHERE company_id` (o una lista) y un `LIMIT`. El dinero va en `currency` de cada fila. Fechas = timestamps; `date_trunc('month', col)` para meses. Ventana: 2024-09-01 → 2026-09-01. Responde en español; los nombres de columna se quedan en inglés.
 
 | Table | Rows | Columns | Notes |
 |---|---|---|---|

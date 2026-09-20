@@ -91,8 +91,10 @@ export function toolOutputSummary(name: string, output: unknown): string {
     case "explain_change":
       return [
         typeof row.empresa === "string" ? row.empresa : row.company_id,
-        row.from && row.to ? `${row.from} → ${row.to}` : null,
-        row.change != null ? `${row.change} pts` : null,
+        (row.desde ?? row.from) && (row.hasta ?? row.to)
+          ? `${row.desde ?? row.from} → ${row.hasta ?? row.to}`
+          : null,
+        (row.cambio ?? row.change) != null ? `${row.cambio ?? row.change} pts` : null,
       ]
         .filter(Boolean)
         .join(" · ");

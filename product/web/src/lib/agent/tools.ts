@@ -569,17 +569,17 @@ const explain_change = tool({
       );
       return {
         empresa: entityLabel(id),
-        from: speakMonth(prev.month, true),
-        to: speakMonth(cur.month, true),
-        score_from: speakScore(prev.score),
-        score_to: speakScore(cur.score),
-        change: speakDelta(cur.score - prev.score),
-        trajectory_from: speakTrajectory(prev.trajectory),
-        trajectory_to: speakTrajectory(cur.trajectory),
-        guard_from: speakGuard(prev.guard),
-        guard_to: speakGuard(cur.guard),
-        change_guard: extras?.change_guard ?? null,
-        item_deltas: deltas,
+        desde: speakMonth(prev.month, true),
+        hasta: speakMonth(cur.month, true),
+        indice_desde: speakScore(prev.score),
+        indice_hasta: speakScore(cur.score),
+        cambio: speakDelta(cur.score - prev.score),
+        trayectoria_desde: speakTrajectory(prev.trajectory),
+        trayectoria_hasta: speakTrajectory(cur.trajectory),
+        tope_desde: speakGuard(prev.guard),
+        tope_hasta: speakGuard(cur.guard),
+        cambio_tope: extras?.change_guard ?? null,
+        deltas,
         change_reasons: (cur.change_reasons ?? []).map((reason) => slimReason(reason, detail.currency)),
       };
     } catch (error) {

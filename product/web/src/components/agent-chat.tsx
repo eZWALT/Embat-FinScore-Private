@@ -31,7 +31,13 @@ import {
   type AgentContext,
 } from "@/lib/agent/chat-parts";
 import { streamFollowupChips } from "@/lib/agent/followup-client";
-import { fallbackFollowups } from "@/lib/agent/suggestions";
+import { fallbackFollowups, sanitizeFollowups } from "@/lib/agent/suggestions";
+
+function hadAlertTools(messages: UIMessage[]): boolean {
+  return messages.some((message) =>
+    (message.parts ?? []).some((part) => isToolUIPart(part) && getToolName(part) === "get_alerts"),
+  );
+}
 
 type AgentToolPart = ToolUIPart | DynamicToolUIPart;
 
@@ -216,20 +222,20 @@ export function AgentChat({
     followupAbort.current?.abort();
     const ac = new AbortController();
     followupAbort.current = ac;
-    const fallback = fallbackFollowups();
+    const alerts = hadAlertTools(messagesRef.current);
+    const fallback = fallbackFollowups(alerts);
     setFollowups(fallback);
     void streamFollowupChips({
       messages: messagesRef.current,
       context: ctxRef.current,
       signal: ac.signal,
       onChip: (chips) => {
-        if (!ac.signal.aborted && chips.length) setFollowups(chips.length === 1 ? [chips[0], fallback[1]] : chips);
+        if (!ac.signal.aborted && chips.length) setFollowups(sanitizeFollowups(chips, alerts));
       },
     })
       .then((chips) => {
         if (ac.signal.aborted) return;
-        if (chips.length >= 2) setFollowups(chips.slice(0, 2));
-        else if (chips.length === 1) setFollowups([chips[0], fallback[1]]);
+        setFollowups(sanitizeFollowups(chips.length ? chips : fallback, alerts));
       })
       .catch((caught) => {
         if (caught instanceof DOMException && caught.name === "AbortError") return;
@@ -241,7 +247,7 @@ export function AgentChat({
     api !== "/api/ask" || busy
       ? []
       : lastAssistant && answerText
-        ? (followups.length ? followups : fallbackFollowups()).slice(0, 2)
+        ? sanitizeFollowups(followups.length ? followups : fallbackFollowups(hadAlertTools(messages)), hadAlertTools(messages))
         : lastAssistant
           ? []
           : (suggestions ?? []).slice(0, 2);

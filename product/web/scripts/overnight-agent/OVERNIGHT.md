@@ -708,4 +708,10 @@ Keep vs main sample suite (`--ignore-latency`).
 
 What landed: `sin_el_tope` instead of `score_pre_cap`; group payload in Spanish. Period still cites 81,1.
 
+## Tick 66 — 2026-09-20 07:45 +02
+
+Keep vs main sample suite (`--ignore-latency`). Live local: after a graph question, chips are about entradas / estabilidad, not dueño.
+
+What landed: follow-up owner chips stripped unless `get_alerts` ran; `explain_change` in Spanish; records intro + Sentinel refuse aligned with SCOPE.
+
 Do not merge. Past min 4h; loop until 08:55.

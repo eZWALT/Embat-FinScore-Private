@@ -51,6 +51,20 @@ export function extractFollowups(text: string): string[] {
   return chips;
 }
 
-export function fallbackFollowups(): string[] {
-  return ["¿Por qué ha cambiado?", "¿Quién tiene que actuar?"];
+export function isOwnerFollowup(text: string): boolean {
+  return /qui[eé]n (debe|tiene que) actuar|qui[eé]n act[uú]a|qu[eé] debe hacer el|dueño/i.test(text);
+}
+
+export function fallbackFollowups(hadAlerts = false): string[] {
+  return hadAlerts
+    ? ["¿Por qué ha cambiado?", "¿Quién tiene que actuar?"]
+    : ["¿Por qué ha cambiado?", "¿Qué hay detrás de esos euros?"];
+}
+
+/** Dueño/acción chips only after `get_alerts` already ran. */
+export function sanitizeFollowups(chips: string[], hadAlerts: boolean): string[] {
+  const kept = chips.filter((chip) => hadAlerts || !isOwnerFollowup(chip));
+  if (kept.length >= 2) return kept.slice(0, 2);
+  const filler = fallbackFollowups(hadAlerts).filter((chip) => !kept.includes(chip));
+  return [...kept, ...filler].slice(0, 2);
 }
