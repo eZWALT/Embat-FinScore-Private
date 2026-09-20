@@ -442,4 +442,8 @@ Keep. No «10 puntos al mes hacia 50» lecture. why-change cites 81,1 and 535 k�
 
 Keep. `eur` is the amount (`535 k€`), sign on points (`−8,6 pts`).
 
+## Tick 38 — 2026-09-20 05:49 +02
+
+Keep. Omit `currency` when EUR. Period scorer only flags «tres… caen por hundidas», not «tres empeoran, dos topadas, 0651 sin tope».
+
 Do not merge.

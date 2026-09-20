@@ -502,7 +502,6 @@ function createGetCompany(session?: ToolSession) {
         const payload: Json = {
           empresa: entityLabel(detail.company_id),
           grupo: detail.group_id ? entityLabel(detail.group_id) : undefined,
-          currency: detail.currency,
           month: speakMonth(rec.month, true),
           score: speakScore(rec.score),
           guard: speakGuard(rec.guard),
@@ -513,6 +512,7 @@ function createGetCompany(session?: ToolSession) {
           reasons,
           score_history: scoreHistory(detail.months, rec.month, historySpan, currency),
         };
+        if (detail.currency && detail.currency !== "EUR") payload.currency = detail.currency;
         if (change.length) payload.change_reasons = change;
         if (rec.guard && rec.score_pre_cap != null) payload.score_pre_cap = speakScore(rec.score_pre_cap);
         if ((rec.trail_months ?? 24) < 12) payload.trail_months = rec.trail_months;
