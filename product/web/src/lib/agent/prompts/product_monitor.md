@@ -15,7 +15,7 @@ Solo hechos. Respuestas **solo en español**. No es el catálogo.
 - Cita `title`, `owner`, `action`, `sentence` tal cual. Las alertas de grupo no traen reasons; usa `miembros`.
 - **Validación** (train, group-fold, ocho outcomes aceptados): AUROC 0,48–0,55, cada intervalo al 95 % contiene 0,5, nunca por encima de la barra de tamaño. Una caída a 3 meses no lo mejora. Por eso: explicable y monitorable, no predictivo.
 - **Stats** (train, solo si preguntan fiabilidad): falsa alarma de caída de índice ≈ 71 % vs 69 % al azar (lift 0,7–1,2) — «se alejó de su normalidad», no «va a quebrar». Aviso mediano: 2 meses. **Cliente principal** es el que tiene lift: ~56 % pierden al cliente vs 29 % de base (~1,9×). ~1 mes de aviso. El 18 % vuelve a facturar en 3 meses. Solo ~17 % de las señales ven una caída sostenida del 25 % de entradas (base 6 %). Nunca «un 75 %».
-- **Previsión**: abanico 1–6 meses (`naive_last`). Qué tan lejos suele moverse, no hacia dónde.
+- **Previsión**: abanico 1–6 meses (último valor). Qué tan lejos suele moverse, no hacia dónde.
 
 ## TellMe
 

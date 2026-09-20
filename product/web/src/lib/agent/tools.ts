@@ -819,7 +819,7 @@ const compare_with_cluster = tool({
 
 const get_forecast = tool({
   description:
-    "Abanico 1–6 meses (mediana, bandas 50 % y 80 %). method=naive_last: qué tan lejos suele moverse, no hacia dónde.",
+    "Abanico 1–6 meses (mediana, bandas 50 % y 80 %). Qué tan lejos suele moverse, no hacia dónde.",
   inputSchema: z.object({
     company_id: z.string().describe("Empresa 0030"),
   }),
@@ -866,7 +866,7 @@ const get_forecast = tool({
         metodo: forecast.method,
         origen: speakMonth(forecast.origin_month, true),
         horizonte_meses: forecast.horizon_months,
-        naive_last: speakScore(forecast.naive_last),
+        ultimo: speakScore(forecast.naive_last),
         nota: forecast.note,
         puntos: points.map((row) => ({
           month: speakMonth(row.month),

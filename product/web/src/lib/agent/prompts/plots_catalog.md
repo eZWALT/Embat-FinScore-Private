@@ -10,7 +10,7 @@ Un gráfico por respuesta. Nunca facturas, entradas ni una serie tecleada.
 - `control_own` — vs su propia normalidad (`company_id`, `metric?` score / payment_history / amounts_owed / stability)
 - `control_cluster` — hueco vs pares (`company_id`)
 - `control_group` — media del grupo vs su historia (`group_id`)
-- `forecast_fan` — abanico naive_last (`company_id`)
+- `forecast_fan` — abanico (`company_id`)
 - `group_members` — índice actual de cada empresa (`group_id`)
 
 Solo se puede improvisar `control_own` con una métrica de esa lista.

@@ -122,6 +122,7 @@ Add a new dated file after meaningful work. Do not rewrite old ones. If the new 
 | `persistent-memory/2026-09-20-0815-sql-plot-empresa-labels.md` | Overnight: SQL-guard errors in Spanish; plot titles say Empresa. |
 | `persistent-memory/2026-09-20-0820-session-screen-es.md` | Overnight: SESSION screen keys are Spanish (`modo` / `foco`). |
 | `persistent-memory/2026-09-20-0825-sql-comments-cluster-nota.md` | Overnight: records SQL comments in Spanish; cluster field is `nota`. |
+| `persistent-memory/2026-09-20-0830-quick-owner-forecast-ultimo.md` | Overnight: quick ROLE owner only after alerts; forecast `ultimo`. |
 | `persistent-memory/2026-09-20-0115-thinking-no-verbose.md` | Brain on: drop the length cap. Do not ask for a longer reply. |
 | `persistent-memory/2026-09-20-0120-thinking-max-exa.md` | Exa + `max` superseded. |
 | `persistent-memory/2026-09-20-0130-drop-exa.md` | No Exa. No `search_web`. No `EXA_API_KEY`. |

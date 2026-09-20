@@ -742,4 +742,8 @@ Keep vs main. SESSION keys: `modo` / `pantalla` / `foco` / `grupo`.
 
 Keep vs main sample suite (`--ignore-latency`). 1/6, 1/6, 0/5, 4/6, 1/6. SQL comments in Spanish; cluster `nota`.
 
+## Tick 74 — 2026-09-20 08:30 +02
+
+Keep vs main. Quick ROLE matches owner-only-after-alerts. Forecast field `ultimo`. Live chips after graph: no dueño; after alertas: other-empresa follow-ups.
+
 Do not merge. Past min 4h; loop until 08:55.
