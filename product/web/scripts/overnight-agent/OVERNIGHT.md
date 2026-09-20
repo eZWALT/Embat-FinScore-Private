@@ -714,4 +714,8 @@ Keep vs main sample suite (`--ignore-latency`). Live local: after a graph questi
 
 What landed: follow-up owner chips stripped unless `get_alerts` ran; `explain_change` in Spanish; records intro + Sentinel refuse aligned with SCOPE.
 
+## Tick 67 — 2026-09-20 07:52 +02
+
+Keep vs main. `explain_change` deltas speak Spanish labels. Production main still asks for `COMP_*` on unscoped alerts.
+
 Do not merge. Past min 4h; loop until 08:55.

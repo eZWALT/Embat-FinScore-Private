@@ -9,7 +9,7 @@ export const CATEGORY_LABELS: Record<CategoryId, string> = {
   mix: "Combinación de clientes",
 };
 
-const REASON_LABELS: Record<string, string> = {
+export const REASON_LABELS: Record<string, string> = {
   delay_paid: "El retraso en pagos a proveedores",
   delay_coll: "El retraso en cobros de clientes",
   ap_overdue30: "Las facturas de proveedores vencidas",

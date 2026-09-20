@@ -3,7 +3,7 @@ import { z } from "zod";
 
 import { entityLabel, formatDecimal, formatMoney, formatSigned, relabelEntities } from "@/lib/display";
 import { formatMonth, formatMonthShort, parseMonth } from "@/lib/format-month";
-import { CATEGORY_LABELS } from "@/lib/data/plain-language";
+import { CATEGORY_LABELS, REASON_LABELS } from "@/lib/data/plain-language";
 import { createScoreRepository } from "@/lib/data/repository";
 import type {
   Alert,
@@ -564,7 +564,7 @@ const explain_change = tool({
       const deltas = Object.fromEntries(
         Object.entries(itemSource)
           .filter(([, item]) => item.delta != null)
-          .map(([key, item]) => [key, item.delta])
+          .map(([key, item]) => [REASON_LABELS[key] ?? key, item.delta])
           .sort((a, b) => Math.abs(Number(b[1])) - Math.abs(Number(a[1]))),
       );
       return {
