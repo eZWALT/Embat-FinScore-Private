@@ -710,7 +710,7 @@ function createGetAlerts(session?: ToolSession) {
 
 const get_control_chart = tool({
   description:
-    "Gráfico de control: ¿bache o deterioro? Persistencia: 3 de los últimos 4. Empresa: own_history|cluster. Grupo: group_own_history|group_vs_groups.",
+    "Gráfico de control: ¿bache o deterioro? Persistencia: 3 de los últimos 4. Empresa: vs su histórico | vs pares. Grupo: vs su histórico | vs otros grupos.",
   inputSchema: z.object({
       entity_id: z.string().describe("Empresa 0030 o Grupo 0126"),
     comparison: z.enum(COMPARISONS).optional(),
@@ -762,19 +762,19 @@ const get_control_chart = tool({
       const from = Math.max(0, n - 8);
       const slice = <T,>(values: T[] | null | undefined) => (Array.isArray(values) ? values.slice(from) : values);
       return {
-        comparison: chart.comparison,
-        metric: chart.metric,
+        comparacion: CHART_LABELS[chart.comparison] ?? chart.comparison,
+        metrica: chart.metric === "score" ? "índice" : (CATEGORY_LABELS[chart.metric as CategoryId] ?? chart.metric),
         months: (slice(chart.months) ?? []).map((month) => speakMonth(month) ?? month),
         values: slice(chart.values),
         center: slice(chart.center),
         lower: slice(chart.lower),
         upper: slice(chart.upper),
         ewma: slice(chart.ewma),
-        signal: slice(chart.signal),
-        persistent: slice(chart.persistent),
-        persistent_now: Array.isArray(chart.persistent) ? chart.persistent[n - 1] ?? null : null,
-        persistent_rule: "3 de los últimos 4",
-        method,
+        senal: slice(chart.signal),
+        persistencia: slice(chart.persistent),
+        persistencia_ahora: Array.isArray(chart.persistent) ? chart.persistent[n - 1] ?? null : null,
+        persistencia_regla: "3 de los últimos 4",
+        metodo: method === "ewma" ? "EWMA" : method,
       };
     } catch (error) {
       return { error: "sin gráfico de control", detail: error instanceof Error ? error.message : String(error) };
@@ -863,7 +863,7 @@ const get_forecast = tool({
       return {
         empresa: entityLabel(id),
         metrica: forecast.metric === "score" ? "índice" : forecast.metric,
-        metodo: forecast.method,
+        metodo: forecast.method === "naive_last" ? "último valor" : forecast.method,
         origen: speakMonth(forecast.origin_month, true),
         horizonte_meses: forecast.horizon_months,
         ultimo: speakScore(forecast.naive_last),

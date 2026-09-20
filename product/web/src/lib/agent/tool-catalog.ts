@@ -114,7 +114,11 @@ export function toolOutputSummary(name: string, output: unknown): string {
     case "list_companies":
       return `${Array.isArray(row.companies) ? row.companies.length : 0} empresas · ${row.as_of ?? ""}`.trim();
     case "get_control_chart":
-      return [row.comparison, row.metric, Array.isArray(row.months) ? `${row.months.length} meses` : null]
+      return [
+        row.comparacion ?? row.comparison,
+        row.metrica ?? row.metric,
+        Array.isArray(row.months) ? `${row.months.length} meses` : null,
+      ]
         .filter(Boolean)
         .join(" · ");
     case "compare_with_cluster":
