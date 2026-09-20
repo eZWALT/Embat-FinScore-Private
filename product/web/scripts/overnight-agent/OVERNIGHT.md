@@ -580,4 +580,18 @@ Keep vs main sample suite (`--ignore-latency`).
 
 What landed: two reasons per alert; monitor volume line gone. Alerts still have owner + action.
 
+## Tick 52 — 2026-09-20 06:52 +02
+
+Keep vs main sample suite (`--ignore-latency`).
+
+| Case | main tools / q / s | tick 52 tools / q / s |
+|---|---|---|
+| why-score | 1 / 6 / 8.7 | 1 / 6 / 4.6 |
+| alerts | 2 / 6 / 11.0 | **1 / 6** / 3.4 |
+| refuse | 0 / 5 / 2.4 | 0 / 5 / 0.6 |
+| period-4 | 11 / 2 / 17.0 | **4 / 6** / 8.1 |
+| why-change | 2 / 6 / 8.7 | 1 / 6 / 6.5 |
+
+What landed: `companyOnly` is false for group/pares, so `compare_with_cluster` still works. Local ×3: one quote per Empresa, `Leer índice ×3`.
+
 Do not merge. Past min 4h; loop until 08:55.
