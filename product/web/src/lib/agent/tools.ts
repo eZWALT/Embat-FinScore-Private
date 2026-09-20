@@ -346,31 +346,32 @@ const get_company = tool({
       const rec = monthRecord(detail, month);
       if ("error" in rec) return rec;
       const extras = await loadScoreExtras(company_id, rec.month);
-      return {
+      const reasons = (rec.reasons ?? []).map(slimReason);
+      const change = (rec.change_reasons ?? []).map(slimReason);
+      const payload: Json = {
         company_id: detail.company_id,
         group_id: detail.group_id,
-        country: detail.country,
         currency: detail.currency,
-        erp: detail.erp,
-        first_month: detail.first_month,
         month: rec.month,
         score: rec.score,
         score_pre_cap: rec.score_pre_cap,
         guard: rec.guard,
         trajectory: rec.trajectory,
-        slope3: extras?.slope3 ?? null,
-        slope6: extras?.slope6 ?? null,
         confidence: rec.confidence,
         confidence_note: rec.confidence_note,
-        coverage: rec.coverage,
-        trail_months: rec.trail_months,
         categories: rec.categories,
-        items: extras?.items ? slimItems(extras.items) : itemsFromMonth(rec),
-        reasons: (rec.reasons ?? []).map(slimReason),
-        change_reasons: (rec.change_reasons ?? []).map(slimReason),
+        reasons,
+        change_reasons: change,
         score_history: scoreHistory(detail.months, rec.month),
         alert_ids: detail.alert_ids,
       };
+      if (extras?.slope3 != null) payload.slope3 = extras.slope3;
+      if (extras?.slope6 != null) payload.slope6 = extras.slope6;
+      if ((rec.trail_months ?? 24) < 12) payload.trail_months = rec.trail_months;
+      if (!reasons.length) {
+        payload.items = extras?.items ? slimItems(extras.items) : itemsFromMonth(rec);
+      }
+      return payload;
     } catch (error) {
       return asError(error);
     }

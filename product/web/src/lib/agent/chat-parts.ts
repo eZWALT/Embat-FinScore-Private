@@ -49,6 +49,17 @@ export function plotFromPart(part: UIMessage["parts"][number]): PlotSpec | null 
   return isPlotSpec(plot) ? plot : null;
 }
 
+export function reasonQuotesFromPart(part: UIMessage["parts"][number]): string[] {
+  if (!isToolUIPart(part)) return [];
+  const output = "output" in part ? part.output : undefined;
+  if (!output || typeof output !== "object") return [];
+  const row = output as { reasons?: { sentence?: string }[]; change_reasons?: { sentence?: string }[] };
+  const quotes = [...(row.reasons ?? []), ...(row.change_reasons ?? [])]
+    .map((reason) => (typeof reason.sentence === "string" ? reason.sentence.trim() : ""))
+    .filter(Boolean);
+  return quotes.slice(0, 2);
+}
+
 export function plotsFromParts(parts: UIMessage["parts"]): PlotSpec[] {
   return parts.map(plotFromPart).filter((plot): plot is PlotSpec => plot != null);
 }

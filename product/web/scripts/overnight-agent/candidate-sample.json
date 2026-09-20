@@ -1,5 +1,5 @@
 {
-  "at": "2026-09-20T00:50:45.752Z",
+  "at": "2026-09-20T01:10:37.993Z",
   "target": "http://localhost:3010",
   "cases": {
     "why-score": {
@@ -10,12 +10,12 @@
         "month_fanout": 0,
         "has_text": true,
         "empty_after_tools": false,
-        "text_len": 760,
+        "text_len": 781,
         "english_heavy": false,
         "offers_next": false,
         "refused": false,
-        "ttft_ms": 6573,
-        "total_ms": 8905
+        "ttft_ms": 3578,
+        "total_ms": 5932
       },
       "quality": 6,
       "tools": [
@@ -26,7 +26,7 @@
           }
         }
       ],
-      "text": "**Empresa 0030 — índice 88,45/100 en agosto**, trayectoria estable y sin tope activo; sube 0,66 pts sobre julio.\n\n- Lo que más resta: **salidas mensuales oscilan un 164 % de su media** en 6 meses (34 k€) → −8,5 pts.\n- **Comisiones e intereses bancarios**: 118 € en 5 meses, 0,0 % de las entradas → −3,1 pts. Es también el único movimiento del mes (+0,62 pts).\n\nConfianza **media**: no hay pagos de facturas en la ventana ni datos de concentración de clientes, así que las categorías de pago y mix van en blanco y el resto se repondera. Por eso no conviene leerlo en paralelo con empresas de datos completos.\n\nCon los meses de trayectoria que tiene (24), el nivel alto se apoya en liquidez y deuda: **caja positiva**, 24 meses de runway y sin servicio de deuda."
+      "text": "**Empresa 0030 — índice 88,45 en agosto**, sin tope y con trayectoria estable; mes plano (+0,62 pts, por comisiones). Ojo: confianza **media** (sin pagos de facturas en la ventana y sin datos de concentración de clientes), así que no la compares sin esa salvedad con empresas de datos completos.\n\n- **Salidas volátiles** (`out_vol`, −8,5 pts): las salidas mensuales oscilan un 164 % de su media en 6 meses (desviación típica 34 k€, 34.453 €).\n- **Comisiones e intereses** (`fc_ratio`, −3,1 pts): el 0,0 % de las entradas de caja en los últimos 5 meses, 118 € pagados — es lo único que movió el mes (+0,62 pts).\n\nLo que sostiene el 88 es lo endeudado y la liquidez (94,9, aporta 56,9) y, en menor medida, la estabilidad (71,7); no hay motivo de alarma, solo el ruido de las salidas."
     },
     "alerts": {
       "metrics": {
@@ -36,29 +36,31 @@
         "month_fanout": 0,
         "has_text": true,
         "empty_after_tools": false,
-        "text_len": 1250,
+        "text_len": 1297,
         "english_heavy": false,
         "offers_next": false,
         "refused": false,
-        "ttft_ms": 3304,
-        "total_ms": 7116
+        "ttft_ms": 5428,
+        "total_ms": 9321
       },
       "quality": 6,
       "tools": [
         {
           "name": "get_alerts",
           "input": {
-            "entity_id": "COMP_0016"
+            "entity_id": "COMP_0016",
+            "limit": 20
           }
         },
         {
           "name": "get_alerts",
           "input": {
-            "entity_id": "GROUP_0070"
+            "entity_id": "GROUP_0070",
+            "limit": 20
           }
         }
       ],
-      "text": "**Empresa 0016 — 2 alertas activas:**\n\n- **La puntuación se deteriora frente a su propio histórico** (jul-2026, `act`): 50 frente a su habitual de 81 (−20 puntos), 3 de los últimos 4 meses. Las entradas de caja cayeron al 3 % del nivel propio (32 k€/mes frente a 938 k€) y el tope lo limita a 50 (sin él sería 58). Dueño: **Tesorero** — Confirma que las conexiones bancarias están completas y después contacta con la empresa.\n- **Liquidez y deuda: cae frente a su propio histórico** (sep-2025, `watch`): 84/100 frente a 89 habitual. Comisiones e intereses bancarios 0,9 % de las entradas (11 k€). Dueño: **CFO** — Compara condiciones entre bancos y renegocia las más costosas.\n\n**Grupo 0070 — 1 alerta:** la puntuación media de las 18 empresas cae a 64 frente a 75 habitual (−9, 3 de los últimos 4 meses), severidad `info`. Dueño: **CFO** — Los miembros que más han caído: COMP_0461 (+16,8), COMP_0626 (+16,3) y COMP_0131 (+4,3); trata cada uno con la acción de su propia alerta.\n\nOjo con la fiabilidad: las alertas de caída de puntuación avisan de que la empresa se ha alejado de su normalidad, no de que vaya a fallar; la única con lift medido es la de cliente principal silencioso (unas 56 % de onsets pierden al cliente frente a un 29 % de base)."
+      "text": "En tu empresa hay dos alertas activas y una en el grupo. La más urgente es el tope por caída de entradas de caja.\n\n- **Empresa 0016 — «La puntuación se deteriora frente a su propio histórico»** (`act`). Antes del índice: el tope *fading* está activo, las entradas del último trimestre cayeron al **3 %** de la media propia (32 k€/mes frente a 938 k€), y por eso el índice queda en **50** (sin el límite sería 58) frente a su habitual de 81. Dueño: **Tesorero** — confirma que las conexiones bancarias están completas y después contacta con la empresa. 3 de los últimos 4 meses.\n- **Empresa 0016 — «Liquidez y deuda: cae frente a su propio histórico»** (`watch`). Comisiones e intereses bancarios en el **0,9 %** de las entradas (11 k€ en 5 meses). Dueño: **CFO** — compara condiciones entre bancos y renegocia las más costosas.\n- **Grupo 0070 — «La puntuación media del grupo se deteriora»** (`info`). Media de 18 empresas: **64** frente a 75 habitual (-9). Dueño: **CFO** — revisa los miembros que más se han movido (COMP_0461, COMP_0626, COMP_0131) y aplica la acción de su propia alerta.\n\nSobre fiabilidad: las alertas de puntuación avisan de que la empresa se ha alejado de su normalidad (tasa de falsa alarma ≈ 71 % frente a 69 % al azar); la de cliente principal es la única con lift medido."
     },
     "refuse": {
       "metrics": {
@@ -68,16 +70,16 @@
         "month_fanout": 0,
         "has_text": true,
         "empty_after_tools": false,
-        "text_len": 128,
+        "text_len": 85,
         "english_heavy": false,
         "offers_next": false,
         "refused": true,
-        "ttft_ms": 2088,
-        "total_ms": 2465
+        "ttft_ms": 1374,
+        "total_ms": 1613
       },
       "quality": 5,
       "tools": [],
-      "text": "Eso queda fuera de Health Sentinel: no preparo listas de la compra ni recetas. ¿Miramos el índice o las alertas de esta empresa?"
+      "text": "Eso queda fuera de Health Sentinel. ¿Miramos el índice o las alertas de esta empresa?"
     },
     "period-4": {
       "metrics": {
@@ -87,12 +89,12 @@
         "month_fanout": 0,
         "has_text": true,
         "empty_after_tools": false,
-        "text_len": 1557,
+        "text_len": 1305,
         "english_heavy": false,
         "offers_next": false,
         "refused": false,
-        "ttft_ms": 7950,
-        "total_ms": 12926
+        "ttft_ms": 5801,
+        "total_ms": 9756
       },
       "quality": 6,
       "tools": [
@@ -121,7 +123,7 @@
           }
         }
       ],
-      "text": "En junio–agosto 2026 tres de las cuatro empresas caen por el **tope por entradas hundidas** (`fading`) y solo una cae por deterioro operativo real; la cuarta no se mueve.\n\n- **Empresa 0011** (−9 pts, 82→73): el tope le quitó 8,5 pts. Las entradas cayeron al **6 %** de su propio nivel previo (31 k€/mes frente a 566 k€); sin el tope estaría en **81**. Además, 25 % de los cobros vencidos +30 días (847 €) y caja que cubre 0,1 meses de salidas. Confianza media.\n- **Empresa 0176** (−20 pts, 79→59): el tope se acumula mes a mes. Entradas al **0 %** de su nivel previo (0 € frente a 37 k€/mes) y sin el tope estaría en **82**; las comisiones ya son el **35,7 %** de lo que entra (104 €). Historial de `fading` ya visto en 2025.\n- **Empresa 0651** (−9 pts, 42→33): aquí **no hay tope**, es deterioro real y con confianza alta. Se paga a proveedores **64 días** tarde (18 k€), el **100 %** de los saldos está vencido +30 días (1,0 M€ de clientes, 75 k€ de proveedores), los clientes pagan 27 días tarde (223 k€) y la caja es negativa (−1 k€). Trayectoria **deteriorando**.\n- **Empresa 0030** (+1 pt, 87→88): estable y sana; caja para 24 meses de salidas y sin deuda. Su única tacha es la volatilidad de salidas (164 % de su media) y comisiones de 118 €. Confianza media **sin facturas**: no la compares con las demás sin esa salvedad.\n\nEn resumen: en 0011 y 0176 lo que ves es sobre todo el tope reflejando que **dejó de entrar dinero**, no un empeoramiento de pagos; en 0651 lo que ves es cobro y pago vencidos de verdad, y es la que requiere acción de Cobros."
+      "text": "En junio–agosto de 2026 el movimiento real está en dos empresas con el mismo patrón —entradas de caja hundidas— y en una tercera con cobros y pagos vencidos; la cuarta no se movió.\n\n- **Empresa 0011** (82 → 73): entradas al **6 %** de su propio nivel (**31 k€/mes** frente a 566 k€); tope `fading` activo, la limita a 73 (sin él sería 81). Sin margen: la caja cubre 0,1 meses de salidas. Dueño **Tesorero**: revisar por qué se secaron las entradas. Confianza media.\n- **Empresa 0176** (79 → 59): mismo tope `fading`, más severo: **0 € de entradas** en los últimos 3 meses (su nivel previo era 37 k€/mes), dinero en 2 de los 6 meses. Sin el tope sería 82; con él queda en 59. Dueño **Tesorero**: entrada de caja y continuidad.\n- **Empresa 0651** (42 → 33, deteriorando, sin tope): paga a proveedores 64 días tarde (**18 k€**), el 100 % de los pagos pendientes lleva +30 días (**75 k€**) y el 100 % de los cobros pendientes también (**1,0 M€**); los clientes pagan 27 días tarde (**223 k€**). Dueños **Cobros** (AR) y **CFO** (AP).\n- **Empresa 0030** (87 → 88, estable): sin tope y sin deterioro; solo volatilidad de salidas (**34 k€**) y comisiones (**118 €**). Ojo: confianza media, **sin pagos de facturas en la ventana** (no tiene facturas conectadas), así que no la compares con las de datos completos."
     },
     "why-change": {
       "metrics": {
@@ -131,12 +133,12 @@
         "month_fanout": 0,
         "has_text": true,
         "empty_after_tools": false,
-        "text_len": 1043,
+        "text_len": 990,
         "english_heavy": false,
         "offers_next": false,
         "refused": false,
-        "ttft_ms": 3786,
-        "total_ms": 7006
+        "ttft_ms": 3880,
+        "total_ms": 6783
       },
       "quality": 6,
       "tools": [
@@ -147,7 +149,7 @@
           }
         }
       ],
-      "text": "**Empresa 0011 baja 10 puntos en agosto: de 82,6 a 72,6.** El motivo principal es el tope por **fading**: las entradas de caja cayeron al 6 % de su propio nivel anterior (31 k€/mes frente a 566 k€), así que la puntuación baja como máximo 10 puntos al mes hacia 50 y ahora está limitada a 73 — sin la salvaguarda sería 81.\n\n- **Guard (fading): −8,6 pts**, 535 k€ de entradas hundidas. Es lo que explica casi toda la caída, y en la ficha ya pesa también la razón de guard (−8,5 pts).\n- **Cobros vencidos (>30 días): −3,4 pts**, 25 % de la cartera pendiente, 847 € ahora.\n- Compensan en parte **comisiones e intereses** y **pago de deuda** (+2,6 pts cada uno), ambos sin importe.\n\nContexto: trayectoria **dip** (sin tendencia persistente aún) y confianza **medium** — «entradas de caja hundidas: puntuación limitada», con solo 9 meses de historial. Las razones de fondo siguen siendo runway (la caja cubre 0,1 meses de salidas, 288 k€/mes) y volatilidad de salidas (198 % de su media, 572 k€).\n\nNo hay alertas activas para esta empresa en agosto."
+      "text": "**Empresa 0011** cayó de 82,6 a **72,6** este mes (−10 pts). Primero el tope: tiene la salvaguarda **`fading`** activa, con entradas del último trimestre al 6 % de su media propia (31 k€/mes frente a 566 k€), así que la puntuación baja como máximo 10 puntos al mes hacia 50 y queda limitada a 73 —sin la salvaguarda sería 81.\n\n- **Salvaguarda `fading`** (−8,6 pts, 535 k€ detrás): es el grueso de la caída; el hundimiento de entradas es el hecho a vigilar.\n- **Cobros vencidos** (`ar_overdue30`, −3,4 pts): el 25 % del pendiente de clientes lleva más de 30 días vencido (847 € ahora).\n- Compensan en parte comisiones e intereses y pago de deuda (+2,6 pts cada uno, importe ~0 €).\n\nTrayectoria **dip** y confianza **media** («entradas de caja hundidas: puntuación limitada»), así que no la compares con empresas de datos completos sin esa salvedad. Este mes no ha disparado ninguna alerta del feed; el dueño natural aquí es el **Tesorero**, para la exposición de caja y la entrada de cobros."
     }
   },
   "compare": {
@@ -160,35 +162,35 @@
         "id": "why-score",
         "d_quality": 0,
         "d_tools": 0,
-        "d_ms": 202,
+        "d_ms": -2771,
         "empty_after_tools": false
       },
       {
         "id": "alerts",
         "d_quality": 0,
         "d_tools": 0,
-        "d_ms": -3908,
+        "d_ms": -1703,
         "empty_after_tools": false
       },
       {
         "id": "refuse",
         "d_quality": 0,
         "d_tools": 0,
-        "d_ms": 88,
+        "d_ms": -764,
         "empty_after_tools": false
       },
       {
         "id": "period-4",
         "d_quality": 4,
         "d_tools": -7,
-        "d_ms": -4072,
+        "d_ms": -7242,
         "empty_after_tools": false
       },
       {
         "id": "why-change",
         "d_quality": 0,
         "d_tools": -1,
-        "d_ms": -1696,
+        "d_ms": -1919,
         "empty_after_tools": false
       }
     ]

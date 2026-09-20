@@ -87,3 +87,13 @@ What landed:
 - `get_alerts` without `entity_id` is clipped to the session + named Empresa/Grupo ids. Hard cap 8 if nothing is in scope.
 - `plots_catalog` / `plot_series` only when the question mentions a chart or `Periodo seleccionado`.
 - Trace: «N alertas · K entidades».
+
+## Tick 4 — 2026-09-20 03:12 +02
+
+Keep. period-4 **4 tools / q 6 / 9.8 s** (tick 3: 12.9 s; main 11 / q 2). why-score 1 / q 6.
+
+What landed:
+
+- `get_company` drops null metadata and `items` when `reasons` are present.
+- Chat shows up to two bundle `sentence` quotes per company under «Leer índice» (max 4).
+- Catalog: cita `sentence` tal cual.
