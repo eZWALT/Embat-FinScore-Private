@@ -566,4 +566,18 @@ Keep vs main sample suite (`--ignore-latency`).
 
 What landed: no glide lecture in PRODUCT; WORDING 2 is the never-predict line; period payload drops `confidence` so the lead cannot write «En 0011». First two benches of this tick were q=5 (bare ids) — discarded.
 
+## Tick 51 — 2026-09-20 06:50 +02
+
+Keep vs main sample suite (`--ignore-latency`).
+
+| Case | main tools / q / s | tick 51 tools / q / s |
+|---|---|---|
+| why-score | 1 / 6 / 8.7 | 1 / 6 / 5.7 |
+| alerts | 2 / 6 / 11.0 | **1 / 6** / 7.2 |
+| refuse | 0 / 5 / 2.4 | 0 / 5 / 2.1 |
+| period-4 | 11 / 2 / 17.0 | **4 / 6** / 5.3 |
+| why-change | 2 / 6 / 8.7 | 1 / 6 / 5.1 |
+
+What landed: two reasons per alert; monitor volume line gone. Alerts still have owner + action.
+
 Do not merge. Past min 4h; loop until 08:55.

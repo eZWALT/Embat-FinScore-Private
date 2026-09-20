@@ -293,7 +293,7 @@ function slimAlert(alert: Alert) {
     entity: entityLabel(alert.entity.id),
     month: speakMonth(alert.month),
     title: alert.title,
-    reasons: (alert.reasons ?? []).map((reason) => slimReason(reason)),
+    reasons: (alert.reasons ?? []).map((reason) => slimReason(reason)).slice(0, 2),
     owner: speakOwner(alert.owner),
     severity: speakSeverity(alert.severity),
     action: alert.action,

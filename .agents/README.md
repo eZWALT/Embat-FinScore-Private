@@ -99,6 +99,7 @@ Add a new dated file after meaningful work. Do not rewrite old ones. If the new 
 | `persistent-memory/2026-09-20-0644-opening-no-group.md` | Overnight: first step has no `get_group` unless asked. |
 | `persistent-memory/2026-09-20-0646-session-no-comp-tokens.md` | Overnight: SESSION series speak Empresa; tool errors in Spanish. |
 | `persistent-memory/2026-09-20-0648-period-no-confidence.md` | Overnight: period payload has no confidence; never «En 0011». |
+| `persistent-memory/2026-09-20-0650-slim-alert-reasons.md` | Overnight: alert payloads keep two reasons; no volume lecture. |
 | `persistent-memory/2026-09-20-0115-thinking-no-verbose.md` | Brain on: drop the length cap. Do not ask for a longer reply. |
 | `persistent-memory/2026-09-20-0120-thinking-max-exa.md` | Exa + `max` superseded. |
 | `persistent-memory/2026-09-20-0130-drop-exa.md` | No Exa. No `search_web`. No `EXA_API_KEY`. |
