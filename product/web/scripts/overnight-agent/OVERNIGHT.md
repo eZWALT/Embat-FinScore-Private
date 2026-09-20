@@ -233,3 +233,17 @@ Keep vs main sample suite (`--ignore-latency`).
 | why-change | 2 / 6 / 8.7 | 1 / 6 / 6.5 |
 
 What landed: `product_monitor.md` only if they ask alertas / gráfico / clúster / previsión. Tool row shows «Leer índice · Empresa 0030 · índice 88» without a chevron.
+
+## Tick 13 — 2026-09-20 04:34 +02
+
+Keep vs main sample suite (`--ignore-latency`). Quality held; two Helmcode TTFT stalls (~95 s) on alerts and period-4.
+
+| Case | main q / tools | tick 13 q / tools |
+|---|---|---|
+| why-score | 6 / 1 | 6 / 1 (611 chars, 5.4 s) |
+| alerts | 6 / 2 | 6 / 1 |
+| refuse | 5 / 0 | 5 / 0 |
+| period-4 | 2 / 11 | **6 / 4** |
+| why-change | 6 / 2 | 6 / 1 |
+
+What landed: ROLE is procedure only. No «tus salidas».
