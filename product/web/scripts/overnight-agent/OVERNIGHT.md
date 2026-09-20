@@ -184,3 +184,17 @@ What landed:
 - Categories as Spanish `{ name, score, pts }`.
 - UI quotes alert title · dueño under «Leer alertas».
 - Trace summary uses Empresa/Grupo.
+
+## Tick 9 — 2026-09-20 03:41 +02
+
+Keep vs main sample suite (`--ignore-latency`).
+
+| Case | main tools / q / s | tick 9 tools / q / s |
+|---|---|---|
+| why-score | 1 / 6 / 8.7 | 1 / 6 / 7.0 |
+| alerts | 2 / 6 / 11.0 | **1 / 6 / 4.8** |
+| refuse | 0 / 5 / 2.4 | 0 / 5 / 1.7 |
+| period-4 | 11 / 2 / 17.0 | **4 / 6** / 11.6 |
+| why-change | 2 / 6 / 8.7 | 1 / 6 / 4.9 |
+
+What landed: after an alerts-only question, force the text step. Production Pregunta on hack-spain is still main (this branch is not live there).

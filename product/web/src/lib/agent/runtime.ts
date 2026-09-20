@@ -47,6 +47,7 @@ export async function streamAgentResponse({
   const records = wantsRecordTools(question);
   const plots = wantsPlotCatalog(question);
   const alerts = wantsAlertTools(question);
+  const alertsOnly = alerts && !records && !plots && !/índice|por qu[eé]|cambi[oó]|periodo|gr[aá]fico/i.test(question);
   const system = await loadSystemPrompt(role, sessionExtra({ companyId, groupId, asOf, view }), {
     thinking,
     records,
@@ -72,7 +73,7 @@ export async function streamAgentResponse({
     stopWhen: [isStepCount(8)],
     prepareStep({ steps }) {
       const names = Object.keys(tools) as (keyof typeof tools)[];
-      if (shouldForceTextStep(steps)) {
+      if (shouldForceTextStep(steps, { alertsOnly })) {
         return { activeTools: [], toolChoice: "none" };
       }
       return { activeTools: activeToolsUnderCap(names as string[], steps, { records, plots, alerts }) as typeof names };

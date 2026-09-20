@@ -894,15 +894,30 @@ export function totalToolCalls(steps: { toolCalls?: { toolName: string }[] }[]):
 export const TOOL_STEP_BUDGET = 4;
 export const TOOL_CALL_BUDGET = 8;
 
+function retrievedAlertsOk(
+  steps: { toolResults?: { toolName: string; output?: unknown; result?: unknown }[] }[],
+): boolean {
+  for (const step of steps) {
+    for (const result of step.toolResults ?? []) {
+      if (result.toolName !== "get_alerts") continue;
+      const payload = toolStepOutput(result);
+      if (payload && typeof payload === "object" && !Array.isArray(payload) && !("error" in payload)) return true;
+    }
+  }
+  return false;
+}
+
 export function shouldForceTextStep(
   steps: {
     toolCalls?: { toolName: string }[];
     toolResults?: { toolName: string; output?: unknown; result?: unknown }[];
   }[],
+  options?: { alertsOnly?: boolean },
 ): boolean {
   if (steps.length >= TOOL_STEP_BUDGET || totalToolCalls(steps) >= TOOL_CALL_BUDGET) return true;
   const scored = companyPayloads(steps).filter((row) => typeof row.error !== "string" && row.score != null);
-  return scored.length >= 4;
+  if (scored.length >= 4) return true;
+  return Boolean(options?.alertsOnly && retrievedAlertsOk(steps));
 }
 
 function withMemoize<T extends Record<string, { execute?: (...args: never[]) => unknown }>>(tools: T): T {
