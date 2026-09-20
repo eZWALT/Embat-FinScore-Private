@@ -42,8 +42,10 @@ export function toolChipsFromParts(parts: UIMessage["parts"]): { id: string; nam
   return chips;
 }
 
+export const PLOT_TOOLS = new Set(["plot_series", "plot_from"]);
+
 export function plotFromPart(part: UIMessage["parts"][number]): PlotSpec | null {
-  if (!isToolUIPart(part) || getToolName(part) !== "plot_series") return null;
+  if (!isToolUIPart(part) || !PLOT_TOOLS.has(getToolName(part))) return null;
   const output = "output" in part ? part.output : undefined;
   const plot = output && typeof output === "object" && "plot" in output ? output.plot : output;
   return isPlotSpec(plot) ? plot : null;

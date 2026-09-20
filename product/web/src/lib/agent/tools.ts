@@ -15,6 +15,7 @@ import type {
 
 import { neonQuery, coreIsMounted } from "./neon-sql";
 import { buildCatalogPlot, PLOT_KINDS } from "./plot-catalog";
+import { buildPlotFromResult, PLOT_SOURCES } from "./plot-from";
 import { checkSql, toCoreSql, UnsafeQuery } from "./sql-guard";
 
 const ALERT_KINDS = [
@@ -614,6 +615,36 @@ const plot_series = tool({
   },
 });
 
+const plot_from = tool({
+  description:
+    "Draw a chart from a result you already retrieved this turn (bar | line | pie). Point at the source tool and name its columns; the server reads the numbers. Use when no catalog kind fits: ranking of members, alerts by kind, € behind reasons, rows from query_clean_db. Never type values.",
+  inputSchema: z.object({
+    source: z.enum(PLOT_SOURCES).describe("tool already called this turn"),
+    path: z.string().optional().describe("array inside the result, e.g. members, alerts, reasons. Omit to use the first list."),
+    x: z.string().describe("label column, e.g. company_id, kind, item"),
+    y: z.array(z.string()).min(1).max(3).describe("numeric columns, e.g. score, importe"),
+    kind: z.enum(["bar", "line", "pie"]),
+    sort: z.enum(["asc", "desc", "none"]).optional().describe("by the first y column"),
+    ref_line: z.string().optional().describe("scalar in the result drawn as a line; rows below it are highlighted, e.g. latest_mean_score"),
+    badge: z.string().optional().describe("column; non-zero marks the bar, e.g. n_alerts"),
+    title: z.string().max(80),
+  }),
+  execute: async (input, { messages }) => {
+    const built = buildPlotFromResult(input, messages);
+    if ("error" in built) return built;
+    return {
+      ok: true,
+      title: built.plot.title,
+      points: built.plot.x.length,
+      kind: built.plot.kind,
+      source: built.source_path,
+      highlighted: built.plot.highlight ?? [],
+      badged: Object.keys(built.plot.badges ?? {}),
+      plot: built.plot,
+    };
+  },
+});
+
 /** Distinct calls allowed per tool in one Pregunta turn. Two companies = two reads, not four. */
 export const TOOL_CALL_CAP: Record<string, number> = {
   list_companies: 1,
@@ -626,6 +657,7 @@ export const TOOL_CALL_CAP: Record<string, number> = {
   get_forecast: 2,
   query_clean_db: 2,
   plot_series: 1,
+  plot_from: 1,
 };
 
 function inputKey(input: unknown): string {
@@ -725,6 +757,7 @@ export function chatTools() {
       get_forecast,
       query_clean_db,
       plot_series,
+      plot_from,
     }),
   );
 }
@@ -746,6 +779,7 @@ export function sentinelTools() {
       get_alerts,
       get_control_chart,
       plot_series,
+      plot_from,
     }),
   );
 }

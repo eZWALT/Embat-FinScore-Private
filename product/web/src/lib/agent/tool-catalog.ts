@@ -26,6 +26,7 @@ export const TOOL_LABELS = {
   get_forecast: "Abanico",
   query_clean_db: "Leer registros",
   plot_series: "Gráfico",
+  plot_from: "Gráfico derivado",
 } as const;
 
 export type ToolName = keyof typeof TOOL_LABELS;
@@ -41,6 +42,7 @@ export const TOOL_ICONS: Record<ToolName, ToolIcon> = {
   get_forecast: ChartPieIcon,
   query_clean_db: CircleStackIcon,
   plot_series: PresentationChartLineIcon,
+  plot_from: ChartPieIcon,
 };
 
 export function toolLabel(name: string): string {
@@ -100,6 +102,7 @@ export function toolOutputSummary(name: string, output: unknown): string {
     case "query_clean_db":
       return `${row.rows ?? 0} filas`;
     case "plot_series":
+    case "plot_from":
       return typeof row.title === "string" ? row.title : typeof row.kind === "string" ? row.kind : `${row.points ?? 0} puntos`;
     default:
       return "";

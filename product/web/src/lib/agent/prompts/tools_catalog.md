@@ -14,7 +14,8 @@ You only learn facts through these tools. Each one is a retrieval, not a calcula
 |---|---|---|---|
 | Score run | Neon `api` / `analytics` | all except `query_clean_db` | score, reasons, alerts, charts, cluster, forecast |
 | Records | Neon `core` (prompt as `clean.*`) | `query_clean_db` only | invoices, transactions, balances, debt |
-| UI | none | `plot_series` | draw series you already retrieved |
+| UI | none | `plot_series` | draw one of the eight catalog charts |
+| UI | a result of this turn | `plot_from` | draw columns of a result you already have |
 
 If a tool returns `{error}`, say so. Do not guess.
 
@@ -87,6 +88,13 @@ If a tool returns `{error}`, say so. Do not guess.
 **In:** `kind` (`score_history` \| `score_compare` \| `categories` \| `control_own` \| `control_cluster` \| `control_group` \| `forecast_fan` \| `group_members`) plus the ids in `plots_catalog.md`. No `x`, no `series`.
 **Out:** the server builds the spec from the score run; the UI draws it. One plot per answer.
 **Do not:** type values, plot invoices or inflows, or invent a ninth kind.
+
+## `plot_from`
+
+**When:** the chart is not in the catalog but the numbers are in a result you already have (ranking of a filtered list, alerts by kind, € behind reasons, rows from `query_clean_db`).
+**In:** `source` (tool called this turn), `path?` (list inside it), `x` (label column), `y` (1–3 numeric columns), `kind` (`bar` \| `line` \| `pie`), `sort?`, `ref_line?` (scalar in the result, e.g. `latest_mean_score`), `badge?` (column, e.g. `n_alerts`), `title`.
+**Out:** the server reads the rows, builds the chart, and returns `highlighted` (below the ref line) and `badged` ids so you can name them.
+**Do not:** pass values, call it before the source, or ask for a pie of a 0–100 index (it comes back as bars).
 
 ## Sentinel (Watcher replies)
 

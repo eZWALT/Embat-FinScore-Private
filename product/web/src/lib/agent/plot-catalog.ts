@@ -208,11 +208,17 @@ async function groupMembers(groupId: string): Promise<PlotSpec> {
     .filter((row): row is NonNullable<typeof row> => Boolean(row))
     .sort((a, b) => a.score - b.score);
   if (!members.length) throw new Error("este grupo no tiene empresas puntuadas");
+  const mean = group.latest_mean_score;
+  const badges: Record<string, string> = {};
+  for (const row of members) if (row.n_alerts > 0) badges[row.company_id] = "alerta";
   return asPlot({
-    title: `Empresas de ${groupId}`,
+    title: `Empresas de ${groupId}, de peor a mejor`,
     x: members.map((row) => row.company_id),
     series: { Índice: members.map((row) => row.score) },
     kind: "bar",
     y_label: "0–100",
+    ref_lines: mean != null ? [{ label: "Media del grupo", value: mean }] : [],
+    highlight: mean != null ? members.filter((row) => row.score < mean).map((row) => row.company_id) : [],
+    badges,
   });
 }

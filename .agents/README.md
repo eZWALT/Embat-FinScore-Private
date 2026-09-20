@@ -17,6 +17,7 @@ Add a new dated file after meaningful work. Do not rewrite old ones. If the new 
 | `persistent-memory/2026-09-19-1015-y3-recovery-mechanical.md` | **Do not reuse Y3.** |
 | `persistent-memory/2026-09-19-1300-y7-alert-grade-eval.md` | Top-customer-quiet numbers. Never quote “75%”. |
 | `persistent-memory/2026-09-19-embat-business-context.md` | Buyer rationale (Embat premium module). |
+| `persistent-memory/2026-09-20-0945-monetization-strategy.md` | Who pays (Embat, groups/PE, banks), per-entity pricing, tiers, bank channel rules, deal shape. Never price prediction. |
 | `persistent-memory/2026-09-19-1410-single-repo.md` | This repo only. Public sibling retired. |
 
 ### What was built (afternoon)
