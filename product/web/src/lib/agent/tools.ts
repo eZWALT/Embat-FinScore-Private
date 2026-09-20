@@ -458,15 +458,16 @@ const list_companies = tool({
   description:
     "Lista empresas con puntuación (último mes): índice, trayectoria, confianza, tope, nº de alertas. group_id opcional. Solo si no hay empresa en la sesión.",
   inputSchema: z.object({
-    group_id: z.string().optional().describe("GROUP_xxxx"),
+    group_id: z.string().optional().describe("Grupo 0126"),
     limit: z.number().int().min(1).max(200).optional().describe("Por defecto 30"),
   }),
   execute: async ({ group_id, limit = 30 }) => {
     try {
       const store = repo();
       const [manifest, companies] = await Promise.all([store.getManifest(), store.listCompanies()]);
+      const gid = group_id ? asGroupId(group_id) : undefined;
       const rows = companies
-        .filter((company) => !group_id || company.group_id === group_id)
+        .filter((company) => !gid || company.group_id === gid)
         .sort((a, b) => a.score - b.score)
         .slice(0, limit)
         .map((company) => ({
@@ -493,7 +494,7 @@ function createGetCompany(session?: ToolSession) {
     description:
       "Índice, tope, trayectoria, reasons y change_reasons de UNA empresa. Historial: periodo = tramo+1 mes (máx. 12); si no, 4. Omite month salvo un mes concreto. Sin clúster.",
     inputSchema: z.object({
-      company_id: z.string().describe("COMP_xxxx o Empresa 0030"),
+      company_id: z.string().describe("Empresa 0030"),
       month: z.string().optional().describe("YYYY-MM; omite salvo un mes concreto"),
     }),
     execute: async ({ company_id, month }) => {
@@ -541,7 +542,7 @@ const explain_change = tool({
   description:
     "Por qué se movió vs el mes anterior (deltas, change_reasons, tope). Solo si get_company no trajo change_reasons.",
   inputSchema: z.object({
-    company_id: z.string().describe("COMP_xxxx"),
+    company_id: z.string().describe("Empresa 0030"),
     month: z.string().optional().describe("YYYY-MM; omite = último mes"),
   }),
     execute: async ({ company_id, month }) => {
@@ -597,7 +598,7 @@ const get_group = tool({
   description:
     "Grupo: miembros (Empresa, índice, tope), media, historial. Alertas: get_alerts.",
   inputSchema: z.object({
-    group_id: z.string().describe("GROUP_xxxx"),
+    group_id: z.string().describe("Grupo 0126"),
   }),
   execute: async ({ group_id }) => {
     try {
@@ -711,7 +712,7 @@ const get_control_chart = tool({
   description:
     "Gráfico de control: ¿bache o deterioro? Persistencia: 3 de los últimos 4. Empresa: own_history|cluster. Grupo: group_own_history|group_vs_groups.",
   inputSchema: z.object({
-    entity_id: z.string().describe("COMP_xxxx o GROUP_xxxx / Empresa 0030"),
+      entity_id: z.string().describe("Empresa 0030 o Grupo 0126"),
     comparison: z.enum(COMPARISONS).optional(),
     metric: z.enum(METRICS).optional(),
   }),
@@ -785,7 +786,7 @@ const compare_with_cluster = tool({
   description:
     "Grupo de pares (no segmento): etiqueta, tamaño, percentil y z robusta. Solo si preguntan cómo se sitúa frente a pares.",
   inputSchema: z.object({
-    company_id: z.string().describe("COMP_xxxx"),
+    company_id: z.string().describe("Empresa 0030"),
   }),
   execute: async ({ company_id }) => {
     try {
@@ -820,7 +821,7 @@ const get_forecast = tool({
   description:
     "Abanico 1–6 meses (mediana, bandas 50 % y 80 %). method=naive_last: qué tan lejos suele moverse, no hacia dónde.",
   inputSchema: z.object({
-    company_id: z.string().describe("COMP_xxxx"),
+    company_id: z.string().describe("Empresa 0030"),
   }),
   execute: async ({ company_id }) => {
     try {
@@ -914,8 +915,8 @@ const plot_series = tool({
     "Un gráfico del catálogo. El servidor pone los números. Sin series tecleadas.",
   inputSchema: z.object({
     kind: z.enum(PLOT_KINDS),
-    company_id: z.string().optional().describe("COMP_xxxx"),
-    group_id: z.string().optional().describe("GROUP_xxxx"),
+    company_id: z.string().optional().describe("Empresa 0030"),
+    group_id: z.string().optional().describe("Grupo 0126"),
     company_ids: z.array(z.string()).max(8).optional(),
     metric: z.enum(["score", "payment_history", "amounts_owed", "stability"]).optional(),
   }),

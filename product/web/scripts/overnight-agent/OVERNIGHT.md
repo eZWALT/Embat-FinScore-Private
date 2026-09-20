@@ -718,4 +718,8 @@ What landed: follow-up owner chips stripped unless `get_alerts` ran; `explain_ch
 
 Keep vs main. `explain_change` deltas speak Spanish labels. Production main still asks for `COMP_*` on unscoped alerts.
 
+## Tick 68 — 2026-09-20 07:58 +02
+
+Keep vs main. Tool schemas describe Empresa/Grupo. Period calls `get_company({ company_id: "Empresa 0011" })`.
+
 Do not merge. Past min 4h; loop until 08:55.
