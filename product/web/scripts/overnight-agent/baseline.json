@@ -1,0 +1,173 @@
+{
+  "at": "2026-09-19T23:59:00.395Z",
+  "target": "https://hack-spain.vercel.app",
+  "cases": {
+    "why-score": {
+      "metrics": {
+        "tool_count": 1,
+        "unique_tools": 1,
+        "entity_dups": 0,
+        "month_fanout": 0,
+        "has_text": true,
+        "empty_after_tools": false,
+        "text_len": 846,
+        "english_heavy": false,
+        "offers_next": false,
+        "refused": false,
+        "ttft_ms": 100621,
+        "total_ms": 102965
+      },
+      "quality": 6,
+      "tools": [
+        {
+          "name": "get_company",
+          "input": {
+            "company_id": "COMP_1186"
+          }
+        }
+      ],
+      "text": "**Empresa 1186 · 98 estable**, confianza media: sin facturas conectadas, así que historial de pagos y mix de clientes quedan en blanco y el resto de categorías se reponderó (no la compares con empresas de datos completos).\n\nEl índice es alto porque casi todo está al máximo: sin episodios de caja negativa, runway de 24 meses, deuda y financiación estables, 14 meses observados.\n\nEl **único** motivo por el que no es 100 es la volatilidad de las salidas: **−2,3 pts**, con desviaciones de 7 PLN sobre su media de 6 meses («Las salidas mensuales oscilan un 36 % de su media»).\n\nNo hay cambio material este mes (+0,02 frente a julio, sin movimientos que explicar), y frente a su grupo de pares está en el **percentil 99**. El motor sí marcó una mejora de puntuación en agosto: oportunidad para el **CFO**, que puede revisar si el nivel se sostiene."
+    },
+    "alerts": {
+      "metrics": {
+        "tool_count": 2,
+        "unique_tools": 1,
+        "entity_dups": 0,
+        "month_fanout": 0,
+        "has_text": true,
+        "empty_after_tools": false,
+        "text_len": 740,
+        "english_heavy": false,
+        "offers_next": false,
+        "refused": false,
+        "ttft_ms": 2059,
+        "total_ms": 8135
+      },
+      "quality": 6,
+      "tools": [
+        {
+          "name": "get_alerts",
+          "input": {
+            "entity_id": "COMP_1186",
+            "limit": 30
+          }
+        },
+        {
+          "name": "get_alerts",
+          "input": {
+            "entity_id": "GROUP_0135",
+            "limit": 30
+          }
+        }
+      ],
+      "text": "Voy a mirar las alertas de esta empresa y de su grupo.**Ahora mismo solo hay una alerta, y es una buena noticia.**\n\n- **Empresa 1186 · mejora de puntuación** (oportunidad): 98 frente a su habitual de 87 (+9 puntos), fuera de su rango normal en **3 de los últimos 4 meses**. Dueño: **CFO**.\n- Acción: confirmar que la mejora es duradera y, si lo es, revisar líneas de crédito y condiciones de pago, o dar uso a la caja ociosa.\n- El motivo que más resta es la volatilidad de las salidas (oscilan un 36 % sobre su media de 6 meses, 7 € de desviación típica), con solo 14 meses de historial.\n\nEl **Grupo 0135** no tiene ninguna alerta activa este mes. La alerta es de severidad `info`, es decir, se registra y no se empuja como aviso al equipo."
+    },
+    "refuse": {
+      "metrics": {
+        "tool_count": 0,
+        "unique_tools": 0,
+        "entity_dups": 0,
+        "month_fanout": 0,
+        "has_text": true,
+        "empty_after_tools": false,
+        "text_len": 85,
+        "english_heavy": false,
+        "offers_next": false,
+        "refused": true,
+        "ttft_ms": 2508,
+        "total_ms": 2739
+      },
+      "quality": 5,
+      "tools": [],
+      "text": "Eso queda fuera de Health Sentinel. ¿Miramos el índice o las alertas de esta empresa?"
+    },
+    "period-4": {
+      "metrics": {
+        "tool_count": 4,
+        "unique_tools": 4,
+        "entity_dups": 0,
+        "month_fanout": 1,
+        "has_text": true,
+        "empty_after_tools": false,
+        "text_len": 1189,
+        "english_heavy": false,
+        "offers_next": false,
+        "refused": false,
+        "ttft_ms": 109838,
+        "total_ms": 113378
+      },
+      "quality": 5,
+      "tools": [
+        {
+          "name": "get_company",
+          "input": {
+            "company_id": "COMP_1186",
+            "month": "2025-12"
+          }
+        },
+        {
+          "name": "explain_change",
+          "input": {
+            "company_id": "COMP_1186",
+            "month": "2025-12"
+          }
+        },
+        {
+          "name": "get_alerts",
+          "input": {
+            "entity_id": "COMP_1186",
+            "since_month": "2025-11",
+            "limit": 20
+          }
+        },
+        {
+          "name": "plot_series",
+          "input": {
+            "kind": "score_compare",
+            "company_ids": [
+              "COMP_1186",
+              "COMP_0012",
+              "COMP_0445",
+              "COMP_0735"
+            ]
+          }
+        }
+      ],
+      "text": "**Qué pasó en esa ventana:** solo se movió la Empresa 1186.\n\n- **Empresa 1186 — 86,8 → 78,8 (−8 pts).** No hubo impago ni tope: la caída sale de tres ítems de estructura. Meses con entrada de dinero (6 de 6; 1,9 M PLN recibidos en los últimos 3) restó −5,6 pts; el colchón de caja (17,4 meses de salidas; 442 PLN ahora) −2,0; y el historial de solo 6 meses −1,4. La volatilidad de las salidas sumó +1,1 (oscilan un 197 % de su media, 208 PLN de desviación).\n\n- **Confianza baja en esa empresa:** sin pagos de facturas en la ventana (los ítems de retraso quedan en blanco) y sin datos de concentración de clientes, con 6 meses de historial. Parte del movimiento es renormalización de categorías, no deterioro del negocio.\n\n- **Las otras tres no explican nada:** 0012, 0445 y 0735 se quedaron en 100 los dos meses, sin movimiento que contar.\n\n- **Fue un bache, no un deterioro:** la trayectoria quedó en «caída» (pendiente a 3 meses −5,1), sin persistencia. En 2026-01 ya estaba en 79,1 y en 2026-08 en 97,7; la única alerta de la empresa es la mejora de agosto (CFO: confirma que la mejora es duradera y revisa líneas y caja ociosa).\n\nNo saltó ninguna alerta en noviembre–diciembre de 2025."
+    },
+    "why-change": {
+      "metrics": {
+        "tool_count": 2,
+        "unique_tools": 2,
+        "entity_dups": 0,
+        "month_fanout": 1,
+        "has_text": true,
+        "empty_after_tools": false,
+        "text_len": 1106,
+        "english_heavy": false,
+        "offers_next": false,
+        "refused": false,
+        "ttft_ms": 9913,
+        "total_ms": 13096
+      },
+      "quality": 5,
+      "tools": [
+        {
+          "name": "explain_change",
+          "input": {
+            "company_id": "COMP_1186",
+            "month": "2025-12"
+          }
+        },
+        {
+          "name": "get_company",
+          "input": {
+            "company_id": "COMP_1186",
+            "month": "2025-12"
+          }
+        }
+      ],
+      "text": "**Empresa 1186** bajó de **86,8 a 78,8** en diciembre (−8 pts). Trayectoria **caída** (dip), sin tope activo. Confianza **baja**: sin pagos de facturas en la ventana y solo 6 meses de historial, así que no hay categorías de pago ni de mix y la puntuación se apoya en caja, deuda y actividad.\n\nCasi todo el movimiento es de composición, no un evento puntual (importes en PLN):\n\n- **Meses con entrada de dinero: −5,6 pts.** Entró dinero en 6 de los últimos 6 meses (1,9 M PLN recibidos en los últimos 3).\n- **Runway (meses de salidas cubiertos por la caja): −2,0 pts.** La caja cubrió 17,4 meses de salidas (442 PLN ahora; 106 PLN de salidas al mes).\n- **Meses de historial: −1,4 pts**, con solo 6 meses, y **volatilidad de las salidas +1,1 pts**: oscilan un 197 % de su media (208 PLN de desviación típica).\n\nEl único motivo con importe detrás en la lista de razones es esa **volatilidad de las salidas** (208 PLN); el resto son puntos que se pierden por estructura, no por dinero perdido. La caída no está marcada como deterioro persistente: es un dip de tres meses, sin alerta de deterioro en esa ventana."
+    }
+  }
+}

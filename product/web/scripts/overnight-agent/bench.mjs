@@ -210,8 +210,10 @@ function compare(baseline, candidate) {
 
 async function main() {
   const target = arg("--target", "https://hack-spain.vercel.app");
-  const out = resolve(here, arg("--out", "last.json"));
-  const comparePath = arg("--compare", "");
+  const outRaw = arg("--out", "");
+  const out = outRaw ? resolve(process.cwd(), outRaw) : resolve(here, "last.json");
+  const compareRaw = arg("--compare", "");
+  const comparePath = compareRaw ? resolve(process.cwd(), compareRaw) : "";
   const only = arg("--only", "");
   const cases = only ? CASES.filter((c) => c.id === only) : CASES;
   const pack = {
@@ -247,7 +249,7 @@ async function main() {
   mkdirSync(dirname(out), { recursive: true });
   writeFileSync(out, JSON.stringify(pack, null, 2));
   if (comparePath) {
-    const baseline = JSON.parse(readFileSync(resolve(here, comparePath), "utf8"));
+    const baseline = JSON.parse(readFileSync(comparePath, "utf8"));
     const verdict = compare(baseline, pack);
     pack.compare = verdict;
     writeFileSync(out, JSON.stringify(pack, null, 2));

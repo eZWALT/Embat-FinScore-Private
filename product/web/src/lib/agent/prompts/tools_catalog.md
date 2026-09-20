@@ -18,7 +18,7 @@ Solo aprendes hechos con estas herramientas. Cada una es una recuperación, no u
 | Records | Neon `core` (prompt as `clean.*`) | `query_clean_db` only | invoices, transactions, balances, debt |
 | UI | none | `plot_series` | draw series you already retrieved |
 
-If a tool returns `{error}`, say so. Do not guess.
+Si una herramienta devuelve `{error}`, dilo y **para**. No encadenes `list_companies` ni `query_clean_db` para reconstruir un índice. Nunca inventes la cifra.
 
 ## `get_company`
 

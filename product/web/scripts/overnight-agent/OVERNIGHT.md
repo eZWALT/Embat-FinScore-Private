@@ -12,3 +12,17 @@ First pass (before first live candidate bench):
 - Catalog in Spanish (same tools).
 - Follow-up chips `line-clamp-3`.
 - Leftover Spanish-only SCOPE / WORDING / ROLE from the working tree.
+
+## Tick 0b — baseline (main production)
+
+`hack-spain.vercel.app` · COMP_1186 · 2026-09-19T23:59Z
+
+| Case | tools | q | ms | notes |
+|---|---:|---:|---:|---|
+| why-score | 1 | 6 | 103s | one `get_company` |
+| alerts | 2 | 6 | 8s | company + group |
+| refuse | 0 | 5 | 3s | Spanish refuse |
+| period-4 | 4 | 5 | 113s | one company + plot; text present |
+| why-change | 2 | 5 | 13s | |
+
+Local :3010 is sample_bundle (12 companies). COMP_1186 is not there — do not treat local 1186 benches as vs-main. Preview with Neon is the fair candidate. Local is for compile + sample companies (`COMP_0030`).
