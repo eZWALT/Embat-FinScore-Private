@@ -730,4 +730,8 @@ Keep vs main. WORDING + bench: do not round 72,6 to 73. why-change cites 72,6 / 
 
 Keep vs main. Records schema notes in Spanish (enums and SQL unchanged). Period can still write `−535 k€` (signed_eur extra).
 
+## Tick 71 — 2026-09-20 08:15 +02
+
+Keep vs main. SQL-guard errors in Spanish. Plot titles/series use Empresa labels.
+
 Do not merge. Past min 4h; loop until 08:55.

@@ -900,7 +900,7 @@ const query_clean_db = tool({
       const columns = data[0] ? Object.keys(data[0]) : [];
       return { rows: data.length, columns, data };
     } catch (error) {
-      if (error instanceof UnsafeQuery) return { error: `rejected: ${error.message}` };
+      if (error instanceof UnsafeQuery) return { error: `rechazada: ${error.message}` };
       const first = error instanceof Error ? error.message.split("\n")[0] : String(error);
       if (/does not exist|not mounted|permission denied/i.test(first)) {
         return { error: "registros no montados" };

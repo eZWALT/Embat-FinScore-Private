@@ -38,9 +38,9 @@ export class UnsafeQuery extends Error {
 
 export function checkSql(sql: string): string {
   let s = sql.trim().replace(/;+$/, "");
-  if (s.includes(";")) throw new UnsafeQuery("one statement only");
-  if (!/^\s*(select|with)\b/i.test(s)) throw new UnsafeQuery("SELECT only");
-  if (FORBIDDEN.test(s)) throw new UnsafeQuery("read-only: statement contains a forbidden keyword");
+  if (s.includes(";")) throw new UnsafeQuery("una sola sentencia");
+  if (!/^\s*(select|with)\b/i.test(s)) throw new UnsafeQuery("solo SELECT");
+  if (FORBIDDEN.test(s)) throw new UnsafeQuery("solo lectura: la sentencia tiene una palabra prohibida");
 
   for (const match of s.matchAll(TABLE_REF)) {
     const ref = match[1];
@@ -49,12 +49,12 @@ export function checkSql(sql: string): string {
       const table = low.split(".", 2)[1];
       const allowed = low.startsWith("core.") ? CORE_TABLES : ALLOWED_TABLES;
       if (!allowed.has(table) && !CORE_TABLES.has(TABLE_ALIASES[table] ?? "")) {
-        throw new UnsafeQuery(`unknown table ${ref}`);
+        throw new UnsafeQuery(`tabla desconocida ${ref}`);
       }
     } else if (ALLOWED_TABLES.has(low) || CORE_TABLES.has(low)) {
-      throw new UnsafeQuery(`use the clean schema: clean.${ref}`);
+      throw new UnsafeQuery(`usa el esquema clean: clean.${ref}`);
     } else if (low.includes(".")) {
-      throw new UnsafeQuery(`only clean.* or core.* tables may be queried, not ${ref}`);
+      throw new UnsafeQuery(`solo tablas clean.* o core.*, no ${ref}`);
     }
   }
 
