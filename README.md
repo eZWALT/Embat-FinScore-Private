@@ -129,11 +129,7 @@ The floating chat on every screen. It is the same agent in Rápido, Profundo and
 
 - **Prompts are files, not strings.** A stack of markdown layers (`prompt_map.md` first, conflict order SCOPE > WORDING > TOOLS > PRODUCT > RECORDS) assembled at runtime by `prompt-loader.ts`. Alert copy is the Spanish production text; the model never invents English.
 - **Grounded tools.** `get_company`, `explain_change`, `get_group`, `get_alerts`, `get_control_chart`, `compare_with_cluster`, `get_forecast` read the current score run in Neon (`api` / `analytics`); a score is never recomputed. `query_clean_db` runs one guarded `SELECT … LIMIT 200` over the cleaned records (`core`) when the question is about invoices, movements or balances.
-- **Charts the server fills.** `plot_series` draws one of the eight product charts; `plot_from` draws columns of a result the model already retrieved this turn (ranking of a filtered list, alerts by kind, € behind reasons). The model chooses what to plot, never the values.
-
-<p align="center"><img src="assets/screenshot-pregunta-ranking.png" alt="Pregunta answering a CFO: group members ranked worst to best, mean as a line, below-mean in red, alert badges" width="88%"/></p>
-
-<sub>"Soy el CFO del grupo. Quiero ver en barras el índice de cada una de mis empresas de peor a mejor, cuáles están por debajo de la media y quién tiene una alerta activa." Three tool calls (`get_group`, `get_alerts`, `plot_series`), one chart, three companies to review today.</sub>
+- **Charts the server fills.** The model chooses what to plot, never the values.
 - **Per-turn caps** on tool calls and a forced text step, so a parallel burst of reads still ends in an answer.
 - **Vigilancia** (the last three months of a company or group) is built deterministically by `watcher-post.ts` from the five monitor rules and precomputed; the LLM only answers replies.
 
