@@ -50,3 +50,7 @@ What landed:
 - Bench: `--suite sample`, `--ignore-latency`, month_fanout = extra months per company (not “passed month”).
 
 Loop PID 497061, every 20 min, until 05:55–08:55 +02. Do not merge to main tonight.
+
+## Tick 1b — 2026-09-20 02:16 +02
+
+Keep (no quality drop on why-score q=6 / 1 tool). After four successful `get_company`, force the text step. Control charts return the last 8 months + `persistent_now`, no CUSUM arrays. Local Pregunta opens; a Next hydration overlay on `app-header` can sit on the FAB (pre-existing, not this branch).

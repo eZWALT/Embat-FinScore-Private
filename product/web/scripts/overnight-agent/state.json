@@ -6,7 +6,7 @@
   "branch": "agent/overnight-optimize",
   "mainSha": "0c7771b",
   "mainUrl": "https://hack-spain.vercel.app",
-  "tick": 1,
+  "tick": 2,
   "bestScore": "sample-suite period-4 q 2→5, tools 11→4",
   "loopPid": 497061,
   "loopIntervalSec": 1200,

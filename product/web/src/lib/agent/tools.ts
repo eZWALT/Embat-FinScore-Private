@@ -549,19 +549,22 @@ const get_control_chart = tool({
         typeof chart.method === "object" && chart.method && "name" in chart.method
           ? chart.method.name
           : chart.method;
+      const n = chart.months.length;
+      const from = Math.max(0, n - 8);
+      const slice = <T,>(values: T[] | null | undefined) => (Array.isArray(values) ? values.slice(from) : values);
       return {
         comparison: chart.comparison,
         metric: chart.metric,
-        months: chart.months,
-        values: chart.values,
-        center: chart.center,
-        lower: chart.lower,
-        upper: chart.upper,
-        ewma: chart.ewma,
-        cusum_low: chart.cusum_low,
-        cusum_high: chart.cusum_high,
-        signal: chart.signal,
-        persistent: chart.persistent,
+        months: slice(chart.months),
+        values: slice(chart.values),
+        center: slice(chart.center),
+        lower: slice(chart.lower),
+        upper: slice(chart.upper),
+        ewma: slice(chart.ewma),
+        signal: slice(chart.signal),
+        persistent: slice(chart.persistent),
+        persistent_now: Array.isArray(chart.persistent) ? chart.persistent[n - 1] ?? null : null,
+        persistent_rule: "3 de los últimos 4",
         method,
       };
     } catch (error) {
@@ -790,8 +793,15 @@ export function totalToolCalls(steps: { toolCalls?: { toolName: string }[] }[]):
 export const TOOL_STEP_BUDGET = 4;
 export const TOOL_CALL_BUDGET = 8;
 
-export function shouldForceTextStep(steps: { toolCalls?: { toolName: string }[] }[]): boolean {
-  return steps.length >= TOOL_STEP_BUDGET || totalToolCalls(steps) >= TOOL_CALL_BUDGET;
+export function shouldForceTextStep(
+  steps: {
+    toolCalls?: { toolName: string }[];
+    toolResults?: { toolName: string; output?: unknown; result?: unknown }[];
+  }[],
+): boolean {
+  if (steps.length >= TOOL_STEP_BUDGET || totalToolCalls(steps) >= TOOL_CALL_BUDGET) return true;
+  const scored = companyPayloads(steps).filter((row) => typeof row.error !== "string" && row.score != null);
+  return scored.length >= 4;
 }
 
 function withMemoize<T extends Record<string, { execute?: (...args: never[]) => unknown }>>(tools: T): T {
