@@ -626,4 +626,8 @@ Keep vs main. Persistence fallback is Spanish; WORDING 3 says «señales», not 
 
 Keep vs main. Control-chart blurb is Spanish. Production main still on the Rápido-list chips when no company is selected.
 
+## Tick 58 — 2026-09-20 07:04 +02
+
+Keep vs main. Zod describes (`Default 30`, SELECT) are Spanish. Period history omits `sin tope`.
+
 Do not merge. Past min 4h; loop until 08:55.

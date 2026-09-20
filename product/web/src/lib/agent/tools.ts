@@ -199,7 +199,7 @@ function scoreHistory(
     const trajectory = speakTrajectory(row.trajectory);
     const guard = speakGuard(row.guard);
     if (trajectory) base.trajectory = trajectory;
-    if (guard) base.guard = guard;
+    if (guard && !(scoresOnly && guard === "sin tope")) base.guard = guard;
     if (scoresOnly || (!moved && !focus && !recent)) return base;
     return {
       ...base,
@@ -459,7 +459,7 @@ const list_companies = tool({
     "Lista empresas con puntuación (último mes): índice, trayectoria, confianza, tope, nº de alertas. group_id opcional. Solo si no hay empresa en la sesión.",
   inputSchema: z.object({
     group_id: z.string().optional().describe("GROUP_xxxx"),
-    limit: z.number().int().min(1).max(200).optional().describe("Default 30"),
+    limit: z.number().int().min(1).max(200).optional().describe("Por defecto 30"),
   }),
   execute: async ({ group_id, limit = 30 }) => {
     try {
@@ -542,7 +542,7 @@ const explain_change = tool({
     "Por qué se movió vs el mes anterior (deltas, change_reasons, tope). Solo si get_company no trajo change_reasons.",
   inputSchema: z.object({
     company_id: z.string().describe("COMP_xxxx"),
-    month: z.string().optional().describe("YYYY-MM, default latest"),
+    month: z.string().optional().describe("YYYY-MM; omite = último mes"),
   }),
     execute: async ({ company_id, month }) => {
       try {
@@ -673,7 +673,7 @@ function createGetAlerts(session?: ToolSession) {
       kinds: z.array(z.enum(ALERT_KINDS)).optional(),
       severities: z.array(z.enum(ALERT_SEVERITIES)).optional(),
       since_month: z.string().optional().describe("YYYY-MM"),
-      limit: z.number().int().min(1).max(200).optional().describe("Default 30"),
+      limit: z.number().int().min(1).max(200).optional().describe("Por defecto 30"),
     }),
     execute: async ({ entity_id, kinds, severities, since_month, limit = 30 }) => {
       try {
@@ -711,7 +711,7 @@ const get_control_chart = tool({
   description:
     "Gráfico de control: ¿bache o deterioro? Persistencia: 3 de los últimos 4. Empresa: own_history|cluster. Grupo: group_own_history|group_vs_groups.",
   inputSchema: z.object({
-    entity_id: z.string().describe("COMP_xxxx or GROUP_xxxx"),
+    entity_id: z.string().describe("COMP_xxxx o GROUP_xxxx / Empresa 0030"),
     comparison: z.enum(COMPARISONS).optional(),
     metric: z.enum(METRICS).optional(),
   }),
@@ -880,7 +880,7 @@ const query_clean_db = tool({
   description:
     "Un SELECT de solo lectura sobre registros limpios (clean.* → core.*). Siempre WHERE company_id y LIMIT ≤ 200. Nunca para reconstruir un índice.",
   inputSchema: z.object({
-    sql: z.string().describe("One SELECT or WITH … SELECT. Use clean.* (rewritten to core.*)."),
+    sql: z.string().describe("Un SELECT o WITH … SELECT. Usa clean.* (se reescribe a core.*)."),
   }),
   execute: async ({ sql }) => {
     try {
