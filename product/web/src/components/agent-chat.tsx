@@ -359,11 +359,11 @@ export function AgentChat({
                                         className="border-l-2 border-muted pl-2 text-[12px] leading-snug text-muted-foreground"
                                       >
                                         {row.empresa && run.items.length > 1 ? (
-                                          <span className="mr-1 font-medium text-foreground">{row.empresa} ·</span>
+                                          <span className="mr-1 font-medium text-foreground">{row.empresa} · </span>
                                         ) : null}
                                         {row.text}
                                         {row.money ? (
-                                          <span className="ml-1 font-medium tabular-nums text-foreground">{row.money}</span>
+                                          <span className="ml-1 font-medium tabular-nums text-foreground"> {row.money}</span>
                                         ) : null}
                                       </p>
                                     ))

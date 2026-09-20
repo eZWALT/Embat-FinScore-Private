@@ -48,4 +48,4 @@ Facturas, contrapartidas, saldos, deuda. `clean.*` + `WHERE company_id` + `LIMIT
 
 ## `plot_series`
 
-Un `kind` del catálogo. El servidor pone los números. Un gráfico por respuesta.
+Un `kind` del catálogo. El servidor pone los números. Un gráfico por respuesta. «¿Qué explica este gráfico?» no es esto: es periodo.

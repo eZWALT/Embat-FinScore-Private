@@ -64,6 +64,7 @@ export function wantsRecordTools(text: string): boolean {
 }
 
 export function wantsPlotCatalog(text: string): boolean {
+  if (wantsPeriodHistory(text)) return false;
   return /gr[aá]fico|plot|dibuja|pinta|abanico|control chart/i.test(text);
 }
 
@@ -85,7 +86,9 @@ export function wantsGroupTools(text: string): boolean {
 
 /** Dragged period or a named month range. “este mes” is not this. */
 export function wantsPeriodHistory(text: string): boolean {
-  return /periodo seleccionado|periodo:|\d{4}-\d{2}\s*→|desde .+hasta|[a-záéíóú]+ \d{4} →/i.test(text);
+  return /periodo seleccionado|periodo:|\d{4}-\d{2}\s*→|desde .+hasta|[a-záéíóú]+ \d{4} →|explica (este )?gr[aá]fico/i.test(
+    text,
+  );
 }
 
 /** Months of score_history for a period question: the span + one month before, capped at 12. */
