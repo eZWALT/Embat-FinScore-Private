@@ -124,53 +124,65 @@ export function AgentTrace({
     return value != null ? sum + value : sum;
   }, 0);
   const previews = calls.map((part) => callPreview(name, part));
+  const headerHint = previews.find((row) => row.summary)?.summary ?? "";
   const hasBody = previews.some(
     (row) =>
-      row.summary ||
       (row.input != null && shouldShowInput(name, row.input)) ||
       row.errorText ||
       (row.output != null && shouldShowOutput(name, row.errorText)),
   );
 
+  const header = (
+    <>
+      <Icon className="size-3 shrink-0" aria-hidden="true" />
+      <span className="min-w-0 truncate font-medium text-foreground">
+        {toolLabel(name)}
+        {count > 1 ? <span className="tabular-nums text-muted-foreground"> ×{count}</span> : null}
+      </span>
+      {headerHint ? <span className="min-w-0 truncate">{headerHint}</span> : null}
+      {showSpinner ? <AgentBusy /> : null}
+      {errored ? <span className="text-destructive">Error</span> : null}
+      {allDone && !keepBusy && ms > 0 ? (
+        <span className="shrink-0 font-mono text-[10px] tabular-nums">{formatSeconds(ms)}</span>
+      ) : null}
+    </>
+  );
+
+  if (!hasBody) {
+    return (
+      <div className="flex min-w-0 items-center gap-1.5 overflow-hidden py-0.5 text-[12px] leading-snug text-muted-foreground">
+        {header}
+      </div>
+    );
+  }
+
   return (
     <details className="group min-w-0 text-[12px] leading-snug">
       <summary className="flex min-w-0 cursor-pointer list-none items-center gap-1.5 overflow-hidden py-0.5 text-muted-foreground">
-        <Icon className="size-3 shrink-0" aria-hidden="true" />
-        <span className="min-w-0 truncate font-medium text-foreground">
-          {toolLabel(name)}
-          {count > 1 ? <span className="tabular-nums text-muted-foreground"> ×{count}</span> : null}
-        </span>
+        {header}
         <ChevronRight className="size-3 shrink-0 transition-transform group-open:rotate-90" />
-        {showSpinner ? <AgentBusy /> : null}
-        {errored ? <span className="text-destructive">Error</span> : null}
-        {allDone && !keepBusy && ms > 0 ? (
-          <span className="shrink-0 font-mono text-[10px] tabular-nums">{formatSeconds(ms)}</span>
-        ) : null}
       </summary>
-      {hasBody ? (
-        <div className="space-y-2 border-l pl-3 ml-4 py-1.5">
-          {previews.map((row, index) => (
-            <div key={index} className="space-y-1">
-              {calls.length > 1 ? (
-                <p className="font-mono text-[10px] text-muted-foreground">×{index + 1}</p>
-              ) : null}
-              {row.summary ? <p className="text-muted-foreground">{row.summary}</p> : null}
-              {row.input != null && shouldShowInput(name, row.input) ? (
-                <pre className="max-h-32 overflow-auto whitespace-pre-wrap font-mono text-[11px] text-muted-foreground">
-                  {name === "query_clean_db" && row.input && typeof row.input === "object" && "sql" in row.input
-                    ? String((row.input as { sql: unknown }).sql)
-                    : preview(row.input, 800)}
-                </pre>
-              ) : null}
-              {row.errorText || (row.output != null && shouldShowOutput(name, row.errorText)) ? (
-                <pre className="max-h-40 overflow-auto whitespace-pre-wrap font-mono text-[11px] text-muted-foreground">
-                  {row.errorText || preview(row.output)}
-                </pre>
-              ) : null}
-            </div>
-          ))}
-        </div>
-      ) : null}
+      <div className="space-y-2 border-l pl-3 ml-4 py-1.5">
+        {previews.map((row, index) => (
+          <div key={index} className="space-y-1">
+            {calls.length > 1 ? (
+              <p className="font-mono text-[10px] text-muted-foreground">×{index + 1}</p>
+            ) : null}
+            {row.input != null && shouldShowInput(name, row.input) ? (
+              <pre className="max-h-32 overflow-auto whitespace-pre-wrap font-mono text-[11px] text-muted-foreground">
+                {name === "query_clean_db" && row.input && typeof row.input === "object" && "sql" in row.input
+                  ? String((row.input as { sql: unknown }).sql)
+                  : preview(row.input, 800)}
+              </pre>
+            ) : null}
+            {row.errorText || (row.output != null && shouldShowOutput(name, row.errorText)) ? (
+              <pre className="max-h-40 overflow-auto whitespace-pre-wrap font-mono text-[11px] text-muted-foreground">
+                {row.errorText || preview(row.output)}
+              </pre>
+            ) : null}
+          </div>
+        ))}
+      </div>
     </details>
   );
 }

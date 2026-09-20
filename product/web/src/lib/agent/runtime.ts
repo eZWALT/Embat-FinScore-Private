@@ -52,10 +52,16 @@ export async function streamAgentResponse({
   const namedCompanies = entitiesFromText(question).filter((id) => id.startsWith("COMP_"));
   const alertsOnly = alerts && !records && !plots && !/índice|por qu[eé]|cambi[oó]|periodo|gr[aá]fico/i.test(question);
   const companyOnly = !alerts && !records && !plots && !period && namedCompanies.length <= 1;
+  const monitor =
+    alerts ||
+    plots ||
+    wantsAlertStats(question) ||
+    /cl[uú]ster|pares|previsi[oó]n|abanico|vigilanc/i.test(question);
   const system = await loadSystemPrompt(role, sessionExtra({ companyId, groupId, asOf, view }), {
     thinking,
     records,
     plots,
+    monitor,
   });
   const modelMessages = await convertToModelMessages(uiMessages);
   const session = {

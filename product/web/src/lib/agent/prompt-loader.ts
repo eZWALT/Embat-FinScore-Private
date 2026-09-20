@@ -11,6 +11,7 @@ const FILES = {
   scope: "scope.md",
   quick: "quick_system.md",
   product: "product_context.md",
+  monitor: "product_monitor.md",
   wording: "wording_rules.md",
   format: "watcher_format.md",
   tools: "tools_catalog.md",
@@ -30,15 +31,16 @@ async function readPrompt(name: string) {
 export async function loadSystemPrompt(
   role: AgentRole,
   extra?: string,
-  options?: { thinking?: boolean; records?: boolean; plots?: boolean },
+  options?: { thinking?: boolean; records?: boolean; plots?: boolean; monitor?: boolean },
 ) {
   const parts = [
     await readPrompt(FILES.map),
     await readPrompt(FILES[role]),
     await readPrompt(FILES.scope),
     await readPrompt(FILES.product),
-    await readPrompt(FILES.wording),
   ];
+  if (role === "sentinel" || options?.monitor) parts.push(await readPrompt(FILES.monitor));
+  parts.push(await readPrompt(FILES.wording));
   // FORMAT is the Watcher month-card shape. Pregunta live replies do not use it.
   if (role === "sentinel") parts.push(await readPrompt(FILES.format));
   parts.push(await readPrompt(FILES.tools));

@@ -219,3 +219,17 @@ Keep vs main sample suite (`--ignore-latency`).
 | why-change | 2 / 6 / 8.7 | 1 / 6 / 7.9 |
 
 What landed: force text after one company on a single-empresa question; history is 4 months unless the question is a period (18). No `alert_ids` on `get_company`.
+
+## Tick 12 — 2026-09-20 04:12 +02
+
+Keep vs main sample suite (`--ignore-latency`).
+
+| Case | main tools / q / s | tick 12 tools / q / s |
+|---|---|---|
+| why-score | 1 / 6 / 8.7 | 1 / 6 / 6.1 |
+| alerts | 2 / 6 / 11.0 | **1 / 6** / 6.7 |
+| refuse | 0 / 5 / 2.4 | 0 / 5 / 1.4 |
+| period-4 | 11 / 2 / 17.0 | **4 / 6** / 11.4 |
+| why-change | 2 / 6 / 8.7 | 1 / 6 / 6.5 |
+
+What landed: `product_monitor.md` only if they ask alertas / gráfico / clúster / previsión. Tool row shows «Leer índice · Empresa 0030 · índice 88» without a chevron.
