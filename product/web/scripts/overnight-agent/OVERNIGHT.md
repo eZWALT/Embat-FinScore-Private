@@ -397,3 +397,7 @@ Keep. Catalog matches the unscoped-alerts guard.
 ## Tick 30 — 2026-09-20 05:17 +02
 
 Keep. `list_companies` catalog in Spanish. `explain_change` parses `agosto 2026`. Alerts 851 chars / q 6.
+
+## Tick 31 — 2026-09-20 05:19 +02
+
+Keep. Spanish missing-month errors. WORDING: media/baja; cite owner/action.

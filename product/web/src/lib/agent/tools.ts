@@ -314,12 +314,12 @@ function monthRecord(
   month?: string | null,
 ): MonthRecord | { error: string; scored_months?: string[] } {
   const months = detail.months;
-  if (!months.length) return { error: `${detail.company_id} has no scored month` };
+  if (!months.length) return { error: `${entityLabel(detail.company_id)} no tiene mes puntuado` };
   if (month) {
     const key = monthKey(month) ?? month;
     const rec = months.find((row) => row.month === key);
     if (!rec) {
-      return { error: `${detail.company_id} has no scored month ${month}`, scored_months: months.map((m) => speakMonth(m.month)) };
+      return { error: `${entityLabel(detail.company_id)} no tiene mes puntuado ${speakMonth(month, true) ?? month}`, scored_months: months.map((m) => speakMonth(m.month)) };
     }
     return rec;
   }
@@ -517,14 +517,14 @@ const explain_change = tool({
     try {
       const detail = await repo().getCompany(company_id);
       const months = detail.months;
-      if (!months.length) return { error: "no scored month" };
+      if (!months.length) return { error: "sin mes puntuado" };
       let idx = months.length - 1;
       if (month) {
         const key = monthKey(month) ?? month;
         idx = months.findIndex((row) => row.month === key);
-        if (idx < 0) return { error: `no scored month ${month}` };
+        if (idx < 0) return { error: `sin mes puntuado ${speakMonth(month, true) ?? month}` };
       }
-      if (idx === 0) return { error: "first scored month, no previous month" };
+      if (idx === 0) return { error: "primer mes puntuado, no hay anterior" };
       const cur = months[idx];
       const prev = months[idx - 1];
       const extras = await loadScoreExtras(company_id, cur.month);
@@ -575,7 +575,7 @@ const get_group = tool({
         store.listCompanies(),
         store.getManifest(),
       ]);
-      if (!group) return { error: `${group_id} not in current score run` };
+      if (!group) return { error: `${entityLabel(group_id)} no está en esta corrida` };
       const byId = new Map(companies.map((company) => [company.company_id, company]));
       const members = group.company_ids
         .map((id) => byId.get(id))
