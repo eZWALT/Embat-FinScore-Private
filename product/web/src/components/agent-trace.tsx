@@ -76,6 +76,13 @@ export function AgentThinking({ streaming = false }: { streaming?: boolean }) {
   );
 }
 
+function shouldShowInput(name: string, input: unknown): boolean {
+  if (name === "query_clean_db") return true;
+  if (!input || typeof input !== "object") return false;
+  const keys = Object.keys(input as object);
+  return !keys.every((key) => ["company_id", "group_id", "entity_id", "month", "kind"].includes(key));
+}
+
 function callPreview(name: string, part: ToolPart): { summary: string; input: unknown; output: unknown; errorText: string } {
   const input = "input" in part ? part.input : undefined;
   const output = "output" in part ? part.output : undefined;
@@ -120,7 +127,7 @@ export function AgentTrace({
         <Icon className="size-3 shrink-0" aria-hidden="true" />
         <span className="min-w-0 truncate font-medium text-foreground">
           {toolLabel(name)}
-          <span className="tabular-nums text-muted-foreground"> ×{count}</span>
+          {count > 1 ? <span className="tabular-nums text-muted-foreground"> ×{count}</span> : null}
         </span>
         <ChevronRight className="size-3 shrink-0 transition-transform group-open:rotate-90" />
         {showSpinner ? <AgentBusy /> : null}
@@ -137,7 +144,7 @@ export function AgentTrace({
                 <p className="font-mono text-[10px] text-muted-foreground">×{index + 1}</p>
               ) : null}
               {row.summary ? <p className="text-muted-foreground">{row.summary}</p> : null}
-              {row.input != null ? (
+              {row.input != null && shouldShowInput(name, row.input) ? (
                 <pre className="max-h-32 overflow-auto whitespace-pre-wrap font-mono text-[11px] text-muted-foreground">
                   {name === "query_clean_db" && row.input && typeof row.input === "object" && "sql" in row.input
                     ? String((row.input as { sql: unknown }).sql)

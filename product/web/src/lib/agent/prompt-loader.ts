@@ -3,7 +3,7 @@ import path from "node:path";
 
 export type AgentRole = "sentinel" | "chat" | "quick";
 
-/** Ask stack (full context, do not drop a layer): MAP → ROLE → SCOPE → PRODUCT → WORDING → FORMAT → TOOLS → RECORDS → SESSION. */
+/** Ask stack: MAP → ROLE → SCOPE → PRODUCT → WORDING → [FORMAT if sentinel] → TOOLS → PLOTS → RECORDS → SESSION → BREVITY. */
 const FILES = {
   map: "prompt_map.md",
   sentinel: "sentinel_system.md",
@@ -34,9 +34,10 @@ export async function loadSystemPrompt(role: AgentRole, extra?: string, options?
     await readPrompt(FILES.scope),
     await readPrompt(FILES.product),
     await readPrompt(FILES.wording),
-    await readPrompt(FILES.format),
-    await readPrompt(FILES.tools),
   ];
+  // FORMAT is the Watcher month-card shape. Pregunta live replies do not use it.
+  if (role === "sentinel") parts.push(await readPrompt(FILES.format));
+  parts.push(await readPrompt(FILES.tools));
   if (role === "chat" || role === "sentinel") parts.push(await readPrompt(FILES.plots));
   if (role === "chat") parts.push(await readPrompt(FILES.schema));
   if (extra) parts.push(extra);

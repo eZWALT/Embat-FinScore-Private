@@ -24,8 +24,8 @@ Si una herramienta devuelve `{error}`, dilo y **para**. No encadenes `list_compa
 
 **Cuándo:** por qué el índice es X, trayectoria, motivos con €, ítems, historial.
 **Entrada:** `company_id` (COMP_xxxx), `month?` (YYYY-MM, por defecto el último).
-**Salida:** score, `score_pre_cap`, guard (`dark`/`fading`), trayectoria, confianza + nota, categorías, ítems, `reasons`, `change_reasons`, `score_history`, clúster, `alert_ids`.
-**No:** no la uses para listar empresas; no trates `rank_score` (no está aquí). Una vez por empresa.
+**Salida:** score, `score_pre_cap`, guard (`dark`/`fading`), trayectoria, confianza + nota, categorías, ítems, `reasons`, `change_reasons`, `score_history` (con reasons/change_reasons en el mes pedido, los 3 últimos y los que se movieron ≥2 pts), `alert_ids`. Sin clúster (eso es `compare_with_cluster`).
+**No:** no la uses para listar empresas; no trates `rank_score`. Una vez por empresa. Un periodo = esta llamada, no una por mes.
 
 ## `explain_change`
 

@@ -26,3 +26,27 @@ First pass (before first live candidate bench):
 | why-change | 2 | 5 | 13s | |
 
 Local :3010 is sample_bundle (12 companies). COMP_1186 is not there — do not treat local 1186 benches as vs-main. Preview with Neon is the fair candidate. Local is for compile + sample companies (`COMP_0030`).
+
+## Tick 1 — 2026-09-20 02:15 +02
+
+Keep. Fair suite = `--suite sample` (COMP_0030 / 0016 / 0011 / 0176 / 0651) on production vs local.
+
+| Case | main tools / q / s | candidate tools / q / s |
+|---|---|---|
+| why-score | 1 / 6 / 8.7 | 1 / 6 / 6.1 |
+| alerts | 2 / 6 / 11.0 | 2 / 6 / 7.1 |
+| refuse | 0 / 5 / 2.4 | 0 / 5 / 0.9 |
+| period-4 | 11 / 2 / 17.0 | 4 / 5 / 17.1 |
+| why-change | 2 / 6 / 8.7 | 1 / 6 / 5.5 |
+
+Main period-4: `explain_change` ×7 + `get_alerts` ×4. Candidate: four `get_company` (one per empresa), text grounded.
+
+What landed:
+
+- `score_history` carries reasons on moved months / last 3 / focus month. Cluster dropped from `get_company` (still on `compare_with_cluster`).
+- After a successful `get_company` with `change_reasons`, `explain_change` and `list_companies` are stripped. Force text at 4 steps.
+- Pregunta no longer loads FORMAT. ROLE / PLOTS trimmed or Spanish. Tool descriptions Spanish.
+- Trace: hide `×1`; hide tiny input JSON; Spanish cap / records-not-mounted labels.
+- Bench: `--suite sample`, `--ignore-latency`, month_fanout = extra months per company (not “passed month”).
+
+Loop PID 497061, every 20 min, until 05:55–08:55 +02. Do not merge to main tonight.

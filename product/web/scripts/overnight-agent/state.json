@@ -6,7 +6,9 @@
   "branch": "agent/overnight-optimize",
   "mainSha": "0c7771b",
   "mainUrl": "https://hack-spain.vercel.app",
-  "tick": 0,
-  "bestScore": null,
-  "notes": "Fill startedAt on first bench. Do not merge to main tonight."
+  "tick": 1,
+  "bestScore": "sample-suite period-4 q 2→5, tools 11→4",
+  "loopPid": 497061,
+  "loopIntervalSec": 1200,
+  "notes": "Keep tick 1. Fair compare is --suite sample. Do not merge to main tonight."
 }

@@ -1,0 +1,198 @@
+{
+  "at": "2026-09-20T00:11:32.362Z",
+  "target": "https://hack-spain.vercel.app",
+  "cases": {
+    "why-score": {
+      "metrics": {
+        "tool_count": 1,
+        "unique_tools": 1,
+        "entity_dups": 0,
+        "month_fanout": 0,
+        "has_text": true,
+        "empty_after_tools": false,
+        "text_len": 920,
+        "english_heavy": false,
+        "offers_next": false,
+        "refused": false,
+        "ttft_ms": 6096,
+        "total_ms": 8703
+      },
+      "quality": 6,
+      "tools": [
+        {
+          "name": "get_company",
+          "input": {
+            "company_id": "COMP_0030"
+          }
+        }
+      ],
+      "text": "**Empresa 0030 · 88** (estable, +0,7 pts vs julio), sin tope activo. Casi todo el índice lo sostienen **deudas y liquidez** (94,9) y **crédito nuevo** (100); lo que lo frena es la **volatilidad de las salidas**: −8,5 puntos, con desviaciones de hasta 34 k€ en la media de 6 meses.\n\nEl segundo motivo es menor: **comisiones e intereses bancarios / entradas de caja**, −3,1 puntos (118 € pagados en 5 meses). El mes apenas se movió: el único cambio relevante es ese mismo ítem, +0,62 puntos.\n\nConfianza **media**: en la ventana no hay pagos de facturas ni datos de concentración de clientes, así que el historial de pagos y el mix quedan en blanco y no son comparables con empresas de datos completos.\n\nEn su grupo de pares el índice está en el percentil 94 (amounts_owed 79, stability 62). Para vigilar la oscilación de salidas, el dueño es el **Tesorero**: revisar los meses con picos y adelantar el calendario de pagos."
+    },
+    "alerts": {
+      "metrics": {
+        "tool_count": 2,
+        "unique_tools": 1,
+        "entity_dups": 0,
+        "month_fanout": 0,
+        "has_text": true,
+        "empty_after_tools": false,
+        "text_len": 1000,
+        "english_heavy": false,
+        "offers_next": false,
+        "refused": false,
+        "ttft_ms": 8194,
+        "total_ms": 11024
+      },
+      "quality": 6,
+      "tools": [
+        {
+          "name": "get_alerts",
+          "input": {
+            "entity_id": "COMP_0016",
+            "since_month": "2026-05"
+          }
+        },
+        {
+          "name": "get_alerts",
+          "input": {
+            "entity_id": "GROUP_0070",
+            "since_month": "2026-05"
+          }
+        }
+      ],
+      "text": "**Empresa 0016** tiene una alerta activa, y el **Grupo 0070** otra (esta solo informativa).\n\n- **Tesorero · Empresa 0016** — La puntuación se deteriora frente a su propio histórico: **50** frente a su habitual de **81,3** (−20 pts), fuera de rango en **3 de los últimos 4 meses**. La acción es confirmar que las conexiones bancarias están completas y después contactar con la empresa.\n- **CFO · Grupo 0070** — La puntuación media del grupo se deteriora: **64** frente a **75** habitual (−9) en 18 empresas. Toca revisar los miembros que más se movieron y tratar cada uno con la acción de su propia alerta. Es severidad `info`, así que se registra pero no se empuja.\n\nOjo: la puntuación de la 0016 está limitada por el **tope por desvanecimiento** — las entradas de caja cayeron al **3 %** del nivel previo (**32 k€/mes** frente a **938 k€**). Sin el tope sería **58**.\n\nLos importes detrás del riesgo: **108 k€** pagados a proveedores 5 días tarde de media y **246 k€** cobrados con 1 día de retraso."
+    },
+    "refuse": {
+      "metrics": {
+        "tool_count": 0,
+        "unique_tools": 0,
+        "entity_dups": 0,
+        "month_fanout": 0,
+        "has_text": true,
+        "empty_after_tools": false,
+        "text_len": 128,
+        "english_heavy": false,
+        "offers_next": false,
+        "refused": true,
+        "ttft_ms": 2028,
+        "total_ms": 2377
+      },
+      "quality": 5,
+      "tools": [],
+      "text": "Eso queda fuera de Health Sentinel: no preparo recetas ni listas de la compra. ¿Miramos el índice o las alertas de esta empresa?"
+    },
+    "period-4": {
+      "metrics": {
+        "tool_count": 11,
+        "unique_tools": 2,
+        "entity_dups": 2,
+        "month_fanout": 0,
+        "has_text": true,
+        "empty_after_tools": false,
+        "text_len": 1328,
+        "english_heavy": false,
+        "offers_next": false,
+        "refused": false,
+        "ttft_ms": 13073,
+        "total_ms": 16998
+      },
+      "quality": 2,
+      "tools": [
+        {
+          "name": "explain_change",
+          "input": {
+            "company_id": "COMP_0011",
+            "month": "2026-08"
+          }
+        },
+        {
+          "name": "explain_change",
+          "input": {
+            "company_id": "COMP_0176",
+            "month": "2026-08"
+          }
+        },
+        {
+          "name": "explain_change",
+          "input": {
+            "company_id": "COMP_0651",
+            "month": "2026-08"
+          }
+        },
+        {
+          "name": "explain_change",
+          "input": {
+            "company_id": "COMP_0030",
+            "month": "2026-08"
+          }
+        },
+        {
+          "name": "get_alerts",
+          "input": {
+            "entity_id": "COMP_0011",
+            "since_month": "2026-06"
+          }
+        },
+        {
+          "name": "get_alerts",
+          "input": {
+            "entity_id": "COMP_0176",
+            "since_month": "2026-06"
+          }
+        },
+        {
+          "name": "get_alerts",
+          "input": {
+            "entity_id": "COMP_0651",
+            "since_month": "2026-06"
+          }
+        },
+        {
+          "name": "explain_change"
+        },
+        {
+          "name": "explain_change"
+        },
+        {
+          "name": "explain_change"
+        },
+        {
+          "name": "get_alerts"
+        }
+      ],
+      "text": "**Lo que movió el periodo (jun → ago 2026):** dos de las cuatro caídas no son deterioro operativo, son el **tope por entradas hundidas**; las otras dos sí son movimiento real.\n\n- **Empresa 0011** (73, `fading`): las entradas cayeron al **6 %** de su nivel previo (31 k€/mes frente a 566 k€). El tope la limita a 73 y baja como máximo 10 pts/mes hacia 50 — **sin la salvaguarda sería 81**. Además, 25 % de los cobros pendientes lleva más de 30 días vencido (847 €). Tesorero: comprueba la conexión bancaria antes de dar la caída por real.\n- **Empresa 0176** (59, `fading`): el caso más extremo, **0 € de entradas al mes frente a 37 k€**. El tope la deja en 59 (sin él, 82), y solo entró dinero en 2 de los últimos 6 meses. Comisiones e intereses se comen el 35,7 % de lo poco que entra (104 €). Tesorero.\n- **Empresa 0651** (33, deteriorándose, sin tope): caída orgánica. Los clientes pagan **27 días después del vencimiento** (223 k€ cobrados con retraso) y la caja está en negativo (−1 k€). Cobros: reclama los vencidos y frena la escalada de retraso.\n- **Empresa 0030** (88, estable): sin movimiento material, solo una mejora de 0,62 pts por comisiones (118 €). Nada que hacer.\n\nNo saltó ninguna alerta de puntuación o categoría en esa ventana para estas empresas: el cambio se explica por el tope y por las razones de arriba."
+    },
+    "why-change": {
+      "metrics": {
+        "tool_count": 2,
+        "unique_tools": 2,
+        "entity_dups": 0,
+        "month_fanout": 0,
+        "has_text": true,
+        "empty_after_tools": false,
+        "text_len": 1025,
+        "english_heavy": false,
+        "offers_next": false,
+        "refused": false,
+        "ttft_ms": 5770,
+        "total_ms": 8702
+      },
+      "quality": 6,
+      "tools": [
+        {
+          "name": "explain_change",
+          "input": {
+            "company_id": "COMP_0011"
+          }
+        },
+        {
+          "name": "get_company",
+          "input": {
+            "company_id": "COMP_0011"
+          }
+        }
+      ],
+      "text": "**Empresa 0011 · 73 (dip, −10 este mes)** — pero el tope manda: está **desvaneciéndose** (entradas de caja hundidas). Las entradas cayeron al **6 % de su propio nivel anterior** (31 k€/mes frente a 566 k€), así que el índice baja como máximo 10 puntos al mes hacia 50: el techo de este mes es 73 y sin la salvaguarda sería 81. Confianza `medium` por ese mismo motivo.\n\nAdemás de la salvaguarda (que sola aporta −8,55), lo que resta es de cobros: el **25 % de los cobros pendientes de clientes lleva más de 30 días vencido** (−3,36 pts; 847 € abiertos ahora). El resto de movimientos son positivos y pequeños (comisiones y deuda al alza, +2,63 cada uno, con 0 € detrás).\n\nCon **Tesorero**: confirma que las conexiones bancarias están completas, porque una caída de entradas tan brusca se ve igual si se rompe la fuente de datos. Si están completas, es una caída real de caja: revisa los 847 € vencidos con **Cobros**.\n\nNo ha saltado ninguna alerta este mes; la trayectoria pasa de `stable` a `dip` (pendiente a 3 meses −4,66)."
+    }
+  }
+}

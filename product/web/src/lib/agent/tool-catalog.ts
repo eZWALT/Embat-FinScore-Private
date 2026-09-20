@@ -67,7 +67,11 @@ export function toolOutputSummary(name: string, output: unknown): string {
   if (output == null) return "";
   if (typeof output !== "object") return String(output).slice(0, 160);
   const row = output as Record<string, unknown>;
-  if (typeof row.error === "string") return row.error;
+  if (typeof row.error === "string") {
+    if (row.error === "cap") return "Ya lo tienes · responde con lo recuperado";
+    if (row.error === "records not mounted") return "Registros no montados";
+    return row.error;
+  }
   switch (name) {
     case "get_company":
       return [row.company_id, row.month, row.score != null ? `índice ${row.score}` : null, row.trajectory]

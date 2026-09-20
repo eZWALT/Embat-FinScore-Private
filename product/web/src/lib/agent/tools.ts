@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { createScoreRepository } from "@/lib/data/repository";
 import type {
+  Alert,
   AlertKind,
   AlertSeverity,
   CategoryId,
@@ -10,6 +11,7 @@ import type {
   Comparison,
   GroupRow,
   MonthRecord,
+  Reason,
   ScoreRepository,
 } from "@/lib/data/types";
 
@@ -80,6 +82,99 @@ function round(value: number | null | undefined, digits = 1): number | null {
 function asError(error: unknown): Json {
   if (error instanceof Error) return { error: error.message };
   return { error: String(error) };
+}
+
+function slimReason(reason: Reason) {
+  return {
+    item: reason.item,
+    points: reason.points,
+    eur: reason.eur,
+    sentence: reason.sentence,
+  };
+}
+
+/** Full reasons on the focus month, the last 3, or a move of ≥2 pts. One call covers a period. */
+function scoreHistory(months: MonthRecord[], focusMonth: string) {
+  return months.map((row, index) => {
+    const prev = months[index - 1];
+    const moved = prev != null && Math.abs(row.score - prev.score) >= 2;
+    const focus = row.month === focusMonth;
+    const recent = index >= months.length - 3;
+    const base = {
+      month: row.month,
+      score: row.score,
+      trajectory: row.trajectory,
+      guard: row.guard,
+    };
+    if (!moved && !focus && !recent) return base;
+    return {
+      ...base,
+      reasons: (row.reasons ?? []).map(slimReason),
+      change_reasons: (row.change_reasons ?? []).map(slimReason),
+    };
+  });
+}
+
+function slimItems(items: Record<string, ItemRow>): Record<string, ItemRow> {
+  const rows = Object.entries(items);
+  if (rows.length <= 8) return items;
+  return Object.fromEntries(
+    rows
+      .sort((a, b) => Math.abs(Number(b[1].delta ?? 0)) - Math.abs(Number(a[1].delta ?? 0)))
+      .slice(0, 8),
+  );
+}
+
+function slimAlert(alert: Alert) {
+  return {
+    alert_id: alert.alert_id,
+    entity: alert.entity,
+    month: alert.month,
+    kind: alert.kind,
+    direction: alert.direction,
+    severity: alert.severity,
+    title: alert.title,
+    summary: alert.summary,
+    reasons: (alert.reasons ?? []).map(slimReason),
+    owner: alert.owner,
+    action: alert.action,
+    persistence: alert.persistence,
+    evidence: alert.evidence,
+  };
+}
+
+function toolStepOutput(result: { output?: unknown; result?: unknown }): unknown {
+  return result.output ?? result.result;
+}
+
+function companyPayloads(
+  steps: { toolResults?: { toolName: string; output?: unknown; result?: unknown }[] }[],
+): Record<string, unknown>[] {
+  const out: Record<string, unknown>[] = [];
+  for (const step of steps) {
+    for (const result of step.toolResults ?? []) {
+      if (result.toolName !== "get_company") continue;
+      const payload = toolStepOutput(result);
+      if (payload && typeof payload === "object" && !Array.isArray(payload)) {
+        out.push(payload as Record<string, unknown>);
+      }
+    }
+  }
+  return out;
+}
+
+function retrievedCompanyOk(
+  steps: { toolResults?: { toolName: string; output?: unknown; result?: unknown }[] }[],
+): boolean {
+  return companyPayloads(steps).some((row) => typeof row.error !== "string" && row.score != null);
+}
+
+function companyHasChangeReasons(
+  steps: { toolResults?: { toolName: string; output?: unknown; result?: unknown }[] }[],
+): boolean {
+  return companyPayloads(steps).some(
+    (row) => Array.isArray(row.change_reasons) && row.change_reasons.length > 0,
+  );
 }
 
 function monthRecord(
@@ -201,7 +296,7 @@ async function loadClusterQualityNote(): Promise<string | null> {
 
 const list_companies = tool({
   description:
-    "List scored companies (latest month) with score, trajectory, confidence, guard, alert count. Optional group_id filters to one group. Use it to resolve which companies exist.",
+    "Lista empresas con puntuación (último mes): índice, trayectoria, confianza, tope, nº de alertas. group_id opcional. Solo si no hay empresa en la sesión.",
   inputSchema: z.object({
     group_id: z.string().optional().describe("GROUP_xxxx"),
     limit: z.number().int().min(1).max(200).optional().describe("Default 30"),
@@ -234,10 +329,10 @@ const list_companies = tool({
 
 const get_company = tool({
   description:
-    "Score, trajectory, guard, confidence, categories, items, reasons (with EUR) and change reasons of one company for one month (default: latest). Also returns the score history and cluster membership when loaded.",
+    "Índice, trayectoria, tope, confianza, categorías, reasons y change_reasons de UNA empresa. score_history trae reasons en el mes pedido, los 3 últimos y los que se movieron ≥2 pts: una llamada cubre un periodo. No pases month salvo un mes concreto. No llames explain_change si ya hay change_reasons. Sin clúster (usa compare_with_cluster).",
   inputSchema: z.object({
     company_id: z.string().describe("COMP_xxxx"),
-    month: z.string().optional().describe("YYYY-MM, default latest"),
+    month: z.string().optional().describe("YYYY-MM; omite salvo un mes concreto"),
   }),
   execute: async ({ company_id, month }) => {
     try {
@@ -245,7 +340,6 @@ const get_company = tool({
       const rec = monthRecord(detail, month);
       if ("error" in rec) return rec;
       const extras = await loadScoreExtras(company_id, rec.month);
-      const cluster = await loadCompanyCluster(company_id);
       return {
         company_id: detail.company_id,
         group_id: detail.group_id,
@@ -265,18 +359,10 @@ const get_company = tool({
         coverage: rec.coverage,
         trail_months: rec.trail_months,
         categories: rec.categories,
-        items: extras?.items ?? {},
-        reasons: rec.reasons,
-        change_reasons: rec.change_reasons,
-        score_history: detail.months.map((row) => ({
-          month: row.month,
-          score: row.score,
-          trajectory: row.trajectory,
-          guard: row.guard,
-        })),
-        cluster: cluster
-          ? { cluster_id: cluster.cluster_id, month: cluster.month, vs_cluster: cluster.vs_cluster }
-          : null,
+        items: extras?.items ? slimItems(extras.items) : {},
+        reasons: (rec.reasons ?? []).map(slimReason),
+        change_reasons: (rec.change_reasons ?? []).map(slimReason),
+        score_history: scoreHistory(detail.months, rec.month),
         alert_ids: detail.alert_ids,
       };
     } catch (error) {
@@ -287,7 +373,7 @@ const get_company = tool({
 
 const explain_change = tool({
   description:
-    "Why the score moved from the previous month: signed per-item deltas, change_reasons, guard effect. Default month: latest.",
+    "Por qué se movió vs el mes anterior (deltas, change_reasons, tope). Solo si get_company no trajo change_reasons.",
   inputSchema: z.object({
     company_id: z.string().describe("COMP_xxxx"),
     month: z.string().optional().describe("YYYY-MM, default latest"),
@@ -340,7 +426,7 @@ async function findGroup(groupId: string): Promise<GroupRow | undefined> {
 
 const get_group = tool({
   description:
-    "Group summary: members with their latest score/trajectory/guard, group mean and min, mean-score history, whether funnel limits exist (3+ scored members), and the group's alert ids.",
+    "Resumen del grupo: miembros (índice, trayectoria, tope), media/mínimo, historial de la media, limits_available (3+), alert_ids.",
   inputSchema: z.object({
     group_id: z.string().describe("GROUP_xxxx"),
   }),
@@ -390,7 +476,7 @@ const get_group = tool({
 
 const get_alerts = tool({
   description:
-    "Alerts from the feed, newest first. Filter by entity (company or group id), kinds (score_deterioration, score_improvement, category_drop, going_dark, top_customer_quiet), severities (info, watch, act), and since_month (YYYY-MM). Each alert has title, summary, reasons with EUR, owner, action, evidence, persistence.",
+    "Alertas del feed, más nuevas primero. Filtra por entity_id (COMP_ o GROUP_), kinds, severities y since_month. Una vez por periodo. Cita title y action tal cual.",
   inputSchema: z.object({
     entity_id: z.string().optional(),
     kinds: z.array(z.enum(ALERT_KINDS)).optional(),
@@ -406,7 +492,7 @@ const get_alerts = tool({
       if (kinds?.length) alerts = alerts.filter((alert) => kinds.includes(alert.kind));
       if (severities?.length) alerts = alerts.filter((alert) => severities.includes(alert.severity));
       if (since_month) alerts = alerts.filter((alert) => alert.month >= since_month);
-      const out = alerts.slice(0, limit).map(({ rank_score: _rank, ...alert }) => alert);
+      const out = alerts.slice(0, limit).map(slimAlert);
       return { stats: feed.stats, n_matching: alerts.length, alerts: out };
     } catch (error) {
       return asError(error);
@@ -416,7 +502,7 @@ const get_alerts = tool({
 
 const get_control_chart = tool({
   description:
-    "Control chart series for a company (comparison own_history|cluster; metric score|payment_history|amounts_owed|stability) or a group (comparison group_own_history|group_vs_groups; metric score). Returns months, values, center, lower, upper, ewma, signal per month and the persistent flag.",
+    "Gráfico de control: ¿bache o deterioro? persistent (3 de los últimos 4) es la regla. Empresa: own_history|cluster. Grupo: group_own_history|group_vs_groups.",
   inputSchema: z.object({
     entity_id: z.string().describe("COMP_xxxx or GROUP_xxxx"),
     comparison: z.enum(COMPARISONS).optional(),
@@ -486,7 +572,7 @@ const get_control_chart = tool({
 
 const compare_with_cluster = tool({
   description:
-    "Peer-group comparison: the company's behaviour cluster (label, description, size, quality caveat) and its percentile / robust z inside that cluster for score and categories at the latest month.",
+    "Grupo de pares (no segmento): etiqueta, tamaño, percentil y z robusta. Solo si preguntan cómo se sitúa frente a pares.",
   inputSchema: z.object({
     company_id: z.string().describe("COMP_xxxx"),
   }),
@@ -514,7 +600,7 @@ const compare_with_cluster = tool({
 
 const get_forecast = tool({
   description:
-    "Score fan 1-6 months ahead (median, 50% and 80% bands) with the naive-last baseline. Method is naive_last: it says how far the score usually moves, not which way.",
+    "Abanico 1–6 meses (mediana, bandas 50 % y 80 %). method=naive_last: qué tan lejos suele moverse, no hacia dónde.",
   inputSchema: z.object({
     company_id: z.string().describe("COMP_xxxx"),
   }),
@@ -572,7 +658,7 @@ const get_forecast = tool({
 
 const query_clean_db = tool({
   description:
-    "Run one read-only SELECT over the cleaned records (schema `clean`: companies, groups, transactions, invoices, balances, banking_products, debt_products, debt_schedule_config, dq_log). Always filter by company_id and use LIMIT (max 200 rows). Hosted as Neon `core` (same table names; banking/debt products live in core.products). Never recompute a score.",
+    "Un SELECT de solo lectura sobre registros limpios (clean.* → core.*). Siempre WHERE company_id y LIMIT ≤ 200. Nunca para reconstruir un índice.",
   inputSchema: z.object({
     sql: z.string().describe("One SELECT or WITH … SELECT. Use clean.* (rewritten to core.*)."),
   }),
@@ -599,7 +685,7 @@ const query_clean_db = tool({
 
 const plot_series = tool({
   description:
-    "Draw one catalog chart. The server fills every number from the score run. kind: score_history | score_compare | categories | control_own | control_cluster | control_group | forecast_fan | group_members. Do not pass series or typed values.",
+    "Un gráfico del catálogo. El servidor pone los números. kind: score_history | score_compare | categories | control_own | control_cluster | control_group | forecast_fan | group_members. Sin series tecleadas.",
   inputSchema: z.object({
     kind: z.enum(PLOT_KINDS),
     company_id: z.string().optional().describe("COMP_xxxx"),
@@ -678,9 +764,22 @@ export function countToolCallsByName(steps: { toolCalls?: { toolName: string }[]
   return counts;
 }
 
-export function activeToolsUnderCap(names: string[], steps: { toolCalls?: { toolName: string }[] }[]): string[] {
+export function activeToolsUnderCap(
+  names: string[],
+  steps: {
+    toolCalls?: { toolName: string }[];
+    toolResults?: { toolName: string; output?: unknown; result?: unknown }[];
+  }[],
+): string[] {
   const counts = countToolCallsByName(steps);
-  return names.filter((name) => (counts.get(name) ?? 0) < (TOOL_CALL_CAP[name] ?? 2));
+  const hasCompany = retrievedCompanyOk(steps);
+  const hasChangeReasons = companyHasChangeReasons(steps);
+  return names.filter((name) => {
+    if ((counts.get(name) ?? 0) >= (TOOL_CALL_CAP[name] ?? 2)) return false;
+    if (name === "explain_change" && hasChangeReasons) return false;
+    if (name === "list_companies" && hasCompany) return false;
+    return true;
+  });
 }
 
 export function totalToolCalls(steps: { toolCalls?: { toolName: string }[] }[]): number {
@@ -688,7 +787,7 @@ export function totalToolCalls(steps: { toolCalls?: { toolName: string }[] }[]):
 }
 
 /** Completed steps / calls after which the next step must write, not call again. */
-export const TOOL_STEP_BUDGET = 6;
+export const TOOL_STEP_BUDGET = 4;
 export const TOOL_CALL_BUDGET = 8;
 
 export function shouldForceTextStep(steps: { toolCalls?: { toolName: string }[] }[]): boolean {
@@ -771,11 +870,13 @@ export function chatTools() {
 
 /** Explicación rápida: solo lo necesario para decir qué movió la puntuación. */
 export function quickTools() {
-  return {
-    get_company,
-    explain_change,
-    get_alerts,
-  };
+  return withMemoize(
+    timeAll({
+      get_company,
+      explain_change,
+      get_alerts,
+    }),
+  );
 }
 
 export function sentinelTools() {

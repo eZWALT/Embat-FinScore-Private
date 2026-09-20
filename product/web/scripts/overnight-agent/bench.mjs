@@ -12,7 +12,7 @@ import { fileURLToPath } from "node:url";
 
 const here = dirname(fileURLToPath(import.meta.url));
 
-const CASES = [
+const PROD_CASES = [
   {
     id: "why-score",
     companyId: "COMP_1186",
@@ -49,6 +49,44 @@ const CASES = [
   },
 ];
 
+/** Same companies exist in sample_bundle and (usually) Neon. Use for local vs production quality. */
+const SAMPLE_CASES = [
+  {
+    id: "why-score",
+    companyId: "COMP_0030",
+    groupId: "GROUP_0126",
+    asOf: "2026-08",
+    question: "¿Por qué este índice este mes?",
+  },
+  {
+    id: "alerts",
+    companyId: "COMP_0016",
+    groupId: "GROUP_0070",
+    asOf: "2026-08",
+    question: "¿Qué alertas hay y quién debe actuar?",
+  },
+  {
+    id: "refuse",
+    companyId: "COMP_0030",
+    groupId: "GROUP_0126",
+    asOf: "2026-08",
+    question: "Hazme la lista de la compra para una paella de domingo.",
+  },
+  {
+    id: "period-4",
+    companyId: "COMP_0030",
+    question:
+      "Periodo seleccionado: junio 2026 → agosto 2026.\nEmpresas:\n- Empresa 0011 (Grupo 0234): 82 en junio 2026 → 73 en agosto 2026 (−9 pts), fading\n- Empresa 0176 (Grupo 0225): 79 en junio 2026 → 59 en agosto 2026 (−20 pts), fading\n- Empresa 0651 (Grupo 0081): 42 en junio 2026 → 33 en agosto 2026 (−9 pts), deteriorando\n- Empresa 0030 (Grupo 0126): 87 en junio 2026 → 88 en agosto 2026 (+1 pt), estable\n\nExplica qué pasó en ese periodo y por qué.",
+  },
+  {
+    id: "why-change",
+    companyId: "COMP_0011",
+    groupId: "GROUP_0234",
+    asOf: "2026-08",
+    question: "¿Por qué cayó Empresa 0011 este mes?",
+  },
+];
+
 function arg(name, fallback) {
   const i = process.argv.indexOf(name);
   if (i < 0) return fallback;
@@ -69,7 +107,15 @@ function scoreCase(run) {
   const text = (run.text ?? "").trim();
   const keys = tools.map((t) => `${t.name}:${entityOf(t.name, t.input) || "_"}`);
   const dup = keys.length - new Set(keys).size;
-  const monthFanout = tools.filter((t) => t.name === "get_company" && t.input && t.input.month).length;
+  const monthsByCompany = new Map();
+  for (const tool of tools) {
+    if (tool.name !== "get_company") continue;
+    const company = entityOf(tool.name, tool.input) || "_";
+    const months = monthsByCompany.get(company) ?? new Set();
+    months.add(tool.input && tool.input.month ? String(tool.input.month) : "latest");
+    monthsByCompany.set(company, months);
+  }
+  const monthFanout = [...monthsByCompany.values()].reduce((sum, months) => sum + Math.max(0, months.size - 1), 0);
   const hasText = text.length >= 40;
   const emptyAfterTools = tools.length > 0 && !hasText;
   const englishHeavy = /\b(the score|because|company|here is|I will)\b/i.test(text);
@@ -192,7 +238,7 @@ function compare(baseline, candidate) {
       keep = false;
       reasons.push(`${id}: worse quality/grounding`);
     }
-    if (dt > 8000 && dq <= 0) {
+    if (dt > 8000 && dq <= 0 && !hasFlag("--ignore-latency")) {
       keep = false;
       reasons.push(`${id}: +${Math.round(dt / 1000)}s without quality gain`);
     }
@@ -215,7 +261,9 @@ async function main() {
   const compareRaw = arg("--compare", "");
   const comparePath = compareRaw ? resolve(process.cwd(), compareRaw) : "";
   const only = arg("--only", "");
-  const cases = only ? CASES.filter((c) => c.id === only) : CASES;
+  const suite = arg("--suite", "prod");
+  const pool = suite === "sample" ? SAMPLE_CASES : PROD_CASES;
+  const cases = only ? pool.filter((c) => c.id === only) : pool;
   const pack = {
     at: new Date().toISOString(),
     target,

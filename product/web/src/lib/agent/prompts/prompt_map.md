@@ -8,7 +8,7 @@ Esto es un prompt apilado. **Cada archivo que sigue tiene un solo trabajo.** No 
 | 2 | **SCOPE** | `scope.md` | Qué temas existen. Recusa el resto. Gana si hay conflicto. |
 | 3 | **PRODUCT** | `product_context.md` | Qué es el índice, el monitor, los datos. Contexto. No redacta. No llama herramientas. |
 | 4 | **WORDING** | `wording_rules.md` | Frases fijas de Javi (español). Cómo decir, no qué recuperar. |
-| 5 | **FORMAT** | `watcher_format.md` | Forma de la ficha mensual. No la reescribas. |
+| 5 | **FORMAT** | `watcher_format.md` | Forma de la ficha mensual (solo Sentinel). Pregunta no carga esta capa. |
 | 6 | **TOOLS** | `tools_catalog.md` | Qué recuperación llamar (`get_company`, `get_alerts`…). Hechos, no cuentas. |
 | 6b | **PLOTS** | `plots_catalog.md` | Ocho gráficos del producto/monitor. El servidor rellena los números. |
 | 7 | **RECORDS** | `clean_schema.md` (solo Ask) | Tablas `clean.*` / `core` para facturas y movimientos. |
