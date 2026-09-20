@@ -807,8 +807,8 @@ const compare_with_cluster = tool({
         month: speakMonth(cluster.month, true),
         vs_pares: cluster.vs_cluster.map((row) => ({
           metrica: row.metric === "score" ? "índice" : (CATEGORY_LABELS[row.metric as CategoryId] ?? row.metric),
-          percentil: row.percentile,
-          z: row.robust_z,
+          percentil: speakScore(row.percentile),
+          z: speakScore(row.robust_z),
         })),
       };
     } catch (error) {

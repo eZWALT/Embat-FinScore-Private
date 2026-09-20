@@ -802,4 +802,8 @@ Keep vs main. History field `historial`, `nota_confianza`, `categorias`. History
 
 Keep vs main. `speakMonth` defaults to long. Suite 6/6/5/6/6.
 
+## Tick 89 — 2026-09-20 09:08 +02
+
+Keep vs main. Cluster percentil/z spoken. Suite 6/6/5/6/6. why-change: 82,6 julio → 72,6.
+
 Do not merge. Past min 4h; loop until 08:55.

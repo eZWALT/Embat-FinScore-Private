@@ -137,6 +137,7 @@ Add a new dated file after meaningful work. Do not rewrite old ones. If the new 
 | `persistent-memory/2026-09-20-0855-company-trayectoria-confianza.md` | Overnight: `get_company` keys are `trayectoria` / `confianza` / `meses_historial`. |
 | `persistent-memory/2026-09-20-0858-historial-nota.md` | Overnight: `get_company` history field is `historial`; note is `nota_confianza`. |
 | `persistent-memory/2026-09-20-0902-months-long-default.md` | Overnight: tool months default to `julio 2026`, not `jul 2026`. |
+| `persistent-memory/2026-09-20-0908-cluster-percentil-es.md` | Overnight: cluster `percentil` / `z` are spoken tenths. |
 | `persistent-memory/2026-09-20-0115-thinking-no-verbose.md` | Brain on: drop the length cap. Do not ask for a longer reply. |
 | `persistent-memory/2026-09-20-0120-thinking-max-exa.md` | Exa + `max` superseded. |
 | `persistent-memory/2026-09-20-0130-drop-exa.md` | No Exa. No `search_web`. No `EXA_API_KEY`. |
