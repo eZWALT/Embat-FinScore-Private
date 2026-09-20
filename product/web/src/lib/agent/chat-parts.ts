@@ -67,6 +67,15 @@ export function alertQuotesFromPart(part: UIMessage["parts"][number]): string[] 
     .slice(0, 4);
 }
 
+/** UI quote only: drop the 10 pts/month glide lecture. The model still sees the full `sentence`. */
+function clipGlideLecture(text: string): string {
+  const clipped = text
+    .replace(/\s*:?\s*la puntuación baja como máximo 10 puntos al mes hacia \d+[^.]*\.?/gi, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+  return clipped || text;
+}
+
 export function reasonQuotesFromPart(part: UIMessage["parts"][number]): { text: string; money?: string; empresa?: string }[] {
   if (!isToolUIPart(part)) return [];
   const output = "output" in part ? part.output : undefined;
@@ -85,7 +94,7 @@ export function reasonQuotesFromPart(part: UIMessage["parts"][number]): { text: 
         : undefined;
   const quotes: { text: string; money?: string; empresa?: string }[] = [];
   for (const reason of [...(row.reasons ?? []), ...(row.change_reasons ?? [])]) {
-    const text = typeof reason.sentence === "string" ? reason.sentence.trim() : "";
+    const text = typeof reason.sentence === "string" ? clipGlideLecture(reason.sentence.trim()) : "";
     if (!text) continue;
     const money = typeof reason.eur === "string" ? reason.eur.trim() : "";
     quotes.push(money ? { text, money, empresa } : { text, empresa });

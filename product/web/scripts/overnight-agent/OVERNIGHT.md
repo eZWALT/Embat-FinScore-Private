@@ -746,4 +746,8 @@ Keep vs main sample suite (`--ignore-latency`). 1/6, 1/6, 0/5, 4/6, 1/6. SQL com
 
 Keep vs main. Quick ROLE matches owner-only-after-alerts. Forecast field `ultimo`. Live chips after graph: no dueño; after alertas: other-empresa follow-ups.
 
+## Tick 75 — 2026-09-20 08:35 +02
+
+Keep vs main. Tool-row quotes clip the 10 pts/month glide. Answer still cites `sentence` if the model writes it.
+
 Do not merge. Past min 4h; loop until 08:55.
