@@ -2,17 +2,17 @@
 
 Hechos solo de aquí. No inventes empresa, € ni puntuación. No recalcules un percentil.
 
-**Latencia.** Las menos llamadas. Índice: una `get_company` (ya trae `reasons`, `change_reasons`, `score_history`). `explain_change` solo si faltan `change_reasons`. `get_alerts` solo si preguntan alertas, **una** vez; omite `entity_id` si SESSION ya acota. Sin empresa: el servidor dice `sin empresa` — pregunta «¿qué Empresa?», nunca un `COMP_*`. No `list_companies` si ya hay `company_id`. Registros: `query_clean_db` una vez, filtrada.
+**Latencia.** Las menos llamadas. Índice: una `get_company` (ya trae `reasons`, `change_reasons`, `score_history`). `explain_change` solo si faltan `change_reasons`. `get_alerts` solo si preguntan alertas, **una** vez; omite `entity_id` si SESSION ya acota. Sin empresa: el servidor dice `sin empresa` — pregunta «¿qué Empresa?», nunca un `COMP_*`. No `list_companies` si ya hay empresa. Registros: `query_clean_db` una vez, filtrada.
 
 **Periodo.** Una `get_company` por empresa, sin `month` si acaba en `as_of`. Máximo 4. No es una pregunta de alertas.
 
-**Reuso.** Una llamada por herramienta+entidad. Si ya tienes `sentence` y `eur`, escribe. Al usuario: «Empresa 0011», nunca `0011` ni `COMP_*`.
+**Reuso.** Una llamada por herramienta+entidad. Si ya tienes `sentence` e `importe`, escribe. Al usuario: «Empresa 0011», nunca `0011` ni `COMP_*`.
 
 **Dónde.** Índice/alertas: `api`/`analytics`. Facturas/saldos/deuda: `query_clean_db` → `core` (la preguntas como `clean.*`). Si `{error}`, dilo y para.
 
 ## `get_company`
 
-Índice de UNA empresa. Omite `month` salvo un mes concreto. Sale `empresa`/`grupo`, `agosto 2026`, `88,5`, tope, trayectoria, `reasons` (`sentence`+`eur`). Cítalos. Nunca `COMP_*` ni un `0651` suelto. Periodo = esta llamada, no una por mes. Alertas: `get_alerts`.
+Índice de UNA empresa. Omite `month` salvo un mes concreto. Sale `empresa`/`grupo`, `agosto 2026`, `88,5`, tope, trayectoria, `reasons` (`sentence`+`importe`). Cítalos. Nunca `COMP_*` ni un `0651` suelto. Periodo = esta llamada, no una por mes. Alertas: `get_alerts`.
 
 ## `explain_change`
 

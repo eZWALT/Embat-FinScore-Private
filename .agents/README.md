@@ -125,6 +125,7 @@ Add a new dated file after meaningful work. Do not rewrite old ones. If the new 
 | `persistent-memory/2026-09-20-0830-quick-owner-forecast-ultimo.md` | Overnight: quick ROLE owner only after alerts; forecast `ultimo`. |
 | `persistent-memory/2026-09-20-0835-clip-glide-quotes.md` | Overnight: tool-row quotes drop the 10 pts/month glide lecture. |
 | `persistent-memory/2026-09-20-0840-control-forecast-es.md` | Overnight: control-chart and forecast payloads speak Spanish. |
+| `persistent-memory/2026-09-20-0755-importe-not-signed.md` | Overnight: reason money field is `importe`, not signed `eur`. |
 | `persistent-memory/2026-09-20-0115-thinking-no-verbose.md` | Brain on: drop the length cap. Do not ask for a longer reply. |
 | `persistent-memory/2026-09-20-0120-thinking-max-exa.md` | Exa + `max` superseded. |
 | `persistent-memory/2026-09-20-0130-drop-exa.md` | No Exa. No `search_web`. No `EXA_API_KEY`. |

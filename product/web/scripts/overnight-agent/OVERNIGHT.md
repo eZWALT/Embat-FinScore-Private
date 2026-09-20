@@ -754,4 +754,8 @@ Keep vs main. Tool-row quotes clip the 10 pts/month glide. Answer still cites `s
 
 Keep vs main. Control-chart / forecast payloads in Spanish. Suite 1/6, 1/6, 0/5, 4/6, 1/6.
 
+## Tick 77 — 2026-09-20 07:55 +02
+
+Keep vs main. Reason money field is `importe` (unsigned). `signed_eur` no longer fires. Period still writes `limitada a 73`; why-change still recites the 10 pts/month glide from the raw `sentence`.
+
 Do not merge. Past min 4h; loop until 08:55.

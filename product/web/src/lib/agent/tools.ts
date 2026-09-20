@@ -90,7 +90,7 @@ function asError(error: unknown): Json {
 function slimReason(reason: Reason, currency: string | null = "EUR") {
   return {
     points: reason.points,
-    eur: reason.eur != null ? formatMoney(reason.eur, currency) : null,
+    importe: reason.eur != null ? formatMoney(reason.eur, currency) : null,
     sentence: reason.sentence,
   };
 }

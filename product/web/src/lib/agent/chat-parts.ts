@@ -83,8 +83,8 @@ export function reasonQuotesFromPart(part: UIMessage["parts"][number]): { text: 
   const row = output as {
     empresa?: string;
     company_id?: string;
-    reasons?: { sentence?: string; eur?: string | null }[];
-    change_reasons?: { sentence?: string; eur?: string | null }[];
+    reasons?: { sentence?: string; importe?: string | null; eur?: string | null }[];
+    change_reasons?: { sentence?: string; importe?: string | null; eur?: string | null }[];
   };
   const empresa =
     typeof row.empresa === "string"
@@ -96,7 +96,12 @@ export function reasonQuotesFromPart(part: UIMessage["parts"][number]): { text: 
   for (const reason of [...(row.reasons ?? []), ...(row.change_reasons ?? [])]) {
     const text = typeof reason.sentence === "string" ? clipGlideLecture(reason.sentence.trim()) : "";
     if (!text) continue;
-    const money = typeof reason.eur === "string" ? reason.eur.trim() : "";
+    const money =
+      typeof reason.importe === "string"
+        ? reason.importe.trim()
+        : typeof reason.eur === "string"
+          ? reason.eur.trim()
+          : "";
     quotes.push(money ? { text, money, empresa } : { text, empresa });
     if (quotes.length === 2) break;
   }

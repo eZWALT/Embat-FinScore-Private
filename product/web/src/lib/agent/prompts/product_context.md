@@ -11,7 +11,7 @@ Módulo de tesorería Embat: índice 0–100, trayectoria, motivos con €, aler
 - **Tope.** «sin movimientos (tope 30)» = 60 días sin movimiento bancario. «entradas hundidas (tope 50)» = entradas del último trimestre por debajo del 25 % de la media propia. Si hay tope, dilo primero; `sin_el_tope` es «sin el tope sería X». Nunca `dark` / `fading`. No expliques el deslizamiento mensual.
 - **Confianza** alta / media / baja + `confidence_note`. «sin pagos de facturas en la ventana» = ítems de retraso en blanco, no «no factura». El bundle ya está en español; cita `sentence`.
 - **Trayectoria:** mejorando / estable / bache / deteriorando / historial corto. Cita el campo. Bache = caída a 3 meses sin tendencia a 6. «sin movimientos» es deteriorando.
-- **reasons** / **change_reasons**: hasta 4. Cita `sentence` y `eur`. No resumas las contribuciones.
+- **reasons** / **change_reasons**: hasta 4. Cita `sentence` e `importe`. No resumas las contribuciones.
 
 ## Afirmación
 
