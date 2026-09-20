@@ -126,8 +126,8 @@ export function sessionExtra(input: {
   named?: string[];
 }): string | undefined {
   const lines: string[] = [];
-  if (input.companyId) lines.push(`company_id=${input.companyId} · ${companyLabel(input.companyId)}`);
-  if (input.groupId) lines.push(`group_id=${input.groupId} · ${groupLabel(input.groupId)}`);
+  if (input.companyId) lines.push(`empresa=${companyLabel(input.companyId)}`);
+  if (input.groupId) lines.push(`grupo=${groupLabel(input.groupId)}`);
   if (input.asOf) lines.push(`as_of=${formatMonth(input.asOf)}`);
   if (input.named?.length) {
     const spoken = [...new Set(input.named)].map((id) =>

@@ -110,6 +110,7 @@ Add a new dated file after meaningful work. Do not rewrite old ones. If the new 
 | `persistent-memory/2026-09-20-0708-spanish-cluster-plots.md` | Overnight: cluster payload and plots catalog are Spanish. |
 | `persistent-memory/2026-09-20-0710-wording4-forecast-es.md` | Overnight: WORDING 4 is one line; forecast payload is Spanish. |
 | `persistent-memory/2026-09-20-0715-refuse-no-offtopic-name.md` | Overnight: refuse does not name the off-topic task; WORDING 6 slim. |
+| `persistent-memory/2026-09-20-0720-product-es-session-labels.md` | Overnight: PRODUCT always-on is Spanish; SESSION has no `COMP_*`. |
 | `persistent-memory/2026-09-20-0115-thinking-no-verbose.md` | Brain on: drop the length cap. Do not ask for a longer reply. |
 | `persistent-memory/2026-09-20-0120-thinking-max-exa.md` | Exa + `max` superseded. |
 | `persistent-memory/2026-09-20-0130-drop-exa.md` | No Exa. No `search_web`. No `EXA_API_KEY`. |

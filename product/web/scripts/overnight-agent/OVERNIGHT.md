@@ -652,4 +652,18 @@ Keep vs main sample suite (`--ignore-latency`).
 
 What landed: WORDING 6 slim; tool-catalog Spanish keys; SCOPE/BREVITY refuse without naming the paella; bench `describes_offtopic`. Two earlier benches of this tick named «listas / recetas» — discarded.
 
+## Tick 62 — 2026-09-20 07:20 +02
+
+Keep vs main sample suite (`--ignore-latency`).
+
+| Case | main tools / q / s | tick 62 tools / q / s |
+|---|---|---|
+| why-score | 1 / 6 / 8.7 | 1 / 6 / 5.4 |
+| alerts | 2 / 6 / 11.0 | **1 / 6** / 7.3 |
+| refuse | 0 / 5 / 2.4 | 0 / 5 / 1.4 |
+| period-4 | 11 / 2 / 17.0 | **4 / 6** / 6.8 |
+| why-change | 2 / 6 / 8.7 | 1 / 6 / 3.8 |
+
+What landed: PRODUCT always-on in Spanish (claims unchanged); SESSION `empresa=` / `grupo=` without `COMP_*`. Leftover: period can still write `−535 k€`.
+
 Do not merge. Past min 4h; loop until 08:55.
