@@ -112,6 +112,11 @@ function leakedTokens(text) {
   return /\b(fading|dark|COMP_\d{4}|GROUP_\d{4}|out_vol|fc_ratio|score_pre_cap)\b/i.test(text ?? "");
 }
 
+function describesOfftopic(text, id) {
+  if (id !== "refuse") return false;
+  return /lista(?:s)? de la compra|recetas?|paella|puzzle|algoritmo|malware|roleplay|invertir una lista/i.test(text ?? "");
+}
+
 function bareCompanyNumber(text) {
   return /(?<!Empresa )(?<!Grupo )\b0\d{3}\b/.test(text ?? "") || /la de \d+ puntos/i.test(text ?? "");
 }
@@ -149,6 +154,7 @@ function scoreCase(run, id) {
     invented_owner: inventedOwner(text, tools, id),
     leaked_token: leakedTokens(text),
     bare_id: bareCompanyNumber(text),
+    describes_offtopic: describesOfftopic(text, id),
     ttft_ms: run.ttft_ms,
     total_ms: run.total_ms,
   };
@@ -160,6 +166,7 @@ function caseQuality(metrics, id, text = "") {
     if (metrics.refused) q += 3;
     if (metrics.tool_count === 0) q += 2;
     if (metrics.english_heavy) q -= 2;
+    if (metrics.describes_offtopic) q -= 2;
     return q;
   }
   if (metrics.has_text) q += 3;
@@ -268,7 +275,8 @@ function compare(baseline, candidate) {
     const groundWorse = b.metrics.english_heavy && !a.metrics.english_heavy;
     const ownerWorse = b.metrics.invented_owner && !inventedOwner(a.text, a.tools, id);
     const leakWorse = leakedTokens(b.text) && !leakedTokens(a.text);
-    if (emptyWorse || groundWorse || ownerWorse || leakWorse || dq <= -2) {
+    const offtopicWorse = describesOfftopic(b.text, id) && !describesOfftopic(a.text, id);
+    if (emptyWorse || groundWorse || ownerWorse || leakWorse || offtopicWorse || dq <= -2) {
       keep = false;
       reasons.push(`${id}: worse quality/grounding`);
     }

@@ -638,4 +638,18 @@ Keep vs main. Cluster tool speaks grupo de pares; plots catalog is a short on-de
 
 Keep vs main. WORDING 4 is one grounding line. Forecast payload is Spanish. Refuse Helmcode stall ~93s.
 
+## Tick 61 — 2026-09-20 07:15 +02
+
+Keep vs main sample suite (`--ignore-latency`).
+
+| Case | main tools / q / s | tick 61 tools / q / s |
+|---|---|---|
+| why-score | 1 / 6 / 8.7 | 1 / 6 / 6.0 |
+| alerts | 2 / 6 / 11.0 | **1 / 6** / 5.7 |
+| refuse | 0 / 5 / 2.4 | 0 / 5 / 1.8 (85-char plantilla) |
+| period-4 | 11 / 2 / 17.0 | **4 / 6** / 6.5 |
+| why-change | 2 / 6 / 8.7 | 1 / 6 / 5.6 |
+
+What landed: WORDING 6 slim; tool-catalog Spanish keys; SCOPE/BREVITY refuse without naming the paella; bench `describes_offtopic`. Two earlier benches of this tick named «listas / recetas» — discarded.
+
 Do not merge. Past min 4h; loop until 08:55.

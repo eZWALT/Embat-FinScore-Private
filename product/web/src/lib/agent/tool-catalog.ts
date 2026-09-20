@@ -71,7 +71,7 @@ export function toolOutputSummary(name: string, output: unknown): string {
   const row = output as Record<string, unknown>;
   if (typeof row.error === "string") {
     if (row.error === "cap") return "Ya lo tienes · responde con lo recuperado";
-    if (row.error === "records not mounted") return "Registros no montados";
+    if (row.error === "records not mounted" || row.error === "registros no montados") return "Registros no montados";
     return row.error;
   }
   switch (name) {
@@ -116,11 +116,17 @@ export function toolOutputSummary(name: string, output: unknown): string {
         .filter(Boolean)
         .join(" · ");
     case "compare_with_cluster":
-      return row.cluster && typeof row.cluster === "object" && "label" in row.cluster
-        ? String((row.cluster as { label?: string }).label)
-        : "grupo de pares";
+      return typeof row.grupo_pares === "string"
+        ? row.grupo_pares
+        : row.cluster && typeof row.cluster === "object" && "label" in row.cluster
+          ? String((row.cluster as { label?: string }).label)
+          : "grupo de pares";
     case "get_forecast":
-      return [row.method, row.origin_month, row.horizon_months != null ? `${row.horizon_months} meses` : null]
+      return [
+        row.metodo ?? row.method,
+        row.origen ?? row.origin_month,
+        (row.horizonte_meses ?? row.horizon_months) != null ? `${row.horizonte_meses ?? row.horizon_months} meses` : null,
+      ]
         .filter(Boolean)
         .join(" · ");
     case "query_clean_db":
