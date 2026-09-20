@@ -194,7 +194,7 @@ function scoreHistory(
     const focus = row.month === focusMonth;
     const recent = from + index >= months.length - 3;
     const base: Json = {
-      month: speakMonth(row.month, true),
+      mes: speakMonth(row.month, true),
       score: speakScore(row.score),
     };
     const trajectory = speakTrajectory(row.trajectory);
@@ -291,7 +291,7 @@ function slimAlert(alert: Alert) {
   const flagged = alert.persistence?.months_flagged;
   return {
     entity: entityLabel(alert.entity.id),
-    month: speakMonth(alert.month, true),
+    mes: speakMonth(alert.month, true),
     title: alert.title,
     reasons: (alert.reasons ?? []).map((reason) => slimReason(reason)).slice(0, 2),
     owner: speakOwner(alert.owner),
@@ -510,7 +510,7 @@ function createGetCompany(session?: ToolSession) {
         const payload: Json = {
           empresa: entityLabel(detail.company_id),
           grupo: period || !detail.group_id ? undefined : entityLabel(detail.group_id),
-          month: speakMonth(rec.month, true),
+          mes: speakMonth(rec.month, true),
           score: speakScore(rec.score),
           guard: speakGuard(rec.guard),
           trayectoria: speakTrajectory(rec.trajectory),
@@ -626,7 +626,7 @@ const get_group = tool({
         }));
       const hist = manifest.months
         .map((month, index) => ({
-          month: speakMonth(month),
+          mes: speakMonth(month),
           media: speakScore(group.mean_scores[index] ?? null),
         }))
         .filter((row) => row.media != null);

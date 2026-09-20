@@ -810,4 +810,8 @@ Keep vs main. Cluster percentil/z spoken. Suite 6/6/5/6/6. why-change: 82,6 juli
 
 Keep vs main. Control/forecast series in Spanish (`meses` / `valores` / `mes`). Suite 6/6/5/6/6.
 
+## Tick 91 — 2026-09-20 08:25 +02
+
+Keep vs main. Payload as-of field is `mes`. Input `month` unchanged. Suite 6/6/5/6/6.
+
 Do not merge. Past min 4h; loop until 08:55.

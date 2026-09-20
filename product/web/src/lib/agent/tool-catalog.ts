@@ -82,7 +82,7 @@ export function toolOutputSummary(name: string, output: unknown): string {
           : typeof row.company_id === "string"
             ? entityLabel(row.company_id)
             : null,
-        row.month,
+        row.mes ?? row.month,
         row.score != null ? `índice ${row.score}` : null,
         row.trayectoria ?? row.trajectory,
       ]
