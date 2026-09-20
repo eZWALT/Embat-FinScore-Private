@@ -10,7 +10,7 @@ Esto es un prompt apilado. **Cada archivo que sigue tiene un solo trabajo.** No 
 | 4 | **WORDING** | `wording_rules.md` | Frases fijas de Javi (español). Cómo decir, no qué recuperar. |
 | 5 | **FORMAT** | `watcher_format.md` | Forma de la ficha mensual (solo Sentinel). Pregunta no carga esta capa. |
 | 6 | **TOOLS** | `tools_catalog.md` | Qué recuperación llamar (`get_company`, `get_alerts`…). Hechos, no cuentas. |
-| 6b | **PLOTS** | `plots_catalog.md` | Ocho gráficos del producto/monitor. El servidor rellena los números. |
+| 6b | **PLOTS** | `plots_catalog.md` | Ocho gráficos. Pregunta solo lo carga si piden un gráfico o arrastran un periodo. |
 | 7 | **RECORDS** | `clean_schema.md` (solo Ask, si preguntan por facturas/saldos/deuda) | Tablas `clean.*` / `core`. No se carga en preguntas de índice o alertas. |
 | 8 | **SESSION** | extra | `company_id` / `group_id` / `as_of` y **la pantalla abierta**: modo, gráfico, color → empresa, periodo. No es Neon. |
 | 9 | **BREVITY** | `brevity.md` (solo Ask, cerebro apagado) | Longitud del popup. **Va al final** para que no se pierda en el stack. |

@@ -52,6 +52,7 @@ Add a new dated file after meaningful work. Do not rewrite old ones. If the new 
 | `persistent-memory/2026-09-20-0155-overnight-agent-optimize.md` | Pregunta overnight: branch `agent/overnight-optimize` only. Same tools. Bench vs `main`. 4–7 h. |
 | `persistent-memory/2026-09-20-0215-get-company-period-history.md` | Overnight keep: `get_company` history carries period reasons; Pregunta skips FORMAT; force text at 4 steps. |
 | `persistent-memory/2026-09-20-0231-opening-tools-records-schema.md` | Overnight: first step is score tools only; `clean_schema` only on record questions. |
+| `persistent-memory/2026-09-20-0250-alerts-scoped-plots-on-demand.md` | Overnight: `get_alerts` scoped to session/named entities; plots catalog only if asked. |
 | `persistent-memory/2026-09-20-0115-thinking-no-verbose.md` | Brain on: drop the length cap. Do not ask for a longer reply. |
 | `persistent-memory/2026-09-20-0120-thinking-max-exa.md` | Exa + `max` superseded. |
 | `persistent-memory/2026-09-20-0130-drop-exa.md` | No Exa. No `search_web`. No `EXA_API_KEY`. |

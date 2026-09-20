@@ -1,7 +1,14 @@
 import { convertToModelMessages, isStepCount, smoothStream, streamText } from "ai";
 
 import { createHelmcodeModel, helmcodeApiKey, helmcodeTemperature } from "./llm";
-import { coerceUiMessages, lastUserText, sessionExtra, wantsRecordTools } from "./messages";
+import {
+  coerceUiMessages,
+  entitiesFromText,
+  lastUserText,
+  sessionExtra,
+  wantsPlotCatalog,
+  wantsRecordTools,
+} from "./messages";
 import { loadSystemPrompt, type AgentRole } from "./prompt-loader";
 import { activeToolsUnderCap, chatTools, quickTools, sentinelTools, shouldForceTextStep } from "./tools";
 import type { DashboardView } from "./view-context";
@@ -34,13 +41,17 @@ export async function streamAgentResponse({
     return Response.json({ error: "messages is required" }, { status: 400 });
   }
 
-  const records = wantsRecordTools(lastUserText(uiMessages));
+  const question = lastUserText(uiMessages);
+  const records = wantsRecordTools(question);
+  const plots = wantsPlotCatalog(question);
   const system = await loadSystemPrompt(role, sessionExtra({ companyId, groupId, asOf, view }), {
     thinking,
     records,
+    plots,
   });
   const modelMessages = await convertToModelMessages(uiMessages);
-  const tools = role === "sentinel" ? sentinelTools() : role === "quick" ? quickTools() : chatTools();
+  const session = { companyId, groupId, named: entitiesFromText(question) };
+  const tools = role === "sentinel" ? sentinelTools(session) : role === "quick" ? quickTools(session) : chatTools(session);
 
   const started = Date.now();
   const result = streamText({
@@ -56,7 +67,7 @@ export async function streamAgentResponse({
       if (shouldForceTextStep(steps)) {
         return { activeTools: [], toolChoice: "none" };
       }
-      return { activeTools: activeToolsUnderCap(names as string[], steps, { records }) as typeof names };
+      return { activeTools: activeToolsUnderCap(names as string[], steps, { records, plots }) as typeof names };
     },
     abortSignal,
     temperature: helmcodeTemperature(),

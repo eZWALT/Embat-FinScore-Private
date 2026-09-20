@@ -36,7 +36,7 @@ Si una herramienta devuelve `{error}`, dilo y **para**. No encadenes `list_compa
 
 ## `get_alerts`
 
-**Cuándo:** qué saltó, quién es el dueño, qué hacer. Solo las cinco de Javi.
+**Cuándo:** qué saltó, quién es el dueño, qué hacer. Solo las cinco de Javi. Pasa `entity_id`. Sin id, el servidor acota a la sesión y a las empresas del periodo — no al feed entero.
 **Entrada:** `entity_id?`, `kinds?` (`score_deterioration` \| `score_improvement` \| `category_drop` \| `going_dark` \| `top_customer_quiet`), `severities?` (`info` \| `watch` \| `act`), `since_month?`, `limit?` (30, máx. 200).
 **Salida:** `stats` (cita con tasa base), `n_matching`, `alerts` (título, resumen, motivos+€, dueño, acción, evidencia, persistencia). `rank_score` no es una probabilidad.
 **Redacción:** cita `title` y `action` tal cual (español). Nunca «ingresos en riesgo». Una vez por periodo.

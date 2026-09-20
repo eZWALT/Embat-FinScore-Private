@@ -60,6 +60,24 @@ export function wantsRecordTools(text: string): boolean {
   );
 }
 
+export function wantsPlotCatalog(text: string): boolean {
+  return /gr[aá]fico|plot|dibuja|pinta|abanico|periodo seleccionado|control chart/i.test(text);
+}
+
+/** COMP_ / GROUP_ ids and «Empresa 0011» / «Grupo 0234» mentions. */
+export function entitiesFromText(text: string): string[] {
+  const found = new Set<string>();
+  for (const match of text.matchAll(/\bCOMP_(\d{4})\b/g)) found.add(`COMP_${match[1]}`);
+  for (const match of text.matchAll(/\bGROUP_(\d{4})\b/g)) found.add(`GROUP_${match[1]}`);
+  for (const match of text.matchAll(/\bEmpresa\s+(\d{1,4})\b/gi)) {
+    found.add(`COMP_${match[1].padStart(4, "0")}`);
+  }
+  for (const match of text.matchAll(/\bGrupo\s+(\d{1,4})\b/gi)) {
+    found.add(`GROUP_${match[1].padStart(4, "0")}`);
+  }
+  return [...found];
+}
+
 export function sessionExtra(input: {
   companyId?: string;
   groupId?: string;

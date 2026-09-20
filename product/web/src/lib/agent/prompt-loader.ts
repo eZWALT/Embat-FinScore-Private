@@ -30,7 +30,7 @@ async function readPrompt(name: string) {
 export async function loadSystemPrompt(
   role: AgentRole,
   extra?: string,
-  options?: { thinking?: boolean; records?: boolean },
+  options?: { thinking?: boolean; records?: boolean; plots?: boolean },
 ) {
   const parts = [
     await readPrompt(FILES.map),
@@ -42,7 +42,7 @@ export async function loadSystemPrompt(
   // FORMAT is the Watcher month-card shape. Pregunta live replies do not use it.
   if (role === "sentinel") parts.push(await readPrompt(FILES.format));
   parts.push(await readPrompt(FILES.tools));
-  if (role === "chat" || role === "sentinel") parts.push(await readPrompt(FILES.plots));
+  if ((role === "chat" && options?.plots) || role === "sentinel") parts.push(await readPrompt(FILES.plots));
   if (role === "chat" && options?.records) parts.push(await readPrompt(FILES.schema));
   if (extra) parts.push(extra);
   // Last on purpose (needle): length rules after the long stack so they are not forgotten.

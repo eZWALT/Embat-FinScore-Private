@@ -77,3 +77,13 @@ What landed:
 - Period shape: 1 line + 1 bullet per empresa.
 
 Production `/empresa` still shows the main picker; the known waste there is still `explain_change` fan-out (this branch). Loop continues. Do not merge.
+
+## Tick 3 — 2026-09-20 02:50 +02
+
+Keep. period-4 now **4 tools / q 6 / 12.9 s** (tick 2 was 5 / 17.9 s; main 11 / q 2). Four `get_company`, no month, no unscoped `get_alerts`. Answer still splits fading vs cobros.
+
+What landed:
+
+- `get_alerts` without `entity_id` is clipped to the session + named Empresa/Grupo ids. Hard cap 8 if nothing is in scope.
+- `plots_catalog` / `plot_series` only when the question mentions a chart or `Periodo seleccionado`.
+- Trace: «N alertas · K entidades».

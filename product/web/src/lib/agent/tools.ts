@@ -481,31 +481,51 @@ const get_group = tool({
   },
 });
 
-const get_alerts = tool({
-  description:
-    "Alertas del feed, más nuevas primero. Filtra por entity_id (COMP_ o GROUP_), kinds, severities y since_month. Una vez por periodo. Cita title y action tal cual.",
-  inputSchema: z.object({
-    entity_id: z.string().optional(),
-    kinds: z.array(z.enum(ALERT_KINDS)).optional(),
-    severities: z.array(z.enum(ALERT_SEVERITIES)).optional(),
-    since_month: z.string().optional().describe("YYYY-MM"),
-    limit: z.number().int().min(1).max(200).optional().describe("Default 30"),
-  }),
-  execute: async ({ entity_id, kinds, severities, since_month, limit = 30 }) => {
-    try {
-      const feed = await repo().getAlerts();
-      let alerts = feed.alerts;
-      if (entity_id) alerts = alerts.filter((alert) => alert.entity.id === entity_id);
-      if (kinds?.length) alerts = alerts.filter((alert) => kinds.includes(alert.kind));
-      if (severities?.length) alerts = alerts.filter((alert) => severities.includes(alert.severity));
-      if (since_month) alerts = alerts.filter((alert) => alert.month >= since_month);
-      const out = alerts.slice(0, limit).map(slimAlert);
-      return { stats: feed.stats, n_matching: alerts.length, alerts: out };
-    } catch (error) {
-      return asError(error);
-    }
-  },
-});
+export type ToolSession = {
+  companyId?: string;
+  groupId?: string;
+  named?: string[];
+};
+
+function alertScope(session?: ToolSession): Set<string> {
+  const seen = new Set<string>();
+  if (session?.companyId) seen.add(session.companyId);
+  if (session?.groupId) seen.add(session.groupId);
+  for (const id of session?.named ?? []) seen.add(id);
+  return seen;
+}
+
+function createGetAlerts(session?: ToolSession) {
+  const scope = alertScope(session);
+  return tool({
+    description:
+      "Alertas del feed, más nuevas primero. Pasa entity_id (COMP_ o GROUP_). Sin id, el servidor acota a la sesión y a las empresas nombradas — nunca el feed entero. Una vez por periodo. Cita title y action tal cual.",
+    inputSchema: z.object({
+      entity_id: z.string().optional(),
+      kinds: z.array(z.enum(ALERT_KINDS)).optional(),
+      severities: z.array(z.enum(ALERT_SEVERITIES)).optional(),
+      since_month: z.string().optional().describe("YYYY-MM"),
+      limit: z.number().int().min(1).max(200).optional().describe("Default 30"),
+    }),
+    execute: async ({ entity_id, kinds, severities, since_month, limit = 30 }) => {
+      try {
+        const feed = await repo().getAlerts();
+        let alerts = feed.alerts;
+        const scoped = entity_id ? [entity_id] : [...scope];
+        if (entity_id) alerts = alerts.filter((alert) => alert.entity.id === entity_id);
+        else if (scope.size) alerts = alerts.filter((alert) => scope.has(alert.entity.id));
+        if (kinds?.length) alerts = alerts.filter((alert) => kinds.includes(alert.kind));
+        if (severities?.length) alerts = alerts.filter((alert) => severities.includes(alert.severity));
+        if (since_month) alerts = alerts.filter((alert) => alert.month >= since_month);
+        const cap = entity_id || scope.size ? limit : Math.min(limit, 8);
+        const out = alerts.slice(0, cap).map(slimAlert);
+        return { stats: feed.stats, n_matching: alerts.length, alerts: out, scoped_to: scoped };
+      } catch (error) {
+        return asError(error);
+      }
+    },
+  });
+}
 
 const get_control_chart = tool({
   description:
@@ -783,14 +803,16 @@ export function activeToolsUnderCap(
     toolCalls?: { toolName: string }[];
     toolResults?: { toolName: string; output?: unknown; result?: unknown }[];
   }[],
-  options?: { records?: boolean },
+  options?: { records?: boolean; plots?: boolean },
 ): string[] {
   const counts = countToolCallsByName(steps);
   const hasCompany = retrievedCompanyOk(steps);
   const hasChangeReasons = companyHasChangeReasons(steps);
   const opening = new Set(OPENING_TOOLS);
   if (options?.records) opening.add("query_clean_db");
+  if (!options?.plots) opening.delete("plot_series");
   return names.filter((name) => {
+    if (name === "plot_series" && !options?.plots) return false;
     if (steps.length === 0 && !opening.has(name)) return false;
     if ((counts.get(name) ?? 0) >= (TOOL_CALL_CAP[name] ?? 2)) return false;
     if (name === "explain_change" && hasChangeReasons) return false;
@@ -875,14 +897,14 @@ function timeAll<T extends Record<string, { execute?: (...args: never[]) => unkn
   ) as T;
 }
 
-export function chatTools() {
+export function chatTools(session?: ToolSession) {
   return withMemoize(
     timeAll({
       list_companies,
       get_company,
       explain_change,
       get_group,
-      get_alerts,
+      get_alerts: createGetAlerts(session),
       get_control_chart,
       compare_with_cluster,
       get_forecast,
@@ -893,22 +915,22 @@ export function chatTools() {
 }
 
 /** Explicación rápida: solo lo necesario para decir qué movió la puntuación. */
-export function quickTools() {
+export function quickTools(session?: ToolSession) {
   return withMemoize(
     timeAll({
       get_company,
       explain_change,
-      get_alerts,
+      get_alerts: createGetAlerts(session),
     }),
   );
 }
 
-export function sentinelTools() {
+export function sentinelTools(session?: ToolSession) {
   return withMemoize(
     timeAll({
       get_company,
       get_group,
-      get_alerts,
+      get_alerts: createGetAlerts(session),
       get_control_chart,
       plot_series,
     }),

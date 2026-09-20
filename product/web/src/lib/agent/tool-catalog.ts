@@ -81,8 +81,11 @@ export function toolOutputSummary(name: string, output: unknown): string {
       return [row.company_id, row.from && row.to ? `${row.from} → ${row.to}` : null, row.change != null ? `${row.change} pts` : null]
         .filter(Boolean)
         .join(" · ");
-    case "get_alerts":
-      return `${row.n_matching ?? (Array.isArray(row.alerts) ? row.alerts.length : 0)} alertas`;
+    case "get_alerts": {
+      const n = row.n_matching ?? (Array.isArray(row.alerts) ? row.alerts.length : 0);
+      const scoped = Array.isArray(row.scoped_to) && row.scoped_to.length ? ` · ${row.scoped_to.length} entidades` : "";
+      return `${n} alertas${scoped}`;
+    }
     case "get_group":
       return [row.group_id, row.n_companies != null ? `${row.n_companies} empresas` : null, row.latest_mean_score != null ? `media ${row.latest_mean_score}` : null]
         .filter(Boolean)
