@@ -247,3 +247,21 @@ Keep vs main sample suite (`--ignore-latency`). Quality held; two Helmcode TTFT 
 | why-change | 6 / 2 | 6 / 1 |
 
 What landed: ROLE is procedure only. No «tus salidas».
+
+## Tick 14 — 2026-09-20 04:51 +02
+
+Keep vs main sample suite (`--ignore-latency`). First bench of this tick was **not** a keep: `.map(slimReason)` passed the array index as currency and alerts confessed `toUpperCase is not a function`. Re-benched after the wrap.
+
+| Case | main tools / q / s | tick 14 tools / q / s |
+|---|---|---|
+| why-score | 1 / 6 / 8.7 | 1 / 6 / 3.3 (705 chars, `34 k€`) |
+| alerts | 2 / 6 / 11.0 | **1 / 6** / 6.1 (feed, not error) |
+| refuse | 0 / 5 / 2.4 | 0 / 5 / 0.6 |
+| period-4 | 11 / 2 / 17.0 | **4 / 6** / 10.6 |
+| why-change | 2 / 6 / 8.7 | 1 / 6 / 3.2 |
+
+What landed: `eur` is `formatMoney`; WORDING cites it as-is; `formatMoney` ignores a non-string currency.
+
+## Tick 15 — next
+
+Spanish month labels + rounded scores in the payload so the bubble does not write `2026-08` / `88,45`.

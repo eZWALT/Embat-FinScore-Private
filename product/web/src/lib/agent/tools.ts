@@ -1,7 +1,7 @@
 import { tool } from "ai";
 import { z } from "zod";
 
-import { entityLabel, relabelEntities } from "@/lib/display";
+import { entityLabel, formatMoney, relabelEntities } from "@/lib/display";
 import { CATEGORY_LABELS } from "@/lib/data/plain-language";
 import { createScoreRepository } from "@/lib/data/repository";
 import type {
@@ -86,10 +86,10 @@ function asError(error: unknown): Json {
   return { error: String(error) };
 }
 
-function slimReason(reason: Reason) {
+function slimReason(reason: Reason, currency: string | null = "EUR") {
   return {
     points: reason.points,
-    eur: reason.eur,
+    eur: reason.eur != null ? formatMoney(reason.eur, currency) : null,
     sentence: reason.sentence,
   };
 }
@@ -133,7 +133,7 @@ function speakSeverity(value: string | null | undefined): string | undefined {
 }
 
 /** Full reasons on the focus month, the last 3, or a move of ≥2 pts. One call covers a period. */
-function scoreHistory(months: MonthRecord[], focusMonth: string, span = 18) {
+function scoreHistory(months: MonthRecord[], focusMonth: string, span = 18, currency: string | null = "EUR") {
   const focusIdx = months.findIndex((row) => row.month === focusMonth);
   const lookback = span >= 12 ? 6 : 1;
   const from = Math.max(0, months.length - span, focusIdx >= 0 ? focusIdx - lookback : 0);
@@ -154,8 +154,8 @@ function scoreHistory(months: MonthRecord[], focusMonth: string, span = 18) {
     if (!moved && !focus && !recent) return base;
     return {
       ...base,
-      reasons: (row.reasons ?? []).map(slimReason),
-      change_reasons: (row.change_reasons ?? []).map(slimReason),
+      reasons: (row.reasons ?? []).map((reason) => slimReason(reason, currency)),
+      change_reasons: (row.change_reasons ?? []).map((reason) => slimReason(reason, currency)),
     };
   });
 }
@@ -199,7 +199,7 @@ function slimAlert(alert: Alert) {
     month: alert.month,
     title: alert.title,
     summary: alert.summary,
-    reasons: (alert.reasons ?? []).map(slimReason),
+    reasons: (alert.reasons ?? []).map((reason) => slimReason(reason)),
     owner: speakOwner(alert.owner),
     severity: speakSeverity(alert.severity),
     action: alert.action,
@@ -407,8 +407,9 @@ function createGetCompany(session?: ToolSession) {
         const rec = monthRecord(detail, month);
         if ("error" in rec) return rec;
         const extras = await loadScoreExtras(company_id, rec.month);
-        const reasons = (rec.reasons ?? []).map(slimReason);
-        const change = (rec.change_reasons ?? []).map(slimReason);
+        const currency = detail.currency ?? "EUR";
+        const reasons = (rec.reasons ?? []).map((reason) => slimReason(reason, currency));
+        const change = (rec.change_reasons ?? []).map((reason) => slimReason(reason, currency));
         const payload: Json = {
           company_id: detail.company_id,
           group_id: detail.group_id,
@@ -423,7 +424,7 @@ function createGetCompany(session?: ToolSession) {
           categories: slimCategories(rec.categories),
           reasons,
           change_reasons: change,
-          score_history: scoreHistory(detail.months, rec.month, historySpan),
+          score_history: scoreHistory(detail.months, rec.month, historySpan, currency),
         };
         if (extras?.slope3 != null) payload.slope3 = extras.slope3;
         if (extras?.slope6 != null) payload.slope6 = extras.slope6;
@@ -480,7 +481,7 @@ const explain_change = tool({
         guard_to: speakGuard(cur.guard),
         change_guard: extras?.change_guard ?? null,
         item_deltas: deltas,
-        change_reasons: (cur.change_reasons ?? []).map(slimReason),
+        change_reasons: (cur.change_reasons ?? []).map((reason) => slimReason(reason, detail.currency)),
       };
     } catch (error) {
       return asError(error);

@@ -55,7 +55,7 @@ export function formatSigned(value: number, digits = 1): string {
 
 /** Javi money: `14 k€`, `1,2 M€`, `164 €`. Other ISO codes: `14 k AED`. */
 export function formatMoney(value: number, currency: string | null = "EUR"): string {
-  const code = (currency || "EUR").toUpperCase();
+  const code = (typeof currency === "string" && currency ? currency : "EUR").toUpperCase();
   const abs = Math.abs(value);
   const sign = value < 0 ? "−" : "";
   const amount = (n: number, digits: number) => `${sign}${formatDecimal(n, digits)}`;
