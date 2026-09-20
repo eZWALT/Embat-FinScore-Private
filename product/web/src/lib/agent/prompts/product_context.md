@@ -10,7 +10,7 @@ Health Sentinel is Embat’s treasury module: a **0–100 company health score**
 - Categories (weights fixed): historial de pagos 35, liquidez y deuda 30, estabilidad 15, nuevo crédito 10 (shrunk to 5), combinación de clientes 10. Missing categories are dropped and the rest reweighted (~5 pts higher without invoices — say so before comparing).
 - **Guard.** «sin movimientos (tope 30)» = 60 days without a bank booking. «entradas hundidas (tope 50)» = last-3-month inflows under 25% of own earlier mean. Ceiling glides at most 10 pts/month and lifts at once. Always mention an active tope; `score_pre_cap` is «sin el tope sería X». Never write `dark` / `fading`.
 - **Confidence** alta / media / baja + `confidence_note`. «sin pagos de facturas en la ventana» = delay items blank, not “does not invoice”. Bundle copy is Spanish; cite `sentence`.
-- **Trajectory:** mejorando / estable / bache / deteriorando / historial corto. Improving or deteriorating = 6-month slope same way (±1.5 pts/month) for 3 months and 3-month slope confirms (±3). Bache = 3-month down without that 6-month trend. «sin movimientos» is deteriorando by rule.
+- **Trajectory:** mejorando / estable / bache / deteriorando / historial corto. Cite the field. Bache = 3-month drop without a 6-month trend. «sin movimientos» is deteriorando.
 - **Reasons** / **change_reasons**: up to 4. Cite `sentence` and `eur`. Do not re-sum contributions.
 
 ## Validation, stated plainly

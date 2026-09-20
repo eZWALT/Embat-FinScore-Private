@@ -586,7 +586,7 @@ async function findGroup(groupId: string): Promise<GroupRow | undefined> {
 
 const get_group = tool({
   description:
-    "Resumen del grupo: miembros (Empresa, índice, trayectoria, tope), media/mínimo, historial de la media, limits_available (3+). Alertas: get_alerts.",
+    "Grupo: miembros (Empresa, índice, tope), media, historial. Alertas: get_alerts.",
   inputSchema: z.object({
     group_id: z.string().describe("GROUP_xxxx"),
   }),
@@ -896,7 +896,7 @@ const query_clean_db = tool({
 
 const plot_series = tool({
   description:
-    "Un gráfico del catálogo. El servidor pone los números. kind: score_history | score_compare | categories | control_own | control_cluster | control_group | forecast_fan | group_members. Sin series tecleadas.",
+    "Un gráfico del catálogo. El servidor pone los números. Sin series tecleadas.",
   inputSchema: z.object({
     kind: z.enum(PLOT_KINDS),
     company_id: z.string().optional().describe("COMP_xxxx"),
