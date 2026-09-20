@@ -4,9 +4,15 @@ import type { DashboardView } from "./view-context";
  * First Pregunta chips. Precomputed from the open screen — no LLM wait.
  * Helmcode warmup covers first-token latency when one of these is tapped.
  */
-export function openingSuggestions(view?: DashboardView): string[] {
+export function openingSuggestions(view?: DashboardView, companyId?: string): string[] {
+  const hasEntity = Boolean(
+    companyId || view?.focusCompanyId || view?.focusGroupId || (view?.series?.length ?? 0) > 0,
+  );
   if (view?.periodFrom && view?.periodTo) {
-    return ["¿Qué cambió en este periodo?", "¿Quién tiene que actuar?"];
+    return ["¿Qué cambió en este periodo?", hasEntity ? "¿Quién tiene que actuar?" : "¿Qué empresa miro primero?"];
+  }
+  if (!hasEntity) {
+    return ["¿Qué empresa miro primero?", "¿Quién está peor este mes?"];
   }
   if (view?.screen === "resumen") {
     return ["¿Por qué este índice este mes?", "¿Qué alertas hay?"];

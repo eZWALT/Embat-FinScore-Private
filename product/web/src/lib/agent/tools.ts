@@ -564,7 +564,7 @@ async function findGroup(groupId: string): Promise<GroupRow | undefined> {
 
 const get_group = tool({
   description:
-    "Resumen del grupo: miembros (índice, trayectoria, tope), media/mínimo, historial de la media, limits_available (3+), alert_ids.",
+    "Resumen del grupo: miembros (Empresa, índice, trayectoria, tope), media/mínimo, historial de la media, limits_available (3+). Alertas: get_alerts.",
   inputSchema: z.object({
     group_id: z.string().describe("GROUP_xxxx"),
   }),

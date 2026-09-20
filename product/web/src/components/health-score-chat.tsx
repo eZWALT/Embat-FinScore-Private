@@ -113,7 +113,7 @@ export function HealthScoreChat({
               seedPrompt={seedPrompt}
               seedKey={seedKey}
               placeholder="Ej. ¿Qué cambió este mes?"
-              suggestions={openingSuggestions(view)}
+              suggestions={openingSuggestions(view, companyId)}
             />
           </CardContent>
         </Card>

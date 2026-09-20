@@ -303,3 +303,31 @@ Keep vs main sample suite (`--ignore-latency`). Alerts TTFT ~95 s (Helmcode).
 | why-change | 2 / 6 / 8.7 | 1 / 6 / 6.0 |
 
 What landed: no unscoped feed; drop `summary`; never ask the user for `COMP_*`. Production Rápido (no company) already asked which entity, but leaked tokens.
+
+## Tick 18 — 2026-09-20 05:01 +02
+
+Keep vs main sample suite (`--ignore-latency`). Visual: opening chips.
+
+| Case | main tools / q / s | tick 18 tools / q / s |
+|---|---|---|
+| why-score | 1 / 6 / 8.7 | 1 / 6 / 5.7 |
+| alerts | 2 / 6 / 11.0 | **1 / 6** / 7.9 |
+| refuse | 0 / 5 / 2.4 | 0 / 5 / 0.6 |
+| period-4 | 11 / 2 / 17.0 | **4 / 6** / 11.4 |
+| why-change | 2 / 6 / 8.7 | 1 / 6 / 7.3 |
+
+What landed: Rápido without empresa opens «¿Qué empresa miro primero?» / «¿Quién está peor este mes?».
+
+## Tick 19 — 2026-09-20 05:02 +02
+
+Keep vs main sample suite (`--ignore-latency`).
+
+| Case | main tools / q / s | tick 19 tools / q / s |
+|---|---|---|
+| why-score | 1 / 6 / 8.7 | 1 / 6 / 5.8 |
+| alerts | 2 / 6 / 11.0 | **1 / 6** / 8.7 |
+| refuse | 0 / 5 / 2.4 | 0 / 5 / 1.4 |
+| period-4 | 11 / 2 / 17.0 | **4 / 6** / **9.0** |
+| why-change | 2 / 6 / 8.7 | 1 / 6 / 6.7 |
+
+What landed: PRODUCT guard/trajectory labels match `speakGuard` / `speakTrajectory`.
