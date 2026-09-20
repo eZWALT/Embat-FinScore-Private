@@ -438,4 +438,8 @@ Keep. WORDING: cite `81,1` not `81`. Local Pregunta: empty → pick-empresa chip
 
 Keep. No «10 puntos al mes hacia 50» lecture. why-change cites 81,1 and 535 k€.
 
+## Tick 37 — 2026-09-20 05:44 +02
+
+Keep. `eur` is the amount (`535 k€`), sign on points (`−8,6 pts`).
+
 Do not merge.
