@@ -369,3 +369,11 @@ What landed: no extras query when `reasons` exist; `score_pre_cap` only with a t
 Keep vs main sample suite (`--ignore-latency`). Same 1/1/0/4/1 tools and q 6/6/5/6/6.
 
 What landed: omit empty `change_reasons`; MAP SESSION says agosto 2026 / Empresa 0030.
+
+## Tick 24 — 2026-09-20 05:10 +02
+
+Keep vs main sample suite (`--ignore-latency`). Visual: `34 k€` sits next to the reason sentence under «Leer índice».
+
+## Tick 25 — 2026-09-20 05:13 +02
+
+Keep. PRODUCT validation shortened; AUROC / not-predictive / no hidden-test claims stay.

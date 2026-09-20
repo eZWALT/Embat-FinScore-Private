@@ -65,20 +65,20 @@ export function alertQuotesFromPart(part: UIMessage["parts"][number]): string[] 
     .slice(0, 4);
 }
 
-export function reasonQuotesFromPart(part: UIMessage["parts"][number]): string[] {
+export function reasonQuotesFromPart(part: UIMessage["parts"][number]): { text: string; money?: string }[] {
   if (!isToolUIPart(part)) return [];
   const output = "output" in part ? part.output : undefined;
   if (!output || typeof output !== "object") return [];
   const row = output as { reasons?: { sentence?: string; eur?: string | null }[]; change_reasons?: { sentence?: string; eur?: string | null }[] };
-  const quotes = [...(row.reasons ?? []), ...(row.change_reasons ?? [])]
-    .map((reason) => {
-      const sentence = typeof reason.sentence === "string" ? reason.sentence.trim() : "";
-      const eur = typeof reason.eur === "string" ? reason.eur.trim() : "";
-      if (!sentence) return "";
-      return eur ? `${sentence} · ${eur}` : sentence;
-    })
-    .filter(Boolean);
-  return quotes.slice(0, 2);
+  const quotes: { text: string; money?: string }[] = [];
+  for (const reason of [...(row.reasons ?? []), ...(row.change_reasons ?? [])]) {
+    const text = typeof reason.sentence === "string" ? reason.sentence.trim() : "";
+    if (!text) continue;
+    const money = typeof reason.eur === "string" ? reason.eur.trim() : "";
+    quotes.push(money ? { text, money } : { text });
+    if (quotes.length === 2) break;
+  }
+  return quotes;
 }
 
 export function plotsFromParts(parts: UIMessage["parts"]): PlotSpec[] {

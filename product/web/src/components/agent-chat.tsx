@@ -332,10 +332,16 @@ export function AgentChat({
                               {run.name === "get_company" || run.name === "get_alerts"
                                 ? run.items
                                     .flatMap((item) =>
-                                      (run.name === "get_alerts"
-                                        ? alertQuotesFromPart(item.part)
-                                        : reasonQuotesFromPart(item.part)
-                                      ).map((quote) => ({ key: item.key, quote })),
+                                      run.name === "get_alerts"
+                                        ? alertQuotesFromPart(item.part).map((text) => ({
+                                            key: item.key,
+                                            text,
+                                          }))
+                                        : reasonQuotesFromPart(item.part).map((quote) => ({
+                                            key: item.key,
+                                            text: quote.text,
+                                            money: quote.money,
+                                          })),
                                     )
                                     .slice(0, 4)
                                     .map((row, index) => (
@@ -343,7 +349,10 @@ export function AgentChat({
                                         key={`${row.key}-q-${index}`}
                                         className="border-l-2 border-muted pl-2 text-[12px] leading-snug text-muted-foreground"
                                       >
-                                        {row.quote}
+                                        {row.text}
+                                        {row.money ? (
+                                          <span className="ml-1 font-medium tabular-nums text-foreground">{row.money}</span>
+                                        ) : null}
                                       </p>
                                     ))
                                 : null}
