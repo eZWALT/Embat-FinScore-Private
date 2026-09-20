@@ -27,6 +27,7 @@ export function HealthScoreChat({
   defaultOpen = false,
   seedPrompt,
   seedKey,
+  onSeedSent,
   view,
 }: {
   companyId?: string;
@@ -37,6 +38,8 @@ export function HealthScoreChat({
   defaultOpen?: boolean;
   seedPrompt?: string;
   seedKey?: number;
+  /** The seed question went out: the owner should clear it. */
+  onSeedSent?: () => void;
   view?: DashboardView;
 }) {
   const [internal, setInternal] = useState(defaultOpen);
@@ -112,6 +115,7 @@ export function HealthScoreChat({
               layout="sheet"
               seedPrompt={seedPrompt}
               seedKey={seedKey}
+              onSeedSent={onSeedSent}
               placeholder="Ej. ¿Qué cambió este mes?"
               suggestions={openingSuggestions(view)}
             />

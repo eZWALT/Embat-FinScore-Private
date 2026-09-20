@@ -421,6 +421,7 @@ export function HealthDashboard({
         asOf={data.asOfMonth}
         seedPrompt={seedPrompt}
         seedKey={seedKey}
+        onSeedSent={() => setSeedPrompt(undefined)}
         view={dashboardView}
         open={chatOpen}
         onOpenChange={setChatOpen}

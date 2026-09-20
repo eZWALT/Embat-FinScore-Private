@@ -100,6 +100,7 @@ export function AgentChat({
   suggestions,
   seedPrompt,
   seedKey,
+  onSeedSent,
   view,
   layout = "page",
 }: {
@@ -112,6 +113,8 @@ export function AgentChat({
   suggestions?: string[];
   seedPrompt?: string;
   seedKey?: number;
+  /** Called once the seed question has been sent, so its owner can drop it and not replay it on a remount. */
+  onSeedSent?: () => void;
   view?: AgentContext["view"];
   layout?: "page" | "sheet";
 }) {
@@ -172,7 +175,8 @@ export function AgentChat({
     resetFollowups();
     setTurnThinking(thinkingRef.current);
     void sendMessage({ text }, { body: requestBody() });
-  }, [seedPrompt, seedKey, busy, sendMessage]);
+    onSeedSent?.();
+  }, [seedPrompt, seedKey, busy, sendMessage, onSeedSent]);
 
   function submit(text: string) {
     const trimmed = text.trim();
