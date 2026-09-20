@@ -363,3 +363,9 @@ Keep vs main sample suite (`--ignore-latency`).
 | why-change | 2 / 6 / 8.7 | 1 / 6 / 7.2 |
 
 What landed: no extras query when `reasons` exist; `score_pre_cap` only with a tope; no raw slopes.
+
+## Tick 23 — 2026-09-20 05:10 +02
+
+Keep vs main sample suite (`--ignore-latency`). Same 1/1/0/4/1 tools and q 6/6/5/6/6.
+
+What landed: omit empty `change_reasons`; MAP SESSION says agosto 2026 / Empresa 0030.

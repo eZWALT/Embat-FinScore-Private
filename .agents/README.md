@@ -71,6 +71,7 @@ Add a new dated file after meaningful work. Do not rewrite old ones. If the new 
 | `persistent-memory/2026-09-20-0502-product-guard-spanish.md` | Overnight: always-on PRODUCT speaks the same guard/trajectory labels as the tools. |
 | `persistent-memory/2026-09-20-0508-session-spanish-months.md` | Overnight: SESSION as_of/periodo/focus in Spanish; local chips verified. |
 | `persistent-memory/2026-09-20-0507-skip-extras-precap.md` | Overnight: skip Neon extras when reasons exist; `score_pre_cap` only if tope. |
+| `persistent-memory/2026-09-20-0510-omit-empty-change.md` | Overnight: omit empty `change_reasons` so `explain_change` stays available. |
 | `persistent-memory/2026-09-20-0115-thinking-no-verbose.md` | Brain on: drop the length cap. Do not ask for a longer reply. |
 | `persistent-memory/2026-09-20-0120-thinking-max-exa.md` | Exa + `max` superseded. |
 | `persistent-memory/2026-09-20-0130-drop-exa.md` | No Exa. No `search_web`. No `EXA_API_KEY`. |

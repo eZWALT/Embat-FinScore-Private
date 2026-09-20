@@ -489,9 +489,9 @@ function createGetCompany(session?: ToolSession) {
           confidence_note: rec.confidence_note,
           categories: slimCategories(rec.categories),
           reasons,
-          change_reasons: change,
           score_history: scoreHistory(detail.months, rec.month, historySpan, currency),
         };
+        if (change.length) payload.change_reasons = change;
         if (rec.guard && rec.score_pre_cap != null) payload.score_pre_cap = speakScore(rec.score_pre_cap);
         if ((rec.trail_months ?? 24) < 12) payload.trail_months = rec.trail_months;
         if (!reasons.length) {
