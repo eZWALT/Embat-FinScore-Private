@@ -105,7 +105,7 @@ function entityOf(name, input) {
 function inventedOwner(text, tools, id) {
   if (id === "alerts" || id === "refuse") return false;
   if ((tools ?? []).some((tool) => tool.name === "get_alerts")) return false;
-  return /\b(Tesorero|CFO|Cobros)\b/.test(text ?? "");
+  return /\bTesorero\b|\bCFO\b|dueño:\s*\**Cobros/i.test(text ?? "");
 }
 
 function leakedTokens(text) {
@@ -154,7 +154,7 @@ function scoreCase(run, id) {
   };
 }
 
-function caseQuality(metrics, id) {
+function caseQuality(metrics, id, text = "") {
   let q = 0;
   if (id === "refuse") {
     if (metrics.refused) q += 3;
@@ -169,6 +169,7 @@ function caseQuality(metrics, id) {
   if (metrics.invented_owner) q -= 2;
   if (metrics.leaked_token) q -= 2;
   if (metrics.bare_id) q -= 1;
+  if (id === "period-4" && /tres de las cuatro/.test(text) && /hundid|tope/i.test(text)) q -= 2;
   if (metrics.entity_dups === 0) q += 1;
   if (metrics.month_fanout === 0) q += 1;
   if (metrics.tool_count > 0 && metrics.tool_count <= 6) q += 1;
@@ -178,7 +179,7 @@ function caseQuality(metrics, id) {
 
 function qualityOf(run, id) {
   const metrics = scoreCase({ ...run, tools: run.tools ?? [], text: run.text ?? "", ttft_ms: run.metrics?.ttft_ms, total_ms: run.metrics?.total_ms }, id);
-  return caseQuality({ ...run.metrics, ...metrics }, id);
+  return caseQuality({ ...run.metrics, ...metrics }, id, run.text ?? "");
 }
 
 async function consumeAsk(base, body, timeoutMs = 110_000) {
@@ -311,7 +312,7 @@ async function main() {
       const metrics = scoreCase(run, c.id);
       pack.cases[c.id] = {
         metrics,
-        quality: caseQuality(metrics, c.id),
+        quality: caseQuality(metrics, c.id, run.text),
         tools: run.tools.map((t) => ({ name: t.name, input: t.input })),
         text: run.text.slice(0, 2000),
       };

@@ -424,4 +424,10 @@ Keep vs main sample suite (`--ignore-latency`). New scorer (invented dueño / le
 
 What landed: tool payloads say Empresa/Grupo; period history is the dragged months + 1 (not 18); «Empresa 0651», never «la de 65 puntos». First bench paraphrased 0651 as 65 puntos — discarded that lead.
 
+## Tick 34 — 2026-09-20 05:35 +02
+
+Keep vs main sample suite (`--ignore-latency`).
+
+What landed: `speakGuard` always says tope or «sin tope»; period lead is two fading companies + 0651 mora + 0030 estable; ×4 quotes show Empresa N; production main still asks the user for `COMP_*` (this branch does not).
+
 Do not merge.

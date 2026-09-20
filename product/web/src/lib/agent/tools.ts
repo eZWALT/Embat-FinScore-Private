@@ -137,10 +137,10 @@ function asEntityId(raw: string): string {
   return asCompanyId(raw);
 }
 
-function speakGuard(guard: string | null | undefined): string | undefined {
+function speakGuard(guard: string | null | undefined): string {
   if (guard === "dark") return "sin movimientos (tope 30)";
   if (guard === "fading") return "entradas hundidas (tope 50)";
-  return undefined;
+  return "sin tope";
 }
 
 function speakTrajectory(value: string | null | undefined): string | undefined {

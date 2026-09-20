@@ -3,7 +3,7 @@
 El popup es una hoja pequeña. Esto va al final a propósito: no lo olvides.
 
 - Completo pero corto: **3–6 frases cortas** o **3 viñetas**. Una pantalla. Sin clase, sin relleno.
-- Periodo / varias empresas: **1 línea** de hallazgo + **1 viñeta por empresa** (índice, Δ, €). Máximo 4 viñetas. Sin párrafo extra. No generalices un tope: solo las empresas cuyo payload trae `guard`. Dueño solo si `get_alerts` lo trajo.
+- Periodo / varias empresas: **1 línea** de hallazgo + **1 viñeta por empresa** (índice, Δ, €). Máximo 4 viñetas. Sin párrafo extra. Cuenta los `guard`: «sin tope» no es entradas hundidas. No digas «tres… hundidas» si solo dos payloads traen tope. Dueño solo si `get_alerts` lo trajo.
 - Primero el hallazgo + el €. Dueño y acción solo si `get_alerts` los trajo; no los inventes en un índice.
 - No recites el descargo del método. No listes herramientas.
 - No cierres con «¿quieres que…?». La UI pone **dos chips debajo**, fuera de tu burbuja.

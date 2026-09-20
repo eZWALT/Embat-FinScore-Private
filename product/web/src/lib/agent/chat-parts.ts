@@ -1,5 +1,7 @@
 import { getToolName, isTextUIPart, isToolUIPart, type UIMessage } from "ai";
 
+import { entityLabel } from "@/lib/display";
+
 import { isPlotSpec, type PlotSpec } from "./plot-spec";
 import type { DashboardView } from "./view-context";
 
@@ -65,17 +67,28 @@ export function alertQuotesFromPart(part: UIMessage["parts"][number]): string[] 
     .slice(0, 4);
 }
 
-export function reasonQuotesFromPart(part: UIMessage["parts"][number]): { text: string; money?: string }[] {
+export function reasonQuotesFromPart(part: UIMessage["parts"][number]): { text: string; money?: string; empresa?: string }[] {
   if (!isToolUIPart(part)) return [];
   const output = "output" in part ? part.output : undefined;
   if (!output || typeof output !== "object") return [];
-  const row = output as { reasons?: { sentence?: string; eur?: string | null }[]; change_reasons?: { sentence?: string; eur?: string | null }[] };
-  const quotes: { text: string; money?: string }[] = [];
+  const row = output as {
+    empresa?: string;
+    company_id?: string;
+    reasons?: { sentence?: string; eur?: string | null }[];
+    change_reasons?: { sentence?: string; eur?: string | null }[];
+  };
+  const empresa =
+    typeof row.empresa === "string"
+      ? row.empresa
+      : typeof row.company_id === "string"
+        ? entityLabel(row.company_id)
+        : undefined;
+  const quotes: { text: string; money?: string; empresa?: string }[] = [];
   for (const reason of [...(row.reasons ?? []), ...(row.change_reasons ?? [])]) {
     const text = typeof reason.sentence === "string" ? reason.sentence.trim() : "";
     if (!text) continue;
     const money = typeof reason.eur === "string" ? reason.eur.trim() : "";
-    quotes.push(money ? { text, money } : { text });
+    quotes.push(money ? { text, money, empresa } : { text, empresa });
     if (quotes.length === 2) break;
   }
   return quotes;
