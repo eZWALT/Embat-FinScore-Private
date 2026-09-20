@@ -1,4 +1,5 @@
 import { companyLabel, formatSigned, groupLabel } from "@/lib/display";
+import { formatMonth } from "@/lib/format-month";
 
 function speakViewTrajectory(value: string): string {
   const map: Record<string, string> = {
@@ -154,9 +155,9 @@ export function formatDashboardView(view: DashboardView): string {
     `screen=${view.screen}`,
     SCREENS[view.screen],
   ];
-  if (view.asOf) lines.push(`as_of=${view.asOf}`);
-  if (view.focusCompanyId) lines.push(`focus=${view.focusCompanyId}`);
-  if (view.focusGroupId) lines.push(`group=${view.focusGroupId}`);
+  if (view.asOf) lines.push(`as_of=${formatMonth(view.asOf)}`);
+  if (view.focusCompanyId) lines.push(`focus=${companyLabel(view.focusCompanyId)} (${view.focusCompanyId})`);
+  if (view.focusGroupId) lines.push(`group=${groupLabel(view.focusGroupId)} (${view.focusGroupId})`);
   if (view.score !== undefined) {
     const trail = view.trajectory ? ` ${view.trajectory}` : "";
     const delta = view.delta1m == null ? "" : ` Δ1m ${signed(view.delta1m)}`;
@@ -168,7 +169,9 @@ export function formatDashboardView(view: DashboardView): string {
       `categorias=${view.categories.map((row) => `${row.label} ${row.score ?? "—"}`).join("; ")}`,
     );
   }
-  if (view.periodFrom && view.periodTo) lines.push(`periodo=${view.periodFrom} → ${view.periodTo}`);
+  if (view.periodFrom && view.periodTo) {
+    lines.push(`periodo=${formatMonth(view.periodFrom)} → ${formatMonth(view.periodTo)}`);
+  }
   if (view.series?.length) {
     lines.push("series (color = empresa en el gráfico):");
     for (const row of view.series) {

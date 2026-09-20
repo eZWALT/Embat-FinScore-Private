@@ -331,3 +331,21 @@ Keep vs main sample suite (`--ignore-latency`).
 | why-change | 2 / 6 / 8.7 | 1 / 6 / 6.7 |
 
 What landed: PRODUCT guard/trajectory labels match `speakGuard` / `speakTrajectory`.
+
+## Tick 20 — 2026-09-20 05:08 +02
+
+Keep vs main sample suite (`--ignore-latency`). Local chips verified (Next overlay still sits on the FAB).
+
+| Case | main tools / q / s | tick 20 tools / q / s |
+|---|---|---|
+| why-score | 1 / 6 / 8.7 | 1 / 6 / 5.1 |
+| alerts | 2 / 6 / 11.0 | **1 / 6** / 8.5 |
+| refuse | 0 / 5 / 2.4 | 0 / 5 / 1.4 |
+| period-4 | 11 / 2 / 17.0 | **4 / 6** / 12.2 |
+| why-change | 2 / 6 / 8.7 | 1 / 6 / stall |
+
+What landed: SESSION months and focus labels in Spanish. Rápido empty → pick-empresa chips; one company on the chart → gráfico/alertas.
+
+## Tick 21 — 2026-09-20 05:10 +02
+
+Keep. One company on the Rápido chart now opens «¿Por qué este índice este mes?» / «¿Qué alertas hay?».

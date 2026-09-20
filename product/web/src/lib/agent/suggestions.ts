@@ -21,6 +21,9 @@ export function openingSuggestions(view?: DashboardView, companyId?: string): st
     return ["¿Qué empresa hay que revisar?", "¿Quién tiene que actuar?"];
   }
   if (view?.screen === "rapido_chart") {
+    if ((view.series?.length ?? 0) === 1) {
+      return ["¿Por qué este índice este mes?", "¿Qué alertas hay?"];
+    }
     return ["¿Qué explica este gráfico?", "¿Qué alertas hay?"];
   }
   return ["¿Por qué este índice este mes?", "¿Qué alertas hay?"];

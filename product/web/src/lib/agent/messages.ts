@@ -1,5 +1,8 @@
 import type { ModelMessage, UIMessage } from "ai";
 
+import { companyLabel, groupLabel } from "@/lib/display";
+import { formatMonth } from "@/lib/format-month";
+
 import { formatDashboardView, type DashboardView } from "./view-context";
 
 type LooseMessage = {
@@ -100,9 +103,9 @@ export function sessionExtra(input: {
   view?: DashboardView;
 }): string | undefined {
   const lines: string[] = [];
-  if (input.companyId) lines.push(`company_id=${input.companyId}`);
-  if (input.groupId) lines.push(`group_id=${input.groupId}`);
-  if (input.asOf) lines.push(`as_of=${input.asOf}`);
+  if (input.companyId) lines.push(`company_id=${input.companyId} · ${companyLabel(input.companyId)}`);
+  if (input.groupId) lines.push(`group_id=${input.groupId} · ${groupLabel(input.groupId)}`);
+  if (input.asOf) lines.push(`as_of=${formatMonth(input.asOf)}`);
   const ids = lines.length ? `session\n${lines.join("\n")}` : undefined;
   const screen = input.view ? formatDashboardView(input.view) : undefined;
   if (ids && screen) return `${ids}\n\n${screen}`;
