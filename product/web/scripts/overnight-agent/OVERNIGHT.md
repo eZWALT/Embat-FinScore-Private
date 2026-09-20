@@ -466,4 +466,20 @@ Keep. Trajectory is cite-the-field. Period lead splits fading vs mora vs estable
 
 Keep. Slimmer always-on tools catalog. Period q=6 after a bare-id miss.
 
+## Tick 44 — 2026-09-20 06:33 +02
+
+Keep vs main sample suite (`--ignore-latency`).
+
+| Case | main tools / q / s | tick 44 tools / q / s |
+|---|---|---|
+| why-score | 1 / 6 / 8.7 | 1 / 6 / 4.4 |
+| alerts | 2 / 6 / 11.0 | **1 / 6** / 9.1 |
+| refuse | 0 / 5 / 2.4 | 0 / 5 / 0.6 |
+| period-4 | 11 / 2 / 17.0 | **4 / 6** / 9.5 |
+| why-change | 2 / 6 / 8.7 | 1 / 6 / 5.0 |
+
+What landed: WORDING 13–16 is one SCOPE pointer; SCOPE says no markdown tables. Refuse still the canonical Empresa 0030 line.
+
+Leftover: period lead can still open «tres caen por entradas hundidas» and only then split mora. Do not merge.
+
 Do not merge. Past min 4h; loop until 08:55.
