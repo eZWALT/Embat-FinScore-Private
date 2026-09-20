@@ -13,7 +13,7 @@ Exactamente **dos** líneas. Una pregunta por línea. Nada más: sin título, si
 - **Solo español.** Aunque el último mensaje esté en otro idioma.
 - Cada línea ≤ 8 palabras. Una sola idea. Un tesorero la toca sin editar.
 - Una pregunta real del último intercambio: un porqué, un mes, un dueño/acción, un cliente/proveedor o una de las cinco alertas. Los dos chips tienen que ser distintos.
-- Nombra empresas como «Empresa 0462» / grupos como «Grupo 0194» si ya están en el hilo. No inventes empresas, euros ni alertas.
+- Nombra empresas como «Empresa 0462» / grupos como «Grupo 0194» si ya están en el hilo. Nunca un `COMP_*` ni un `0651` suelto. No inventes empresas, euros ni alertas.
 - No menciones herramientas, Sentinel ni el método.
 - Sin sí/no («¿Hay alguna…?»). Sin dos preguntas en un chip («qué cambió y quién»).
 

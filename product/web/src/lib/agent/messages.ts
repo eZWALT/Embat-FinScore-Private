@@ -117,11 +117,18 @@ export function sessionExtra(input: {
   groupId?: string;
   asOf?: string;
   view?: DashboardView;
+  named?: string[];
 }): string | undefined {
   const lines: string[] = [];
   if (input.companyId) lines.push(`company_id=${input.companyId} · ${companyLabel(input.companyId)}`);
   if (input.groupId) lines.push(`group_id=${input.groupId} · ${groupLabel(input.groupId)}`);
   if (input.asOf) lines.push(`as_of=${formatMonth(input.asOf)}`);
+  if (input.named?.length) {
+    const spoken = [...new Set(input.named)].map((id) =>
+      id.startsWith("GROUP") ? groupLabel(id) : companyLabel(id),
+    );
+    lines.push(`nombra=${spoken.join(" · ")}`);
+  }
   const ids = lines.length ? `session\n${lines.join("\n")}` : undefined;
   const screen = input.view ? formatDashboardView(input.view) : undefined;
   if (ids && screen) return `${ids}\n\n${screen}`;

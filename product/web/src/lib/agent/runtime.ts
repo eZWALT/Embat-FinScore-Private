@@ -58,7 +58,7 @@ export async function streamAgentResponse({
     plots ||
     wantsAlertStats(question) ||
     /cl[uú]ster|pares|previsi[oó]n|abanico|vigilanc/i.test(question);
-  const system = await loadSystemPrompt(role, sessionExtra({ companyId, groupId, asOf, view }), {
+  const system = await loadSystemPrompt(role, sessionExtra({ companyId, groupId, asOf, view, named: entitiesFromText(question) }), {
     thinking,
     records,
     plots,

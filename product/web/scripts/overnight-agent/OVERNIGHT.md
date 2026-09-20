@@ -446,4 +446,8 @@ Keep. `eur` is the amount (`535 k€`), sign on points (`−8,6 pts`).
 
 Keep. Omit `currency` when EUR. Period scorer only flags «tres… caen por hundidas», not «tres empeoran, dos topadas, 0651 sin tope».
 
+## Tick 39 — 2026-09-20 05:50 +02
+
+Keep vs main. Follow-up chips: never `COMP_*`. SESSION `nombra=` lists Empresa labels from the question. Period q=6, no bare ids.
+
 Do not merge.
