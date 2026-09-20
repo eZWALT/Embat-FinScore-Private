@@ -62,7 +62,7 @@ export function SentinelLanding({
 
   return (
     <div className="landing-root relative h-dvh overflow-hidden bg-white text-black">
-      <header className="absolute inset-x-0 top-0 z-30">
+      <header className="absolute inset-x-0 top-0 z-30 bg-white">
         <nav className="flex h-16 items-center justify-between px-8 sm:px-12 lg:px-16 xl:px-20">
           <a href="#hero" className="flex items-center" aria-label="Sentinel" onClick={(event) => goToScreen("hero", event)}>
             <ViewTransition name="sentinel-logo" share="logo-morph" default="none">
@@ -146,7 +146,7 @@ export function SentinelLanding({
         </main>
       </div>
 
-      <div id="team" className="landing-team-screen absolute inset-0 flex flex-col pt-16">
+      <div id="team" className="landing-team-screen absolute inset-0 flex flex-col overflow-y-auto overscroll-contain pt-16 sm:overflow-hidden">
         <LandingTeam />
       </div>
     </div>

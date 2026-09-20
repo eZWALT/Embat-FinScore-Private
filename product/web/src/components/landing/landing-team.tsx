@@ -23,8 +23,8 @@ const TEAM = [
 
 export function LandingTeam() {
   return (
-    <div className="flex h-full min-h-0 flex-col justify-center px-8 sm:px-12 lg:px-16 xl:px-20">
-      <ul className="grid h-full min-h-0 items-center gap-8 py-8 sm:grid-cols-3 sm:gap-10">
+    <div className="flex shrink-0 flex-col px-8 sm:h-full sm:min-h-0 sm:justify-center sm:px-12 lg:px-16 xl:px-20">
+      <ul className="grid items-center gap-8 py-8 sm:h-full sm:min-h-0 sm:grid-cols-3 sm:gap-10">
         {TEAM.map((person) => (
           <li key={person.name}>
             <a href={person.href} target="_blank" rel="noopener noreferrer" className="group block">
