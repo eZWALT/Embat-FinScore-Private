@@ -100,19 +100,23 @@ export function toolOutputSummary(name: string, output: unknown): string {
         .join(" · ");
     case "get_alerts": {
       const n = row.n_matching ?? (Array.isArray(row.alerts) ? row.alerts.length : 0);
-      const scoped = Array.isArray(row.scoped_to) && row.scoped_to.length ? ` · ${row.scoped_to.length} entidades` : "";
-      return `${n} alertas${scoped}`;
+      const scopedN = Array.isArray(row.scoped_to) ? row.scoped_to.length : 0;
+      const scoped = scopedN ? ` · ${scopedN} ${scopedN === 1 ? "entidad" : "entidades"}` : "";
+      return `${n} ${n === 1 ? "alerta" : "alertas"}${scoped}`;
     }
     case "get_group":
       return [
         typeof row.grupo === "string" ? row.grupo : row.group_id,
-        (row.n_empresas ?? row.n_companies) != null ? `${row.n_empresas ?? row.n_companies} empresas` : null,
+        (row.n_empresas ?? row.n_companies) != null
+          ? `${row.n_empresas ?? row.n_companies} ${(row.n_empresas ?? row.n_companies) === 1 ? "empresa" : "empresas"}`
+          : null,
         (row.media ?? row.latest_mean_score) != null ? `media ${row.media ?? row.latest_mean_score}` : null,
       ]
         .filter(Boolean)
         .join(" · ");
     case "list_companies":
-      return `${Array.isArray(row.companies) ? row.companies.length : 0} empresas · ${row.as_of ?? ""}`.trim();
+      const n = Array.isArray(row.companies) ? row.companies.length : 0;
+      return `${n} ${n === 1 ? "empresa" : "empresas"} · ${row.as_of ?? ""}`.trim();
     case "get_control_chart":
       return [
         row.comparacion ?? row.comparison,

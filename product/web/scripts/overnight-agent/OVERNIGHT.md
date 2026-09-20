@@ -774,4 +774,8 @@ Keep vs main. On-screen «explica este gráfico» is period (no plots catalog). 
 
 Keep vs main. Category `pts` spoken. Live chart chip: ×3, no glide, no dueño chips.
 
+## Tick 82 — 2026-09-20 08:30 +02
+
+Keep vs main. Fallback `items` keys in Spanish. Alert row singular. Live 0016: one alerts call, owner after alerts only.
+
 Do not merge. Past min 4h; loop until 08:55.

@@ -211,12 +211,11 @@ function scoreHistory(
 }
 
 function slimItems(items: Record<string, ItemRow>): Record<string, ItemRow> {
-  const rows = Object.entries(items);
-  if (rows.length <= 8) return items;
   return Object.fromEntries(
-    rows
+    Object.entries(items)
       .sort((a, b) => Math.abs(Number(b[1].delta ?? 0)) - Math.abs(Number(a[1].delta ?? 0)))
-      .slice(0, 8),
+      .slice(0, 8)
+      .map(([key, row]) => [REASON_LABELS[key] ?? key, row]),
   );
 }
 
