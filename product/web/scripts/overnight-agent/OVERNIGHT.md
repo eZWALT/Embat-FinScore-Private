@@ -462,4 +462,8 @@ Keep. Shorter `get_alerts` tool description. alerts still 1 / q 6.
 
 Keep. Trajectory is cite-the-field. Period lead splits fading vs mora vs estable. Shorter group/plot blurbs.
 
-Do not merge. Loop stays armed until 08:55.
+## Tick 43 — 2026-09-20 06:12 +02
+
+Keep. Slimmer always-on tools catalog. Period q=6 after a bare-id miss.
+
+Do not merge. Past min 4h; loop until 08:55.

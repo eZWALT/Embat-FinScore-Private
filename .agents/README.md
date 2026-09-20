@@ -91,6 +91,7 @@ Add a new dated file after meaningful work. Do not rewrite old ones. If the new 
 | `persistent-memory/2026-09-20-0552-slim-get-company-desc.md` | Overnight: short `get_company` tool description; same behaviour. |
 | `persistent-memory/2026-09-20-0553-slim-get-alerts-desc.md` | Overnight: short `get_alerts` tool description; unscoped refuse unchanged. |
 | `persistent-memory/2026-09-20-0552-trajectory-mora-not-inflow.md` | Overnight: cite trajectory; mora ≠ falta de entradas. |
+| `persistent-memory/2026-09-20-0612-slim-tools-catalog.md` | Overnight: always-on tools catalog is one short block per tool. |
 | `persistent-memory/2026-09-20-0115-thinking-no-verbose.md` | Brain on: drop the length cap. Do not ask for a longer reply. |
 | `persistent-memory/2026-09-20-0120-thinking-max-exa.md` | Exa + `max` superseded. |
 | `persistent-memory/2026-09-20-0130-drop-exa.md` | No Exa. No `search_web`. No `EXA_API_KEY`. |
