@@ -430,4 +430,8 @@ Keep vs main sample suite (`--ignore-latency`).
 
 What landed: `speakGuard` always says tope or «sin tope»; period lead is two fading companies + 0651 mora + 0030 estable; ×4 quotes show Empresa N; production main still asks the user for `COMP_*` (this branch does not).
 
+## Tick 35 — 2026-09-20 05:40 +02
+
+Keep. WORDING: cite `81,1` not `81`. Local Pregunta: empty → pick-empresa chips; Empresa 0011 on the chart → why-score / alertas.
+
 Do not merge.

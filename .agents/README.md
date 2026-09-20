@@ -83,6 +83,7 @@ Add a new dated file after meaningful work. Do not rewrite old ones. If the new 
 | `persistent-memory/2026-09-20-0524-monitor-tope-owner.md` | Overnight: slim monitor; tope per company; dueño only if `get_alerts` returned it. |
 | `persistent-memory/2026-09-20-0532-empresa-labels-period-span.md` | Overnight: tools speak Empresa/Grupo; period history = span + 1; no bare `0651`. |
 | `persistent-memory/2026-09-20-0535-sin-tope-period-quotes.md` | Overnight: `guard` is always tope or «sin tope»; period quotes label Empresa. |
+| `persistent-memory/2026-09-20-0540-cite-precap-local-chips.md` | Overnight: cite `score_pre_cap` as `81,1`; local chips switch when a company is on the chart. |
 | `persistent-memory/2026-09-20-0115-thinking-no-verbose.md` | Brain on: drop the length cap. Do not ask for a longer reply. |
 | `persistent-memory/2026-09-20-0120-thinking-max-exa.md` | Exa + `max` superseded. |
 | `persistent-memory/2026-09-20-0130-drop-exa.md` | No Exa. No `search_web`. No `EXA_API_KEY`. |
