@@ -6,9 +6,9 @@
   "branch": "agent/overnight-optimize",
   "mainSha": "0c7771b",
   "mainUrl": "https://hack-spain.vercel.app",
-  "tick": 40,
-  "bestScore": "period-4 11→4 q6; nombra; omit EUR; slim get_company desc",
+  "tick": 41,
+  "bestScore": "period-4 11→4 q6; nombra; slim tool blurbs; omit EUR",
   "loopPid": 497061,
   "loopIntervalSec": 1200,
-  "notes": "Keep tick 40. Fair compare is --suite sample --ignore-latency. Do not merge to main tonight. Window min 05:55 / max 08:55 +02."
+  "notes": "Keep tick 41. Fair compare is --suite sample --ignore-latency. Do not merge to main tonight. Window min 05:55 / max 08:55 +02."
 }

@@ -454,4 +454,8 @@ Keep vs main. Follow-up chips: never `COMP_*`. SESSION `nombra=` lists Empresa l
 
 Keep. Shorter `get_company` tool description. Same 1/1/0/4/1 tools, q 6/6/5/6/6.
 
-Do not merge.
+## Tick 41 — 2026-09-20 05:53 +02
+
+Keep. Shorter `get_alerts` tool description. alerts still 1 / q 6.
+
+Do not merge. The 4h minimum is 05:55 +02; loop stays armed until 08:55.

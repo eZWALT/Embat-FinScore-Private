@@ -658,7 +658,7 @@ function createGetAlerts(session?: ToolSession) {
   const scope = alertScope(session);
   return tool({
     description:
-      "Alertas del feed, más nuevas primero. Una sola llamada. Omite entity_id si SESSION ya tiene empresa y grupo: el servidor acota. Sin id nunca devuelve el feed entero. Cita title y action tal cual.",
+      "Alertas, más nuevas primero. Una llamada. Sin empresa en SESSION ni nombrada: error sin empresa. Cita title y action tal cual.",
     inputSchema: z.object({
       entity_id: z.string().optional(),
       kinds: z.array(z.enum(ALERT_KINDS)).optional(),
