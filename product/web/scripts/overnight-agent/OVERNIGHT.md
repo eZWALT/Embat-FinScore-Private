@@ -163,3 +163,24 @@ What landed:
 - Alert entity + evidence ids as Empresa/Grupo.
 
 Next: stats/lift only if they ask fiabilidad.
+
+## Tick 8 — 2026-09-20 03:39 +02
+
+Keep vs main sample suite (`--ignore-latency`).
+
+| Case | main tools / q / s | tick 8 tools / q / s |
+|---|---|---|
+| why-score | 1 / 6 / 8.7 | 1 / 6 / 6.5 |
+| alerts | 2 / 6 / 11.0 | **1 / 6** / 7.8 typical (this run 96 s TTFT stall) |
+| refuse | 0 / 5 / 2.4 | 0 / 5 / 2.1 |
+| period-4 | 11 / 2 / 17.0 | **4 / 6** / **8.5** |
+| why-change | 2 / 6 / 8.7 | 1 / 6 / 6.8 |
+
+alerts answer dropped the lift lecture (936 chars). Members are Empresa 0461, not `COMP_*`.
+
+What landed:
+
+- `stats` only if they ask fiabilidad.
+- Categories as Spanish `{ name, score, pts }`.
+- UI quotes alert title · dueño under «Leer alertas».
+- Trace summary uses Empresa/Grupo.

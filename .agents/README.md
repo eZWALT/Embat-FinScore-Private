@@ -57,6 +57,7 @@ Add a new dated file after meaningful work. Do not rewrite old ones. If the new 
 | `persistent-memory/2026-09-20-0331-hide-tool-json-history-window.md` | Overnight: hide bulky score-tool JSON in the trace; last-18 `score_history`; last-12 group mean. |
 | `persistent-memory/2026-09-20-0334-alerts-on-demand-spanish-tokens.md` | Overnight: `get_alerts` only if asked; tool payloads in Spanish labels; no `fading`/`item` in the bubble. |
 | `persistent-memory/2026-09-20-0336-one-alerts-call.md` | Overnight: one `get_alerts` (session ∪ entity); no «Llamo a…»; evidence ids as Empresa/Grupo. |
+| `persistent-memory/2026-09-20-0339-alert-quotes-stats-on-demand.md` | Overnight: alert title quotes in the UI; `stats` only if they ask fiabilidad; Spanish categories. |
 | `persistent-memory/2026-09-20-0115-thinking-no-verbose.md` | Brain on: drop the length cap. Do not ask for a longer reply. |
 | `persistent-memory/2026-09-20-0120-thinking-max-exa.md` | Exa + `max` superseded. |
 | `persistent-memory/2026-09-20-0130-drop-exa.md` | No Exa. No `search_web`. No `EXA_API_KEY`. |

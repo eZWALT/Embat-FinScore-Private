@@ -1,6 +1,8 @@
 import { tool } from "ai";
 import { z } from "zod";
 
+import { entityLabel, relabelEntities } from "@/lib/display";
+import { CATEGORY_LABELS } from "@/lib/data/plain-language";
 import { createScoreRepository } from "@/lib/data/repository";
 import type {
   Alert,
@@ -173,29 +175,26 @@ function itemsFromMonth(rec: MonthRecord): Record<string, ItemRow> {
   return slimItems(raw);
 }
 
-function entitySay(id: string): string {
-  const digits = id.replace(/^(COMP|GROUP)_/i, "").replace(/^0+/, "") || id;
-  return id.startsWith("GROUP") ? `Grupo ${digits.padStart(4, "0")}` : `Empresa ${digits.padStart(4, "0")}`;
-}
-
-function speakIdsInText(value: string): string {
-  return value
-    .replace(/\bCOMP_(\d{4})\b/g, "Empresa $1")
-    .replace(/\bGROUP_(\d{4})\b/g, "Grupo $1");
-}
-
 function slimEvidence(evidence: Alert["evidence"]) {
   const out: Record<string, string | number | boolean | null> = {};
   for (const [key, value] of Object.entries(evidence ?? {})) {
-    out[key] = typeof value === "string" ? speakIdsInText(value) : value;
+    out[key] = typeof value === "string" ? relabelEntities(value) : value;
   }
   return out;
+}
+
+function slimCategories(categories: MonthRecord["categories"]) {
+  return Object.entries(categories).map(([id, row]) => ({
+    name: CATEGORY_LABELS[id as CategoryId] ?? id,
+    score: row.score,
+    pts: row.contribution,
+  }));
 }
 
 function slimAlert(alert: Alert) {
   return {
     alert_id: alert.alert_id,
-    entity: entitySay(alert.entity.id),
+    entity: entityLabel(alert.entity.id),
     month: alert.month,
     title: alert.title,
     summary: alert.summary,
@@ -418,7 +417,7 @@ const get_company = tool({
         trajectory: speakTrajectory(rec.trajectory),
         confidence: speakConfidence(rec.confidence),
         confidence_note: rec.confidence_note,
-        categories: rec.categories,
+        categories: slimCategories(rec.categories),
         reasons,
         change_reasons: change,
         score_history: scoreHistory(detail.months, rec.month),
@@ -528,7 +527,7 @@ const get_group = tool({
         n_companies: group.n_companies,
         latest_mean_score: group.latest_mean_score,
         latest_min_score: group.latest_min_score,
-        latest_min_company_id: group.latest_min_company_id,
+        latest_min_company_id: group.latest_min_company_id ? entityLabel(group.latest_min_company_id) : null,
         limits_available: group.limits_available,
         members,
         mean_score_history: hist.slice(-12),
@@ -545,6 +544,7 @@ export type ToolSession = {
   companyId?: string;
   groupId?: string;
   named?: string[];
+  stats?: boolean;
 };
 
 function alertScope(session?: ToolSession): Set<string> {
@@ -580,7 +580,9 @@ function createGetAlerts(session?: ToolSession) {
         if (since_month) alerts = alerts.filter((alert) => alert.month >= since_month);
         const cap = entity_id || scope.size ? limit : Math.min(limit, 8);
         const out = alerts.slice(0, cap).map(slimAlert);
-        return { stats: feed.stats, n_matching: alerts.length, alerts: out, scoped_to: scoped };
+        const payload: Json = { n_matching: alerts.length, alerts: out, scoped_to: scoped.map(entityLabel) };
+        if (session?.stats) payload.stats = feed.stats;
+        return payload;
       } catch (error) {
         return asError(error);
       }

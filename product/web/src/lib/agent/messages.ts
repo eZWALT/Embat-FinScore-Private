@@ -69,6 +69,11 @@ export function wantsAlertTools(text: string): boolean {
   return /alerta|avisos?|qui[eé]n debe actuar|qui[eé]n act[uú]a|dueño/i.test(text);
 }
 
+/** Lift / false-alarm numbers. “qué alertas hay” is not this. */
+export function wantsAlertStats(text: string): boolean {
+  return /fiabil|lift|tasa base|acierto|estad[ií]st|75\s*%/i.test(text);
+}
+
 /** COMP_ / GROUP_ ids and «Empresa 0011» / «Grupo 0234» mentions. */
 export function entitiesFromText(text: string): string[] {
   const found = new Set<string>();

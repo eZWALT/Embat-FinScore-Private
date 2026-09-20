@@ -49,6 +49,22 @@ export function plotFromPart(part: UIMessage["parts"][number]): PlotSpec | null 
   return isPlotSpec(plot) ? plot : null;
 }
 
+export function alertQuotesFromPart(part: UIMessage["parts"][number]): string[] {
+  if (!isToolUIPart(part) || getToolName(part) !== "get_alerts") return [];
+  const output = "output" in part ? part.output : undefined;
+  if (!output || typeof output !== "object") return [];
+  const alerts = (output as { alerts?: { title?: string; owner?: string }[] }).alerts ?? [];
+  return alerts
+    .map((alert) => {
+      const title = typeof alert.title === "string" ? alert.title.trim() : "";
+      const owner = typeof alert.owner === "string" ? alert.owner.trim() : "";
+      if (!title) return "";
+      return owner ? `${title} · ${owner}` : title;
+    })
+    .filter(Boolean)
+    .slice(0, 4);
+}
+
 export function reasonQuotesFromPart(part: UIMessage["parts"][number]): string[] {
   if (!isToolUIPart(part)) return [];
   const output = "output" in part ? part.output : undefined;

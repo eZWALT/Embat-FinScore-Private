@@ -22,7 +22,14 @@ import { AgentPlot } from "@/components/agent-plot";
 import { AgentThinking, AgentTrace } from "@/components/agent-trace";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { contextBody, plotFromPart, reasonQuotesFromPart, textFromParts, type AgentContext } from "@/lib/agent/chat-parts";
+import {
+  alertQuotesFromPart,
+  contextBody,
+  plotFromPart,
+  reasonQuotesFromPart,
+  textFromParts,
+  type AgentContext,
+} from "@/lib/agent/chat-parts";
 import { streamFollowupChips } from "@/lib/agent/followup-client";
 import { fallbackFollowups } from "@/lib/agent/suggestions";
 
@@ -322,10 +329,13 @@ export function AgentChat({
                                 parts={run.items.map((item) => item.part)}
                                 keepBusy={showPulse && lastRun}
                               />
-                              {run.name === "get_company"
+                              {run.name === "get_company" || run.name === "get_alerts"
                                 ? run.items
                                     .flatMap((item) =>
-                                      reasonQuotesFromPart(item.part).map((quote) => ({ key: item.key, quote })),
+                                      (run.name === "get_alerts"
+                                        ? alertQuotesFromPart(item.part)
+                                        : reasonQuotesFromPart(item.part)
+                                      ).map((quote) => ({ key: item.key, quote })),
                                     )
                                     .slice(0, 4)
                                     .map((row, index) => (

@@ -6,6 +6,7 @@ import {
   entitiesFromText,
   lastUserText,
   sessionExtra,
+  wantsAlertStats,
   wantsAlertTools,
   wantsPlotCatalog,
   wantsRecordTools,
@@ -52,7 +53,12 @@ export async function streamAgentResponse({
     plots,
   });
   const modelMessages = await convertToModelMessages(uiMessages);
-  const session = { companyId, groupId, named: entitiesFromText(question) };
+  const session = {
+    companyId,
+    groupId,
+    named: entitiesFromText(question),
+    stats: wantsAlertStats(question),
+  };
   const tools = role === "sentinel" ? sentinelTools(session) : role === "quick" ? quickTools(session) : chatTools(session);
 
   const started = Date.now();

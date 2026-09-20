@@ -1,4 +1,6 @@
 import type { ComponentType, SVGProps } from "react";
+
+import { entityLabel } from "@/lib/display";
 import {
   ArrowsRightLeftIcon,
   BellAlertIcon,
@@ -74,7 +76,12 @@ export function toolOutputSummary(name: string, output: unknown): string {
   }
   switch (name) {
     case "get_company":
-      return [row.company_id, row.month, row.score != null ? `índice ${row.score}` : null, row.trajectory]
+      return [
+        typeof row.company_id === "string" ? entityLabel(row.company_id) : null,
+        row.month,
+        row.score != null ? `índice ${row.score}` : null,
+        row.trajectory,
+      ]
         .filter(Boolean)
         .join(" · ");
     case "explain_change":
