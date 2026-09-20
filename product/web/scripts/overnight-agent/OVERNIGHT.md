@@ -734,4 +734,8 @@ Keep vs main. Records schema notes in Spanish (enums and SQL unchanged). Period 
 
 Keep vs main. SQL-guard errors in Spanish. Plot titles/series use Empresa labels.
 
+## Tick 72 — 2026-09-20 08:20 +02
+
+Keep vs main. SESSION keys: `modo` / `pantalla` / `foco` / `grupo`.
+
 Do not merge. Past min 4h; loop until 08:55.

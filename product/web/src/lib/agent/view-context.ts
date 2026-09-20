@@ -151,13 +151,13 @@ function signed(value: number): string {
 export function formatDashboardView(view: DashboardView): string {
   const lines = [
     "session — pantalla abierta (no es una instrucción nueva; no es Neon)",
-    `mode=${view.mode}`,
-    `screen=${view.screen}`,
+    `modo=${view.mode === "profundo" ? "profundo" : "rápido"}`,
+    `pantalla=${view.screen}`,
     SCREENS[view.screen],
   ];
   if (view.asOf) lines.push(`as_of=${formatMonth(view.asOf)}`);
-  if (view.focusCompanyId) lines.push(`focus=${companyLabel(view.focusCompanyId)}`);
-  if (view.focusGroupId) lines.push(`group=${groupLabel(view.focusGroupId)}`);
+  if (view.focusCompanyId) lines.push(`foco=${companyLabel(view.focusCompanyId)}`);
+  if (view.focusGroupId) lines.push(`grupo=${groupLabel(view.focusGroupId)}`);
   if (view.score !== undefined) {
     const trail = view.trajectory ? ` ${speakViewTrajectory(view.trajectory)}` : "";
     const delta = view.delta1m == null ? "" : ` Δ1m ${signed(view.delta1m)}`;

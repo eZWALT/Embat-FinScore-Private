@@ -120,6 +120,7 @@ Add a new dated file after meaningful work. Do not rewrite old ones. If the new 
 | `persistent-memory/2026-09-20-0802-cite-score-tenth.md` | Overnight: cite `72,6`, never round to `73`. |
 | `persistent-memory/2026-09-20-0808-records-notes-es.md` | Overnight: records schema notes are Spanish. |
 | `persistent-memory/2026-09-20-0815-sql-plot-empresa-labels.md` | Overnight: SQL-guard errors in Spanish; plot titles say Empresa. |
+| `persistent-memory/2026-09-20-0820-session-screen-es.md` | Overnight: SESSION screen keys are Spanish (`modo` / `foco`). |
 | `persistent-memory/2026-09-20-0115-thinking-no-verbose.md` | Brain on: drop the length cap. Do not ask for a longer reply. |
 | `persistent-memory/2026-09-20-0120-thinking-max-exa.md` | Exa + `max` superseded. |
 | `persistent-memory/2026-09-20-0130-drop-exa.md` | No Exa. No `search_web`. No `EXA_API_KEY`. |
