@@ -96,7 +96,7 @@ function slimReason(reason: Reason, currency: string | null = "EUR") {
   };
 }
 
-function speakMonth(month: string | null | undefined, long = false): string | undefined {
+function speakMonth(month: string | null | undefined, long = true): string | undefined {
   if (!month) return undefined;
   const key = parseMonth(month) ?? month;
   if (!/^\d{4}-\d{2}$/.test(key)) return month;

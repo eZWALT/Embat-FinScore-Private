@@ -798,4 +798,8 @@ Keep vs main. `get_company` keys `trayectoria` / `confianza` / `meses_historial`
 
 Keep vs main. History field `historial`, `nota_confianza`, `categorias`. History months are long (`julio 2026`). Suite 6/6/5/6/6.
 
+## Tick 88 — 2026-09-20 09:02 +02
+
+Keep vs main. `speakMonth` defaults to long. Suite 6/6/5/6/6.
+
 Do not merge. Past min 4h; loop until 08:55.
