@@ -401,3 +401,19 @@ Keep. `list_companies` catalog in Spanish. `explain_change` parses `agosto 2026`
 ## Tick 31 — 2026-09-20 05:19 +02
 
 Keep. Spanish missing-month errors. WORDING: media/baja; cite owner/action.
+
+## Tick 32 — 2026-09-20 05:24 +02
+
+Keep vs main sample suite (`--ignore-latency`).
+
+| Case | main tools / q / s | tick 32 tools / q / s |
+|---|---|---|
+| why-score | 1 / 6 / 8.7 | 1 / 6 / 5.5 |
+| alerts | 2 / 6 / 11.0 | **1 / 6** / 7.6 |
+| refuse | 0 / 5 / 2.4 | 0 / 5 / 1.6 |
+| period-4 | 11 / 2 / 17.0 | **4 / 6** / 9.9 |
+| why-change | 2 / 6 / 8.7 | 1 / 6 / 5.5 |
+
+What landed: slimmer on-demand monitor; period tope only on companies that bring `guard`; dueño/acción only after `get_alerts` (why-score / why-change no longer invent Tesorero). First bench said «tres… tope» — 0651 is cobros; second dropped the alert-only qualifier and invented a dueño on the índice; third keep is clean.
+
+Leftover: period lead still writes bare `0651` / `0030`. Do not merge.

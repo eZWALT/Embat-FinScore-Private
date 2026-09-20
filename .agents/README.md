@@ -80,6 +80,7 @@ Add a new dated file after meaningful work. Do not rewrite old ones. If the new 
 | `persistent-memory/2026-09-20-0518-alerts-catalog-no-scope.md` | Overnight: catalog matches unscoped-alerts refuse; never ask `COMP_*`. |
 | `persistent-memory/2026-09-20-0517-catalog-and-parse-month.md` | Overnight: list catalog in Spanish; `explain_change` accepts `agosto 2026`. |
 | `persistent-memory/2026-09-20-0519-spanish-tool-errors.md` | Overnight: tool errors in Spanish; WORDING cites owner/action as-is. |
+| `persistent-memory/2026-09-20-0524-monitor-tope-owner.md` | Overnight: slim monitor; tope per company; dueño only if `get_alerts` returned it. |
 | `persistent-memory/2026-09-20-0115-thinking-no-verbose.md` | Brain on: drop the length cap. Do not ask for a longer reply. |
 | `persistent-memory/2026-09-20-0120-thinking-max-exa.md` | Exa + `max` superseded. |
 | `persistent-memory/2026-09-20-0130-drop-exa.md` | No Exa. No `search_web`. No `EXA_API_KEY`. |
