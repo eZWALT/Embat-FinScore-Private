@@ -523,7 +523,7 @@ function createGetCompany(session?: ToolSession) {
         }
         if (detail.currency && detail.currency !== "EUR") payload.currency = detail.currency;
         if (change.length) payload.change_reasons = change;
-        if (rec.guard && rec.score_pre_cap != null) payload.score_pre_cap = speakScore(rec.score_pre_cap);
+        if (rec.guard && rec.score_pre_cap != null) payload.sin_el_tope = speakScore(rec.score_pre_cap);
         if ((rec.trail_months ?? 24) < 12) payload.trail_months = rec.trail_months;
         if (!reasons.length) {
           const extras = await loadScoreExtras(id, rec.month);
@@ -631,14 +631,14 @@ const get_group = tool({
         .filter((row) => row.mean_score != null);
       return {
         grupo: entityLabel(id),
-        n_companies: group.n_companies,
-        latest_mean_score: speakScore(group.latest_mean_score),
-        latest_min_score: speakScore(group.latest_min_score),
-        latest_min_company: group.latest_min_company_id ? entityLabel(group.latest_min_company_id) : null,
-        limits_available: group.limits_available,
-        members,
-        mean_score_history: hist.slice(-12),
-        control_charts: (group.control ?? []).map((chart) => CHART_LABELS[chart.comparison] ?? chart.comparison),
+        n_empresas: group.n_companies,
+        media: speakScore(group.latest_mean_score),
+        minimo: speakScore(group.latest_min_score),
+        empresa_min: group.latest_min_company_id ? entityLabel(group.latest_min_company_id) : null,
+        limites: group.limits_available,
+        miembros: members,
+        historial_media: hist.slice(-12),
+        graficos: (group.control ?? []).map((chart) => CHART_LABELS[chart.comparison] ?? chart.comparison),
       };
     } catch (error) {
       return asError(error);

@@ -694,4 +694,18 @@ Keep vs main sample suite (`--ignore-latency`).
 
 What landed: no method-coda close; `sin el tope` not `sin el límite`; list/group payloads say `empresa`. Production refuse is already the plantilla.
 
+## Tick 65 — 2026-09-20 07:38 +02
+
+Keep vs main sample suite (`--ignore-latency`).
+
+| Case | main tools / q / s | tick 65 tools / q / s |
+|---|---|---|
+| why-score | 1 / 6 / 8.7 | 1 / 6 / stall ~96s |
+| alerts | 2 / 6 / 11.0 | **1 / 6** / 5.1 |
+| refuse | 0 / 5 / 2.4 | 0 / 5 / 1.5 |
+| period-4 | 11 / 2 / 17.0 | **4 / 6** / 6.2 |
+| why-change | 2 / 6 / 8.7 | 1 / 6 / 4.8 |
+
+What landed: `sin_el_tope` instead of `score_pre_cap`; group payload in Spanish. Period still cites 81,1.
+
 Do not merge. Past min 4h; loop until 08:55.

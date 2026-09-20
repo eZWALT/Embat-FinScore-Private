@@ -104,8 +104,8 @@ export function toolOutputSummary(name: string, output: unknown): string {
     case "get_group":
       return [
         typeof row.grupo === "string" ? row.grupo : row.group_id,
-        row.n_companies != null ? `${row.n_companies} empresas` : null,
-        row.latest_mean_score != null ? `media ${row.latest_mean_score}` : null,
+        (row.n_empresas ?? row.n_companies) != null ? `${row.n_empresas ?? row.n_companies} empresas` : null,
+        (row.media ?? row.latest_mean_score) != null ? `media ${row.media ?? row.latest_mean_score}` : null,
       ]
         .filter(Boolean)
         .join(" · ");
