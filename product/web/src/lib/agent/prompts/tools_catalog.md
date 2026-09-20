@@ -30,9 +30,9 @@ Si una herramienta devuelve `{error}`, dilo y **para**. No encadenes `list_compa
 
 ## `get_alerts`
 
-**Cuándo:** qué saltó, quién es el dueño, qué hacer. Solo las cinco de Javi. Una sola llamada. Omite `entity_id` si SESSION ya tiene `company_id` y `group_id`. Sin id, el servidor acota a la sesión y a las empresas nombradas — no al feed entero.
+**Cuándo:** qué saltó, quién es el dueño, qué hacer. Solo las cinco de Javi. Una sola llamada. Omite `entity_id` si SESSION ya tiene empresa y grupo. Sin empresa en SESSION ni nombrada, el servidor responde `sin empresa`: pregunta «¿qué Empresa?» y nunca un `COMP_*`.
 **Entrada:** `entity_id?`, `kinds?` (`score_deterioration` \| `score_improvement` \| `category_drop` \| `going_dark` \| `top_customer_quiet`), `severities?` (`info` \| `watch` \| `act`), `since_month?`, `limit?` (30, máx. 200).
-**Salida:** `n_matching`, `alerts` (título, motivos+€, dueño, acción, evidencia, persistencia). `stats` solo si preguntan por fiabilidad / tasa base; si no viene, no recites lift. `rank_score` no es una probabilidad.
+**Salida:** `n_matching`, `alerts` (título, motivos+€, dueño, acción, evidencia en español, persistencia `N de los últimos 4`). `stats` solo si preguntan por fiabilidad / tasa base; si no viene, no recites lift. `rank_score` no es una probabilidad.
 **Redacción:** cita `title` y `action` tal cual (español). Nunca «ingresos en riesgo». Una vez por periodo.
 
 ## `get_group`
@@ -46,7 +46,7 @@ Si una herramienta devuelve `{error}`, dilo y **para**. No encadenes `list_compa
 
 **Cuándo:** no hay empresa en la sesión ni en la pregunta, o piden «quién necesita atención».
 **Entrada:** `group_id?`, `limit?` (30, máx. 200). Peor puntuación primero.
-**Salida:** `as_of`, empresas (id, grupo, score, trayectoria, confianza, guard, `delta_3m`, `n_alerts`).
+**Salida:** `as_of` (`agosto 2026`), empresas (Empresa, Grupo, `88,5`, trayectoria, confianza, tope, `delta_3m`, `n_alerts`).
 
 ## `get_control_chart`
 

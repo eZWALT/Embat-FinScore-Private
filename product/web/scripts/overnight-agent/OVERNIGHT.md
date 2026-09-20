@@ -389,3 +389,7 @@ Keep. PRODUCT score method compressed; same weights, glide, tope, trajectory rul
 ## Tick 28 — 2026-09-20 05:16 +02
 
 Keep. TOOLS “dónde” is one line (`api`/`analytics` vs `core`).
+
+## Tick 29 — 2026-09-20 05:18 +02
+
+Keep. Catalog matches the unscoped-alerts guard.
