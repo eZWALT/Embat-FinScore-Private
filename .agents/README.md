@@ -112,6 +112,7 @@ Add a new dated file after meaningful work. Do not rewrite old ones. If the new 
 | `persistent-memory/2026-09-20-0715-refuse-no-offtopic-name.md` | Overnight: refuse does not name the off-topic task; WORDING 6 slim. |
 | `persistent-memory/2026-09-20-0720-product-es-session-labels.md` | Overnight: PRODUCT always-on is Spanish; SESSION has no `COMP_*`. |
 | `persistent-memory/2026-09-20-0725-monitor-es-unsigned-eur.md` | Overnight: monitor layer is Spanish; bench flags signed `eur`. |
+| `persistent-memory/2026-09-20-0730-no-method-coda-list-es.md` | Overnight: no method-coda close; list/group rows say empresa. |
 | `persistent-memory/2026-09-20-0115-thinking-no-verbose.md` | Brain on: drop the length cap. Do not ask for a longer reply. |
 | `persistent-memory/2026-09-20-0120-thinking-max-exa.md` | Exa + `max` superseded. |
 | `persistent-memory/2026-09-20-0130-drop-exa.md` | No Exa. No `search_web`. No `EXA_API_KEY`. |

@@ -470,8 +470,8 @@ const list_companies = tool({
         .sort((a, b) => a.score - b.score)
         .slice(0, limit)
         .map((company) => ({
-          company_id: entityLabel(company.company_id),
-          group_id: company.group_id ? entityLabel(company.group_id) : company.group_id,
+          empresa: entityLabel(company.company_id),
+          grupo: company.group_id ? entityLabel(company.group_id) : undefined,
           score: speakScore(company.score),
           trajectory: speakTrajectory(company.trajectory),
           confidence: speakConfidence(company.confidence),
@@ -615,7 +615,7 @@ const get_group = tool({
         .filter((row): row is NonNullable<typeof row> => Boolean(row))
         .sort((a, b) => a.score - b.score)
         .map((row) => ({
-          company: entityLabel(row.company_id),
+          empresa: entityLabel(row.company_id),
           score: speakScore(row.score),
           trajectory: speakTrajectory(row.trajectory),
           confidence: speakConfidence(row.confidence),
