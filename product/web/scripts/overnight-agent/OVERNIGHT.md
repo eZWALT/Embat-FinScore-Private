@@ -726,4 +726,8 @@ Keep vs main. Tool schemas describe Empresa/Grupo. Period calls `get_company({ c
 
 Keep vs main. WORDING + bench: do not round 72,6 to 73. why-change cites 72,6 / 81,1.
 
+## Tick 70 — 2026-09-20 08:08 +02
+
+Keep vs main. Records schema notes in Spanish (enums and SQL unchanged). Period can still write `−535 k€` (signed_eur extra).
+
 Do not merge. Past min 4h; loop until 08:55.
