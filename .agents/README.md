@@ -74,6 +74,7 @@ Add a new dated file after meaningful work. Do not rewrite old ones. If the new 
 | `persistent-memory/2026-09-20-0510-omit-empty-change.md` | Overnight: omit empty `change_reasons` so `explain_change` stays available. |
 | `persistent-memory/2026-09-20-0512-reason-quote-money.md` | Overnight: tool-row quotes put Javi money in tabular-nums. |
 | `persistent-memory/2026-09-20-0513-slim-product-validation.md` | Overnight: PRODUCT validation is three short bullets; claims unchanged. |
+| `persistent-memory/2026-09-20-0515-slim-product-facts.md` | Overnight: PRODUCT data facts are four bullets; screens live in SESSION. |
 | `persistent-memory/2026-09-20-0115-thinking-no-verbose.md` | Brain on: drop the length cap. Do not ask for a longer reply. |
 | `persistent-memory/2026-09-20-0120-thinking-max-exa.md` | Exa + `max` superseded. |
 | `persistent-memory/2026-09-20-0130-drop-exa.md` | No Exa. No `search_web`. No `EXA_API_KEY`. |

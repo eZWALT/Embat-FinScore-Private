@@ -377,3 +377,7 @@ Keep vs main sample suite (`--ignore-latency`). Visual: `34 k€` sits next to t
 ## Tick 25 — 2026-09-20 05:13 +02
 
 Keep. PRODUCT validation shortened; AUROC / not-predictive / no hidden-test claims stay.
+
+## Tick 26 — 2026-09-20 05:15 +02
+
+Keep vs main sample suite (`--ignore-latency`). Data-facts / screens cut; counterparties, no-invoice, no-refi, no-NSF stay.
