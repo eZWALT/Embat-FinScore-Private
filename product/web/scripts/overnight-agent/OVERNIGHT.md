@@ -482,4 +482,18 @@ What landed: WORDING 13–16 is one SCOPE pointer; SCOPE says no markdown tables
 
 Leftover: period lead can still open «tres caen por entradas hundidas» and only then split mora. Do not merge.
 
+## Tick 45 — 2026-09-20 06:38 +02
+
+Keep vs main sample suite (`--ignore-latency`).
+
+| Case | main tools / q / s | tick 45 tools / q / s |
+|---|---|---|
+| why-score | 1 / 6 / 8.7 | 1 / 6 / 5.6 |
+| alerts | 2 / 6 / 11.0 | **1 / 6** / 8.0 |
+| refuse | 0 / 5 / 2.4 | 0 / 5 / 1.8 |
+| period-4 | 11 / 2 / 17.0 | **4 / 6** / 8.7 |
+| why-change | 2 / 6 / 8.7 | 1 / 6 / 5.2 |
+
+What landed: period lead is «Empresa 0011 y 0176, tope; 0651, mora; 0030, estable»; one quote per empresa on ×4; scorer flags «tres empresas que caen… hundid». Production main still asks for `COMP_*`.
+
 Do not merge. Past min 4h; loop until 08:55.

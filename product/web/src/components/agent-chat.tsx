@@ -337,7 +337,9 @@ export function AgentChat({
                                             key: item.key,
                                             text,
                                           }))
-                                        : reasonQuotesFromPart(item.part).map((quote) => ({
+                                        : reasonQuotesFromPart(item.part)
+                                            .slice(0, run.items.length > 1 ? 1 : 2)
+                                            .map((quote) => ({
                                             key: item.key,
                                             text: quote.text,
                                             money: quote.money,

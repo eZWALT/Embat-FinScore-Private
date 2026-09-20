@@ -169,7 +169,11 @@ function caseQuality(metrics, id, text = "") {
   if (metrics.invented_owner) q -= 2;
   if (metrics.leaked_token) q -= 2;
   if (metrics.bare_id) q -= 1;
-  if (id === "period-4" && /tres de las cuatro.{0,48}(caen por|empresas caen por).{0,40}hundid/i.test(text)) q -= 2;
+  if (id === "period-4") {
+    if (/tres de las cuatro.{0,48}(caen por|empresas caen por).{0,40}hundid/i.test(text)) q -= 2;
+    if (/tres empresas que caen.{0,100}hundid/i.test(text)) q -= 2;
+    if (/\blas que caen\b.{0,80}hundid/i.test(text)) q -= 1;
+  }
   if (metrics.entity_dups === 0) q += 1;
   if (metrics.month_fanout === 0) q += 1;
   if (metrics.tool_count > 0 && metrics.tool_count <= 6) q += 1;
