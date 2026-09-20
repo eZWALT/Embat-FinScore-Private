@@ -666,4 +666,18 @@ Keep vs main sample suite (`--ignore-latency`).
 
 What landed: PRODUCT always-on in Spanish (claims unchanged); SESSION `empresa=` / `grupo=` without `COMP_*`. Leftover: period can still write `−535 k€`.
 
+## Tick 63 — 2026-09-20 07:25 +02
+
+Keep vs main sample suite (`--ignore-latency`).
+
+| Case | main tools / q / s | tick 63 tools / q / s |
+|---|---|---|
+| why-score | 1 / 6 / 8.7 | 1 / 6 / 5.2 |
+| alerts | 2 / 6 / 11.0 | **1 / 6** / 7.1 |
+| refuse | 0 / 5 / 2.4 | 0 / 5 / 1.8 |
+| period-4 | 11 / 2 / 17.0 | **4 / 6** / 5.6 |
+| why-change | 2 / 6 / 8.7 | 1 / 6 / 5.3 |
+
+What landed: monitor layer in Spanish; Persistencia in the catalog; `signed_eur` extra. Period wrote `535 k€` without a minus. Leftover: why-change coda «explicable y monitorable».
+
 Do not merge. Past min 4h; loop until 08:55.

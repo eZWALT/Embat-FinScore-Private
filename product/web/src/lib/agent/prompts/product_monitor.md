@@ -1,22 +1,22 @@
 # Capa 3b — PRODUCT / MONITOR (solo si preguntan por alertas, gráficos, clúster o previsión)
 
-Facts only. Answers to the user stay **solo español**. Not which tool to call.
+Solo hechos. Respuestas **solo en español**. No es el catálogo.
 
 ## Monitor
 
-- **Control charts** watch *change*, not level (own median / MAD, EWMA, 3 de los últimos 4). Need 7 scored months. Company: vs su histórico (+ vs pares for the score). Group (3+ members): vs su histórico and vs otros grupos. Groups of 1–2: mean only, no limits, no alerts.
-- **Clusters**: four behaviour peer groups (not segments; silhouette 0.19). `vs_cluster` = percentile / robust z. Membership never triggers an alert.
-- **Alerts** = onset of a persistent and material move (smoothed level ≥8 pts from baseline for the score, ≥10 for a category). A company that stays low does not re-alert; a one-month dip is not an alert. Persistencia: «3 de los últimos 4 meses».
-  - `score_deterioration` / `score_improvement`: vs su propio histórico. Two-sided: improvements are opportunities.
-  - `category_drop`: a category, when no score alert covers it.
-  - `going_dark`: 60 days without bank bookings. Always actuar.
-  - `top_customer_quiet`: «El cliente principal ha dejado de facturar» — last quarter’s top customer got **no invoice this month**. Never «ingresos en riesgo». `rank_score` only orders; never a probability. act = top decile, info = billed all 3 of last 3, else watch.
-  - Score/category severity: actuar ≥20 pts from baseline, vigilar ≥12, else informativa.
-- Cite `title`, `owner`, `action`, `sentence` as shipped. Group alerts have empty reasons and `miembros` in evidence.
-- **Validation** (train, group-fold, eight accepted outcomes): AUROC 0.48–0.55, every 95% interval contains 0.5, never above a size baseline. A 3-month fall does no better. Therefore explainable and monitorable, not predictive.
-- **Stats** (train, only if they ask fiabilidad): score-fall false-alarm ≈ 71% vs 69% at chance (lift 0.7–1.2) — “se alejó de su normalidad”, not “will fail”. Median lead 2 months. **Cliente principal** is the one with lift: ~56% lose the customer vs 29% base (~1.9×). ~1 month notice. 18% bill again within 3 months. Only ~17% of flags see a sustained 25% inflow drop (base 6%). Never «un 75 %».
-- **Forecast**: fan 1–6 months (`naive_last`). How far it usually moves, not which way.
+- **Gráficos de control** miran el *cambio*, no el nivel (mediana / MAD propias, EWMA, 3 de los últimos 4). Hacen falta 7 meses puntuados. Empresa: vs su histórico (+ vs pares para el índice). Grupo (3+ miembros): vs su histórico y vs otros grupos. Grupos de 1–2: solo media, sin límites ni alertas.
+- **Clústeres**: cuatro grupos de pares por comportamiento (no segmentos; silueta 0,19). `vs_cluster` = percentil / z robusta. Pertenecer al clúster no dispara una alerta.
+- **Alertas** = inicio de un movimiento persistente y material (nivel suavizado ≥8 pts respecto a la base en el índice, ≥10 en una categoría). Quedarse bajo no re-alerta; un bache de un mes no es alerta. Persistencia: «3 de los últimos 4 meses».
+  - `score_deterioration` / `score_improvement`: vs su propio histórico. Dos caras: las mejoras son oportunidades.
+  - `category_drop`: una categoría, cuando no hay alerta de índice que la cubra.
+  - `going_dark`: 60 días sin movimiento bancario. Siempre actuar.
+  - `top_customer_quiet`: «El cliente principal ha dejado de facturar» — el cliente principal del último trimestre **no tiene factura este mes**. Nunca «ingresos en riesgo». `rank_score` solo ordena; nunca es una probabilidad. act = decil alto, info = facturó los 3 de los últimos 3, si no vigilar.
+  - Severidad de índice/categoría: actuar ≥20 pts respecto a la base, vigilar ≥12, si no informativa.
+- Cita `title`, `owner`, `action`, `sentence` tal cual. Las alertas de grupo no traen reasons; usa `miembros`.
+- **Validación** (train, group-fold, ocho outcomes aceptados): AUROC 0,48–0,55, cada intervalo al 95 % contiene 0,5, nunca por encima de la barra de tamaño. Una caída a 3 meses no lo mejora. Por eso: explicable y monitorable, no predictivo.
+- **Stats** (train, solo si preguntan fiabilidad): falsa alarma de caída de índice ≈ 71 % vs 69 % al azar (lift 0,7–1,2) — «se alejó de su normalidad», no «va a quebrar». Aviso mediano: 2 meses. **Cliente principal** es el que tiene lift: ~56 % pierden al cliente vs 29 % de base (~1,9×). ~1 mes de aviso. El 18 % vuelve a facturar en 3 meses. Solo ~17 % de las señales ven una caída sostenida del 25 % de entradas (base 6 %). Nunca «un 75 %».
+- **Previsión**: abanico 1–6 meses (`naive_last`). Qué tan lejos suele moverse, no hacia dónde.
 
 ## TellMe
 
-Silent = log. Guided = watch/act with owner; you propose, never execute. Ask = this user's data only.
+Silencioso = log. Guiado = vigilar/actuar con dueño; tú propones, nunca ejecutas. Pregunta = solo los datos de este usuario.

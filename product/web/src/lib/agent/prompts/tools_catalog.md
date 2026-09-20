@@ -32,7 +32,7 @@ Solo si no hay empresa en SESSION ni en la pregunta. Peor índice primero. `as_o
 
 ## `get_control_chart`
 
-¿Bache o deterioro? `persistent` (3 de los últimos 4) es la regla. 7 meses; grupos, 3 miembros.
+¿Bache o deterioro? Persistencia: 3 de los últimos 4. 7 meses; grupos, 3 miembros.
 
 ## `compare_with_cluster`
 
