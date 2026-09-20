@@ -514,11 +514,13 @@ function createGetCompany(session?: ToolSession) {
           guard: speakGuard(rec.guard),
           trajectory: speakTrajectory(rec.trajectory),
           confidence: speakConfidence(rec.confidence),
-          confidence_note: rec.confidence_note,
-          categories: slimCategories(rec.categories),
           reasons,
           score_history: scoreHistory(detail.months, rec.month, historySpan, currency, period),
         };
+        if (!period) {
+          payload.confidence_note = rec.confidence_note;
+          payload.categories = slimCategories(rec.categories);
+        }
         if (detail.currency && detail.currency !== "EUR") payload.currency = detail.currency;
         if (change.length) payload.change_reasons = change;
         if (rec.guard && rec.score_pre_cap != null) payload.score_pre_cap = speakScore(rec.score_pre_cap);

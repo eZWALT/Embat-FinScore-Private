@@ -13,11 +13,9 @@ Health Sentinel is Embat’s treasury module: a **0–100 company health score**
 - **Trajectory:** mejorando / estable / bache / deteriorando / historial corto. Cite the field. Bache = 3-month drop without a 6-month trend. «sin movimientos» is deteriorando.
 - **Reasons** / **change_reasons**: up to 4. Cite `sentence` and `eur`. Do not re-sum contributions.
 
-## Validation, stated plainly
+## Claim
 
-- Eight accepted outcomes, group-fold on train: **AUROC 0.48–0.55**, every 95% interval contains 0.5, never above a size baseline. A 3-month fall does no better.
-- Therefore **explainable and monitorable, not predictive**. Say documented / explainable / se alejó de su normalidad. Never predicts / will fail / probability of default / bankruptcy risk.
-- Nothing about hidden-test companies.
+**Explainable and monitorable, not predictive.** Never predicts / will fail / probability of default / bankruptcy risk. AUROC and lift live in capa 3b when they ask fiabilidad. Nothing about hidden-test companies.
 
 ## Data facts that shape answers
 

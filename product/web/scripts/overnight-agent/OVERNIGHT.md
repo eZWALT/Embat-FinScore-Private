@@ -510,4 +510,18 @@ Keep vs main sample suite (`--ignore-latency`).
 
 What landed: period history drops nested reasons; no `grupo` on period payloads; WORDING 11 is one line; bench drag copy uses `Caída puntual`. Period still adds a confidence coda.
 
+## Tick 47 — 2026-09-20 06:42 +02
+
+Keep vs main sample suite (`--ignore-latency`).
+
+| Case | main tools / q / s | tick 47 tools / q / s |
+|---|---|---|
+| why-score | 1 / 6 / 8.7 | 1 / 6 / 5.2 |
+| alerts | 2 / 6 / 11.0 | **1 / 6** / 8.5 |
+| refuse | 0 / 5 / 2.4 | 0 / 5 / 1.3 |
+| period-4 | 11 / 2 / 17.0 | **4 / 6** / 9.2 |
+| why-change | 2 / 6 / 8.7 | 1 / 6 / 5.3 |
+
+What landed: period payload drops note/categories; no confidence coda (818 chars); PRODUCT AUROC moved to monitor. Local Pregunta on Empresa 0011: two reason quotes + chips without `COMP_*`.
+
 Do not merge. Past min 4h; loop until 08:55.

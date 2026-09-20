@@ -13,6 +13,7 @@ Facts only. Answers to the user stay **solo español**. Not which tool to call.
   - `top_customer_quiet`: «El cliente principal ha dejado de facturar» — last quarter’s top customer got **no invoice this month**. Never «ingresos en riesgo». `rank_score` only orders; never a probability. act = top decile, info = billed all 3 of last 3, else watch.
   - Score/category severity: actuar ≥20 pts from baseline, vigilar ≥12, else informativa.
 - Cite `title`, `owner`, `action`, `sentence` as shipped. Group alerts have empty reasons and `miembros` in evidence.
+- **Validation** (train, group-fold, eight accepted outcomes): AUROC 0.48–0.55, every 95% interval contains 0.5, never above a size baseline. A 3-month fall does no better. Therefore explainable and monitorable, not predictive.
 - **Stats** (train, only if they ask fiabilidad): score-fall false-alarm ≈ 71% vs 69% at chance (lift 0.7–1.2) — “se alejó de su normalidad”, not “will fail”. Median lead 2 months. **Cliente principal** is the one with lift: ~56% lose the customer vs 29% base (~1.9×). ~1 month notice. 18% bill again within 3 months. Only ~17% of flags see a sustained 25% inflow drop (base 6%). Never «un 75 %».
 - Volume: ~0.55 risk and 0.20 improvement alerts per company-year. 47% of one-month −8 falls become an alert within 3 months.
 - **Forecast**: fan 1–6 months (`naive_last`). How far it usually moves, not which way.
