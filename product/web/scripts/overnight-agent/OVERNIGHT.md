@@ -818,4 +818,8 @@ Keep vs main. Payload as-of field is `mes`. Input `month` unchanged. Suite 6/6/5
 
 Keep vs main. Catalog names the spoken control/forecast keys. Suite 6/6/5/6/6.
 
+## Tick 93 — 2026-09-20 08:32 +02
+
+Keep vs main. Evidence leftovers spoken; missing control charts list `disponibles` in Spanish. Suite 6/6/5/6/6.
+
 Do not merge. Past min 4h; loop until 08:55.

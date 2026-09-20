@@ -271,7 +271,7 @@ function slimEvidence(evidence: Alert["evidence"], currency: string | null = "EU
       if (EVIDENCE_MONEY.has(key)) out[name] = formatMoney(value, currency);
       else if (EVIDENCE_PCT.has(key)) out[name] = `${formatDecimal(value * 100, 0)} %`;
       else if (EVIDENCE_SCORE.has(key)) out[name] = formatDecimal(value, 1);
-      else out[name] = value;
+      else out[name] = Number.isInteger(value) ? value : formatDecimal(value, 1);
       continue;
     }
     if (typeof value === "boolean") out[name] = value;
@@ -339,14 +339,14 @@ function companyHasChangeReasons(
 function monthRecord(
   detail: CompanyDetail,
   month?: string | null,
-): MonthRecord | { error: string; scored_months?: string[] } {
+): MonthRecord | { error: string; meses_puntuados?: string[] } {
   const months = detail.months;
   if (!months.length) return { error: `${entityLabel(detail.company_id)} no tiene mes puntuado` };
   if (month) {
     const key = monthKey(month) ?? month;
     const rec = months.find((row) => row.month === key);
     if (!rec) {
-      return { error: `${entityLabel(detail.company_id)} no tiene mes puntuado ${speakMonth(month, true) ?? month}`, scored_months: months.map((m) => speakMonth(m.month)) };
+      return { error: `${entityLabel(detail.company_id)} no tiene mes puntuado ${speakMonth(month, true) ?? month}`, meses_puntuados: months.map((m) => speakMonth(m.month)) };
     }
     return rec;
   }
@@ -751,7 +751,10 @@ const get_control_chart = tool({
       if (!chart) {
         return {
           error: "sin ese gráfico (hacen falta 7 meses; grupos, 3 miembros)",
-          available: charts.map((row) => [row.comparison, row.metric]),
+          disponibles: charts.map((row) => ({
+            comparacion: CHART_LABELS[row.comparison] ?? row.comparison,
+            metrica: row.metric === "score" ? "índice" : (CATEGORY_LABELS[row.metric as CategoryId] ?? row.metric),
+          })),
         };
       }
       const method =
