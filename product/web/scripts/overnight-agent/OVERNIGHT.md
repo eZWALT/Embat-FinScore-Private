@@ -385,3 +385,7 @@ Keep vs main sample suite (`--ignore-latency`). Data-facts / screens cut; counte
 ## Tick 27 — 2026-09-20 05:13 +02
 
 Keep. PRODUCT score method compressed; same weights, glide, tope, trajectory rule.
+
+## Tick 28 — 2026-09-20 05:16 +02
+
+Keep. TOOLS “dónde” is one line (`api`/`analytics` vs `core`).

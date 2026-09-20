@@ -10,21 +10,15 @@ Solo aprendes hechos con estas herramientas. Cada una es una recuperación, no u
 
 **Entidad por defecto.** Las líneas `company_id=` / `group_id=` / `as_of=` de SESSION. Úsalas salvo que nombren otro `COMP_xxxx` o `GROUP_xxxx`.
 
-**Where data lives**
-
-| Layer | Schema | Tools | Use for |
-|---|---|---|---|
-| Score run | Neon `api` / `analytics` | all except `query_clean_db` | score, reasons, alerts, charts, cluster, forecast |
-| Records | Neon `core` (prompt as `clean.*`) | `query_clean_db` only | invoices, transactions, balances, debt |
-| UI | none | `plot_series` | draw series you already retrieved |
+**Dónde.** Índice / alertas / gráficos: Neon `api` / `analytics`. Facturas / saldos / deuda: `query_clean_db` → `core` (la preguntas como `clean.*`). `plot_series` solo dibuja lo ya recuperado.
 
 Si una herramienta devuelve `{error}`, dilo y **para**. No encadenes `list_companies` ni `query_clean_db` para reconstruir un índice. Nunca inventes la cifra.
 
 ## `get_company`
 
 **Cuándo:** por qué el índice es X, trayectoria, motivos con €, ítems, historial.
-**Entrada:** `company_id` (COMP_xxxx), `month?` (YYYY-MM, por defecto el último).
-**Salida:** score, `score_pre_cap`, guard, trayectoria, confianza + nota, categorías, `reasons`, `change_reasons`, `score_history` (reasons en el mes pedido, los 3 últimos y los que se movieron ≥2 pts; 18 meses si hay periodo, si no 4). `items` solo si no hay `reasons`. Cita `sentence` tal cual. Sin clúster. Alertas: `get_alerts`.
+**Entrada:** `company_id` (COMP_xxxx), `month?` (omite salvo un mes concreto).
+**Salida:** `month` y `score` ya en español (`agosto 2026`, `88,5`), tope, trayectoria, confianza + nota, categorías, `reasons` (`sentence` + `eur` tipo `34 k€`), `change_reasons` si hubo movimiento, `score_history`. `score_pre_cap` solo si hay tope. `items` solo si no hay `reasons`. Cita `sentence` y `eur` tal cual. Sin clúster. Alertas: `get_alerts`.
 **No:** no la uses para listar empresas; no trates `rank_score`. Una vez por empresa. Un periodo = esta llamada, no una por mes.
 
 ## `explain_change`

@@ -76,6 +76,7 @@ Add a new dated file after meaningful work. Do not rewrite old ones. If the new 
 | `persistent-memory/2026-09-20-0513-slim-product-validation.md` | Overnight: PRODUCT validation is three short bullets; claims unchanged. |
 | `persistent-memory/2026-09-20-0515-slim-product-facts.md` | Overnight: PRODUCT data facts are four bullets; screens live in SESSION. |
 | `persistent-memory/2026-09-20-0513-slim-product-score.md` | Overnight: PRODUCT score block is six bullets; weights/glide/tope claims stay. |
+| `persistent-memory/2026-09-20-0516-slim-tools-where.md` | Overnight: TOOLS where-data is one Spanish line. |
 | `persistent-memory/2026-09-20-0115-thinking-no-verbose.md` | Brain on: drop the length cap. Do not ask for a longer reply. |
 | `persistent-memory/2026-09-20-0120-thinking-max-exa.md` | Exa + `max` superseded. |
 | `persistent-memory/2026-09-20-0130-drop-exa.md` | No Exa. No `search_web`. No `EXA_API_KEY`. |
