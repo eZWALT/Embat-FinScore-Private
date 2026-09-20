@@ -97,3 +97,25 @@ What landed:
 - `get_company` drops null metadata and `items` when `reasons` are present.
 - Chat shows up to two bundle `sentence` quotes per company under «Leer índice» (max 4).
 - Catalog: cita `sentence` tal cual.
+
+## Tick 5 — 2026-09-20 03:31 +02
+
+Keep vs main sample suite (`--ignore-latency`).
+
+| Case | main tools / q / s | tick 5 tools / q / s |
+|---|---|---|
+| why-score | 1 / 6 / 8.7 | 1 / 6 / 5.7 |
+| alerts | 2 / 6 / 11.0 | 2 / 6 / 8.6 |
+| refuse | 0 / 5 / 2.4 | 0 / 5 / 1.9 |
+| period-4 | 11 / 2 / 17.0 | **5 / 6** / 14.5 |
+| why-change | 2 / 6 / 8.7 | 1 / 6 / 7.8 |
+
+period-4: four `get_company` (no month) + one scoped `get_alerts`. Tick 4 had 4 tools / 9.8 s; this run added alerts again. Quality still 6. Next: only call `get_alerts` when the user asked.
+
+What landed:
+
+- Trace hides raw JSON for score tools (keep SQL + errors).
+- `score_history` last 18 months (or 6 before focus).
+- Group mean history last 12 months.
+
+Loop continues. Do not merge.

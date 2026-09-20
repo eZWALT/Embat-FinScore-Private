@@ -76,6 +76,11 @@ export function AgentThinking({ streaming = false }: { streaming?: boolean }) {
   );
 }
 
+function shouldShowOutput(name: string, errorText: string): boolean {
+  if (errorText) return true;
+  return name === "query_clean_db";
+}
+
 function shouldShowInput(name: string, input: unknown): boolean {
   if (name === "query_clean_db") return true;
   if (!input || typeof input !== "object") return false;
@@ -119,7 +124,13 @@ export function AgentTrace({
     return value != null ? sum + value : sum;
   }, 0);
   const previews = calls.map((part) => callPreview(name, part));
-  const hasBody = previews.some((row) => row.summary || row.input != null || row.output != null || row.errorText);
+  const hasBody = previews.some(
+    (row) =>
+      row.summary ||
+      (row.input != null && shouldShowInput(name, row.input)) ||
+      row.errorText ||
+      (row.output != null && shouldShowOutput(name, row.errorText)),
+  );
 
   return (
     <details className="group min-w-0 text-[12px] leading-snug">
@@ -151,7 +162,7 @@ export function AgentTrace({
                     : preview(row.input, 800)}
                 </pre>
               ) : null}
-              {row.output != null || row.errorText ? (
+              {row.errorText || (row.output != null && shouldShowOutput(name, row.errorText)) ? (
                 <pre className="max-h-40 overflow-auto whitespace-pre-wrap font-mono text-[11px] text-muted-foreground">
                   {row.errorText || preview(row.output)}
                 </pre>

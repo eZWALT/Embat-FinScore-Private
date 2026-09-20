@@ -95,11 +95,14 @@ function slimReason(reason: Reason) {
 
 /** Full reasons on the focus month, the last 3, or a move of ≥2 pts. One call covers a period. */
 function scoreHistory(months: MonthRecord[], focusMonth: string) {
-  return months.map((row, index) => {
-    const prev = months[index - 1];
+  const focusIdx = months.findIndex((row) => row.month === focusMonth);
+  const from = Math.max(0, months.length - 18, focusIdx >= 0 ? focusIdx - 6 : 0);
+  const window = months.slice(from);
+  return window.map((row, index) => {
+    const prev = window[index - 1] ?? months[from - 1];
     const moved = prev != null && Math.abs(row.score - prev.score) >= 2;
     const focus = row.month === focusMonth;
-    const recent = index >= months.length - 3;
+    const recent = from + index >= months.length - 3;
     const base = {
       month: row.month,
       score: row.score,
@@ -472,7 +475,7 @@ const get_group = tool({
         latest_min_company_id: group.latest_min_company_id,
         limits_available: group.limits_available,
         members,
-        mean_score_history: hist,
+        mean_score_history: hist.slice(-12),
         alert_ids: group.alert_ids,
         control_charts: group.control?.map((chart) => chart.comparison) ?? [],
       };
