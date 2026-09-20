@@ -175,8 +175,14 @@ function speakSeverity(value: string | null | undefined): string | undefined {
   return value ?? undefined;
 }
 
-/** Full reasons on the focus month, the last 3, or a move of ≥2 pts. One call covers a period. */
-function scoreHistory(months: MonthRecord[], focusMonth: string, span = 18, currency: string | null = "EUR") {
+/** Full reasons on the focus month, the last 3, or a move of ≥2 pts. Period: scores only — reasons sit on the payload. */
+function scoreHistory(
+  months: MonthRecord[],
+  focusMonth: string,
+  span = 18,
+  currency: string | null = "EUR",
+  scoresOnly = false,
+) {
   const focusIdx = months.findIndex((row) => row.month === focusMonth);
   const lookback = span >= 12 ? 6 : 1;
   const from = Math.max(0, months.length - span, focusIdx >= 0 ? focusIdx - lookback : 0);
@@ -194,7 +200,7 @@ function scoreHistory(months: MonthRecord[], focusMonth: string, span = 18, curr
     const guard = speakGuard(row.guard);
     if (trajectory) base.trajectory = trajectory;
     if (guard) base.guard = guard;
-    if (!moved && !focus && !recent) return base;
+    if (scoresOnly || (!moved && !focus && !recent)) return base;
     return {
       ...base,
       reasons: (row.reasons ?? []).map((reason) => slimReason(reason, currency)),
@@ -499,9 +505,10 @@ function createGetCompany(session?: ToolSession) {
         const currency = detail.currency ?? "EUR";
         const reasons = (rec.reasons ?? []).map((reason) => slimReason(reason, currency));
         const change = (rec.change_reasons ?? []).map((reason) => slimReason(reason, currency));
+        const period = Boolean(session?.period);
         const payload: Json = {
           empresa: entityLabel(detail.company_id),
-          grupo: detail.group_id ? entityLabel(detail.group_id) : undefined,
+          grupo: period || !detail.group_id ? undefined : entityLabel(detail.group_id),
           month: speakMonth(rec.month, true),
           score: speakScore(rec.score),
           guard: speakGuard(rec.guard),
@@ -510,7 +517,7 @@ function createGetCompany(session?: ToolSession) {
           confidence_note: rec.confidence_note,
           categories: slimCategories(rec.categories),
           reasons,
-          score_history: scoreHistory(detail.months, rec.month, historySpan, currency),
+          score_history: scoreHistory(detail.months, rec.month, historySpan, currency, period),
         };
         if (detail.currency && detail.currency !== "EUR") payload.currency = detail.currency;
         if (change.length) payload.change_reasons = change;

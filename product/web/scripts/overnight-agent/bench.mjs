@@ -76,7 +76,7 @@ const SAMPLE_CASES = [
     id: "period-4",
     companyId: "COMP_0030",
     question:
-      "Periodo seleccionado: junio 2026 → agosto 2026.\nEmpresas:\n- Empresa 0011 (Grupo 0234): 82 en junio 2026 → 73 en agosto 2026 (−9 pts), fading\n- Empresa 0176 (Grupo 0225): 79 en junio 2026 → 59 en agosto 2026 (−20 pts), fading\n- Empresa 0651 (Grupo 0081): 42 en junio 2026 → 33 en agosto 2026 (−9 pts), deteriorando\n- Empresa 0030 (Grupo 0126): 87 en junio 2026 → 88 en agosto 2026 (+1 pt), estable\n\nExplica qué pasó en ese periodo y por qué.",
+      "Periodo seleccionado: junio 2026 → agosto 2026.\nEmpresas:\n- Empresa 0011 (Grupo 0234): 82 en junio 2026 → 73 en agosto 2026 (−9 pts), Caída puntual\n- Empresa 0176 (Grupo 0225): 79 en junio 2026 → 59 en agosto 2026 (−20 pts), Caída puntual\n- Empresa 0651 (Grupo 0081): 42 en junio 2026 → 33 en agosto 2026 (−9 pts), Deteriorándose\n- Empresa 0030 (Grupo 0126): 87 en junio 2026 → 88 en agosto 2026 (+1 pt), Estable\n\nExplica qué pasó en ese periodo y por qué.",
   },
   {
     id: "why-change",

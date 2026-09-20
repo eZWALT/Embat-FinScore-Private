@@ -496,4 +496,18 @@ Keep vs main sample suite (`--ignore-latency`).
 
 What landed: period lead is «Empresa 0011 y 0176, tope; 0651, mora; 0030, estable»; one quote per empresa on ×4; scorer flags «tres empresas que caen… hundid». Production main still asks for `COMP_*`.
 
+## Tick 46 — 2026-09-20 06:40 +02
+
+Keep vs main sample suite (`--ignore-latency`).
+
+| Case | main tools / q / s | tick 46 tools / q / s |
+|---|---|---|
+| why-score | 1 / 6 / 8.7 | 1 / 6 / 5.3 |
+| alerts | 2 / 6 / 11.0 | **1 / 6** / 6.2 |
+| refuse | 0 / 5 / 2.4 | 0 / 5 / 1.6 |
+| period-4 | 11 / 2 / 17.0 | **4 / 6** / 9.9 |
+| why-change | 2 / 6 / 8.7 | 1 / 6 / 6.0 |
+
+What landed: period history drops nested reasons; no `grupo` on period payloads; WORDING 11 is one line; bench drag copy uses `Caída puntual`. Period still adds a confidence coda.
+
 Do not merge. Past min 4h; loop until 08:55.

@@ -94,6 +94,7 @@ Add a new dated file after meaningful work. Do not rewrite old ones. If the new 
 | `persistent-memory/2026-09-20-0612-slim-tools-catalog.md` | Overnight: always-on tools catalog is one short block per tool. |
 | `persistent-memory/2026-09-20-0633-wording-scope-pointer.md` | Overnight: WORDING 13–16 is a SCOPE pointer; no markdown tables. |
 | `persistent-memory/2026-09-20-0638-period-lead-by-guard.md` | Overnight: period lead groups by guard; one quote per empresa. |
+| `persistent-memory/2026-09-20-0640-period-history-scores-only.md` | Overnight: period `score_history` is scores only; no grupo. |
 | `persistent-memory/2026-09-20-0115-thinking-no-verbose.md` | Brain on: drop the length cap. Do not ask for a longer reply. |
 | `persistent-memory/2026-09-20-0120-thinking-max-exa.md` | Exa + `max` superseded. |
 | `persistent-memory/2026-09-20-0130-drop-exa.md` | No Exa. No `search_web`. No `EXA_API_KEY`. |
