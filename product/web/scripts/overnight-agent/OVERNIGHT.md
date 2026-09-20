@@ -381,3 +381,7 @@ Keep. PRODUCT validation shortened; AUROC / not-predictive / no hidden-test clai
 ## Tick 26 — 2026-09-20 05:15 +02
 
 Keep vs main sample suite (`--ignore-latency`). Data-facts / screens cut; counterparties, no-invoice, no-refi, no-NSF stay.
+
+## Tick 27 — 2026-09-20 05:13 +02
+
+Keep. PRODUCT score method compressed; same weights, glide, tope, trajectory rule.
