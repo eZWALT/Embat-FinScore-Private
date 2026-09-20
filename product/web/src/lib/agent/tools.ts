@@ -456,7 +456,7 @@ async function loadClusterQualityNote(): Promise<string | null> {
 
 const list_companies = tool({
   description:
-    "Lista empresas con puntuación (último mes): índice, trayectoria, confianza, tope, nº de alertas. group_id opcional. Solo si no hay empresa en la sesión.",
+    "Lista empresas con puntuación (último mes): índice, trayectoria, confianza, tope, nº de alertas. grupo opcional. Solo si no hay empresa en la sesión.",
   inputSchema: z.object({
     group_id: z.string().optional().describe("Grupo 0126"),
     limit: z.number().int().min(1).max(200).optional().describe("Por defecto 30"),
@@ -565,8 +565,8 @@ const explain_change = tool({
       const deltas = Object.fromEntries(
         Object.entries(itemSource)
           .filter(([, item]) => item.delta != null)
-          .map(([key, item]) => [REASON_LABELS[key] ?? key, item.delta])
-          .sort((a, b) => Math.abs(Number(b[1])) - Math.abs(Number(a[1]))),
+          .sort((a, b) => Math.abs(Number(b[1].delta ?? 0)) - Math.abs(Number(a[1].delta ?? 0)))
+          .map(([key, item]) => [REASON_LABELS[key] ?? key, speakDelta(item.delta)]),
       );
       return {
         empresa: entityLabel(id),
@@ -579,7 +579,7 @@ const explain_change = tool({
         trayectoria_hasta: speakTrajectory(cur.trajectory),
         tope_desde: speakGuard(prev.guard),
         tope_hasta: speakGuard(cur.guard),
-        cambio_tope: extras?.change_guard ?? null,
+        cambio_tope: extras?.change_guard != null ? speakDelta(extras.change_guard) : undefined,
         deltas,
         change_reasons: (cur.change_reasons ?? []).map((reason) => slimReason(reason, detail.currency)),
       };

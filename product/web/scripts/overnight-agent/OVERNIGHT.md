@@ -778,4 +778,8 @@ Keep vs main. Category `pts` spoken. Live chart chip: ×3, no glide, no dueño c
 
 Keep vs main. Fallback `items` keys in Spanish. Alert row singular. Live 0016: one alerts call, owner after alerts only.
 
+## Tick 83 — 2026-09-20 08:38 +02
+
+Keep vs main. `explain_change` deltas spoken. Suite still 6/6/5/6/6.
+
 Do not merge. Past min 4h; loop until 08:55.
