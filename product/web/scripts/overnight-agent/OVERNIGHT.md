@@ -622,4 +622,8 @@ Keep vs main sample suite (`--ignore-latency`). Alert months are long Spanish. P
 
 Keep vs main. Persistence fallback is Spanish; WORDING 3 says «señales», not onsets. Group charts use vs su histórico / vs pares.
 
+## Tick 57 — 2026-09-20 07:02 +02
+
+Keep vs main. Control-chart blurb is Spanish. Production main still on the Rápido-list chips when no company is selected.
+
 Do not merge. Past min 4h; loop until 08:55.

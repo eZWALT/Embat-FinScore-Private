@@ -709,7 +709,7 @@ function createGetAlerts(session?: ToolSession) {
 
 const get_control_chart = tool({
   description:
-    "Gráfico de control: ¿bache o deterioro? persistent (3 de los últimos 4) es la regla. Empresa: own_history|cluster. Grupo: group_own_history|group_vs_groups.",
+    "Gráfico de control: ¿bache o deterioro? Persistencia: 3 de los últimos 4. Empresa: own_history|cluster. Grupo: group_own_history|group_vs_groups.",
   inputSchema: z.object({
     entity_id: z.string().describe("COMP_xxxx or GROUP_xxxx"),
     comparison: z.enum(COMPARISONS).optional(),
