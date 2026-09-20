@@ -121,7 +121,7 @@ export function toolOutputSummary(name: string, output: unknown): string {
       return [
         row.comparacion ?? row.comparison,
         row.metrica ?? row.metric,
-        Array.isArray(row.months) ? `${row.months.length} meses` : null,
+        Array.isArray(row.meses ?? row.months) ? `${(row.meses ?? row.months).length} meses` : null,
       ]
         .filter(Boolean)
         .join(" · ");

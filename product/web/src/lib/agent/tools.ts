@@ -761,15 +761,17 @@ const get_control_chart = tool({
       const n = chart.months.length;
       const from = Math.max(0, n - 8);
       const slice = <T,>(values: T[] | null | undefined) => (Array.isArray(values) ? values.slice(from) : values);
+      const speakArr = (values: (number | null)[] | null | undefined) =>
+        Array.isArray(values) ? values.map((value) => speakScore(value) ?? null) : values;
       return {
         comparacion: CHART_LABELS[chart.comparison] ?? chart.comparison,
         metrica: chart.metric === "score" ? "índice" : (CATEGORY_LABELS[chart.metric as CategoryId] ?? chart.metric),
-        months: (slice(chart.months) ?? []).map((month) => speakMonth(month) ?? month),
-        values: slice(chart.values),
-        center: slice(chart.center),
-        lower: slice(chart.lower),
-        upper: slice(chart.upper),
-        ewma: slice(chart.ewma),
+        meses: (slice(chart.months) ?? []).map((month) => speakMonth(month) ?? month),
+        valores: speakArr(slice(chart.values)),
+        centro: speakArr(slice(chart.center)),
+        inferior: speakArr(slice(chart.lower)),
+        superior: speakArr(slice(chart.upper)),
+        ewma: speakArr(slice(chart.ewma)),
         senal: slice(chart.signal),
         persistencia: slice(chart.persistent),
         persistencia_ahora: Array.isArray(chart.persistent) ? chart.persistent[n - 1] ?? null : null,
@@ -804,7 +806,7 @@ const compare_with_cluster = tool({
         descripcion: cluster.meta.description,
         n_empresas: cluster.meta.n_companies,
         nota: qualityNote,
-        month: speakMonth(cluster.month, true),
+        mes: speakMonth(cluster.month, true),
         vs_pares: cluster.vs_cluster.map((row) => ({
           metrica: row.metric === "score" ? "índice" : (CATEGORY_LABELS[row.metric as CategoryId] ?? row.metric),
           percentil: speakScore(row.percentile),
@@ -869,7 +871,7 @@ const get_forecast = tool({
         ultimo: speakScore(forecast.naive_last),
         nota: forecast.note,
         puntos: points.map((row) => ({
-          month: speakMonth(row.month),
+          mes: speakMonth(row.month),
           mediana: speakScore(row.median),
           lo50: speakScore(row.lo50),
           hi50: speakScore(row.hi50),

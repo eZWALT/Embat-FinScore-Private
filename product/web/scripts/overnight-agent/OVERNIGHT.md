@@ -806,4 +806,8 @@ Keep vs main. `speakMonth` defaults to long. Suite 6/6/5/6/6.
 
 Keep vs main. Cluster percentil/z spoken. Suite 6/6/5/6/6. why-change: 82,6 julio → 72,6.
 
+## Tick 90 — 2026-09-20 08:22 +02
+
+Keep vs main. Control/forecast series in Spanish (`meses` / `valores` / `mes`). Suite 6/6/5/6/6.
+
 Do not merge. Past min 4h; loop until 08:55.
