@@ -279,3 +279,7 @@ data/bundle_work/
 infra/neon/.staging/
 infra/neon/.env
 .neon
+
+# Pregunta QA scratch outputs
+product/web/scripts/temp-qa.last.json
+product/web/scripts/overnight-agent/candidate.json
