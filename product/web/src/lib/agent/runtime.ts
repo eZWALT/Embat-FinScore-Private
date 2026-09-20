@@ -6,6 +6,7 @@ import {
   entitiesFromText,
   lastUserText,
   sessionExtra,
+  wantsAlertTools,
   wantsPlotCatalog,
   wantsRecordTools,
 } from "./messages";
@@ -44,6 +45,7 @@ export async function streamAgentResponse({
   const question = lastUserText(uiMessages);
   const records = wantsRecordTools(question);
   const plots = wantsPlotCatalog(question);
+  const alerts = wantsAlertTools(question);
   const system = await loadSystemPrompt(role, sessionExtra({ companyId, groupId, asOf, view }), {
     thinking,
     records,
@@ -67,7 +69,7 @@ export async function streamAgentResponse({
       if (shouldForceTextStep(steps)) {
         return { activeTools: [], toolChoice: "none" };
       }
-      return { activeTools: activeToolsUnderCap(names as string[], steps, { records, plots }) as typeof names };
+      return { activeTools: activeToolsUnderCap(names as string[], steps, { records, plots, alerts }) as typeof names };
     },
     abortSignal,
     temperature: helmcodeTemperature(),

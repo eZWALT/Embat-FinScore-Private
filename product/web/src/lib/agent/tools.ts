@@ -86,11 +86,48 @@ function asError(error: unknown): Json {
 
 function slimReason(reason: Reason) {
   return {
-    item: reason.item,
     points: reason.points,
     eur: reason.eur,
     sentence: reason.sentence,
   };
+}
+
+function speakGuard(guard: string | null | undefined): string | undefined {
+  if (guard === "dark") return "sin movimientos (tope 30)";
+  if (guard === "fading") return "entradas hundidas (tope 50)";
+  return undefined;
+}
+
+function speakTrajectory(value: string | null | undefined): string | undefined {
+  const map: Record<string, string> = {
+    improving: "mejorando",
+    stable: "estable",
+    dip: "bache",
+    deteriorating: "deteriorando",
+    "insufficient history": "historial corto",
+  };
+  return value ? (map[value] ?? value) : undefined;
+}
+
+function speakConfidence(value: string | null | undefined): string | undefined {
+  if (value === "high") return "alta";
+  if (value === "medium") return "media";
+  if (value === "low") return "baja";
+  return value ?? undefined;
+}
+
+function speakOwner(value: string | null | undefined): string | undefined {
+  if (value === "treasurer") return "Tesorero";
+  if (value === "cfo") return "CFO";
+  if (value === "collections") return "Cobros";
+  return value ?? undefined;
+}
+
+function speakSeverity(value: string | null | undefined): string | undefined {
+  if (value === "act") return "actuar";
+  if (value === "watch") return "vigilar";
+  if (value === "info") return "informativa";
+  return value ?? undefined;
 }
 
 /** Full reasons on the focus month, the last 3, or a move of ≥2 pts. One call covers a period. */
@@ -103,12 +140,14 @@ function scoreHistory(months: MonthRecord[], focusMonth: string) {
     const moved = prev != null && Math.abs(row.score - prev.score) >= 2;
     const focus = row.month === focusMonth;
     const recent = from + index >= months.length - 3;
-    const base = {
+    const base: Json = {
       month: row.month,
       score: row.score,
-      trajectory: row.trajectory,
-      guard: row.guard,
     };
+    const trajectory = speakTrajectory(row.trajectory);
+    const guard = speakGuard(row.guard);
+    if (trajectory) base.trajectory = trajectory;
+    if (guard) base.guard = guard;
     if (!moved && !focus && !recent) return base;
     return {
       ...base,
@@ -139,13 +178,11 @@ function slimAlert(alert: Alert) {
     alert_id: alert.alert_id,
     entity: alert.entity,
     month: alert.month,
-    kind: alert.kind,
-    direction: alert.direction,
-    severity: alert.severity,
     title: alert.title,
     summary: alert.summary,
     reasons: (alert.reasons ?? []).map(slimReason),
-    owner: alert.owner,
+    owner: speakOwner(alert.owner),
+    severity: speakSeverity(alert.severity),
     action: alert.action,
     persistence: alert.persistence,
     evidence: alert.evidence,
@@ -322,12 +359,12 @@ const list_companies = tool({
           company_id: company.company_id,
           group_id: company.group_id,
           score: company.score,
-          trajectory: company.trajectory,
-          confidence: company.confidence,
-          guard: company.guard,
+          trajectory: speakTrajectory(company.trajectory),
+          confidence: speakConfidence(company.confidence),
+          guard: speakGuard(company.guard),
           delta_3m: company.delta_3m,
           n_alerts: company.n_alerts,
-          max_alert_severity: company.max_alert_severity,
+          max_alert_severity: speakSeverity(company.max_alert_severity),
         }));
       return { as_of: manifest.as_of_month, companies: rows };
     } catch (error) {
@@ -358,9 +395,9 @@ const get_company = tool({
         month: rec.month,
         score: rec.score,
         score_pre_cap: rec.score_pre_cap,
-        guard: rec.guard,
-        trajectory: rec.trajectory,
-        confidence: rec.confidence,
+        guard: speakGuard(rec.guard),
+        trajectory: speakTrajectory(rec.trajectory),
+        confidence: speakConfidence(rec.confidence),
         confidence_note: rec.confidence_note,
         categories: rec.categories,
         reasons,
@@ -416,13 +453,13 @@ const explain_change = tool({
         score_from: prev.score,
         score_to: cur.score,
         change: round(cur.score - prev.score, 1),
-        trajectory_from: prev.trajectory,
-        trajectory_to: cur.trajectory,
-        guard_from: prev.guard,
-        guard_to: cur.guard,
+        trajectory_from: speakTrajectory(prev.trajectory),
+        trajectory_to: speakTrajectory(cur.trajectory),
+        guard_from: speakGuard(prev.guard),
+        guard_to: speakGuard(cur.guard),
         change_guard: extras?.change_guard ?? null,
         item_deltas: deltas,
-        change_reasons: cur.change_reasons,
+        change_reasons: (cur.change_reasons ?? []).map(slimReason),
       };
     } catch (error) {
       return asError(error);
@@ -457,9 +494,9 @@ const get_group = tool({
         .map((row) => ({
           company_id: row.company_id,
           score: row.score,
-          trajectory: row.trajectory,
-          confidence: row.confidence,
-          guard: row.guard,
+          trajectory: speakTrajectory(row.trajectory),
+          confidence: speakConfidence(row.confidence),
+          guard: speakGuard(row.guard),
           delta_3m: row.delta_3m,
           n_alerts: row.n_alerts,
         }))
@@ -807,7 +844,7 @@ export function activeToolsUnderCap(
     toolCalls?: { toolName: string }[];
     toolResults?: { toolName: string; output?: unknown; result?: unknown }[];
   }[],
-  options?: { records?: boolean; plots?: boolean },
+  options?: { records?: boolean; plots?: boolean; alerts?: boolean },
 ): string[] {
   const counts = countToolCallsByName(steps);
   const hasCompany = retrievedCompanyOk(steps);
@@ -815,8 +852,10 @@ export function activeToolsUnderCap(
   const opening = new Set(OPENING_TOOLS);
   if (options?.records) opening.add("query_clean_db");
   if (!options?.plots) opening.delete("plot_series");
+  if (!options?.alerts) opening.delete("get_alerts");
   return names.filter((name) => {
     if (name === "plot_series" && !options?.plots) return false;
+    if (name === "get_alerts" && !options?.alerts) return false;
     if (steps.length === 0 && !opening.has(name)) return false;
     if ((counts.get(name) ?? 0) >= (TOOL_CALL_CAP[name] ?? 2)) return false;
     if (name === "explain_change" && hasChangeReasons) return false;

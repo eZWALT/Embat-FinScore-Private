@@ -119,3 +119,25 @@ What landed:
 - Group mean history last 12 months.
 
 Loop continues. Do not merge.
+
+## Tick 6 — 2026-09-20 03:34 +02
+
+Keep vs main sample suite (`--ignore-latency`).
+
+| Case | main tools / q / s | tick 6 tools / q / s |
+|---|---|---|
+| why-score | 1 / 6 / 8.7 | 1 / 6 / 6.7 |
+| alerts | 2 / 6 / 11.0 | 2 / 6 / 8.6 |
+| refuse | 0 / 5 / 2.4 | 0 / 5 / 1.8 |
+| period-4 | 11 / 2 / 17.0 | **4 / 6** / 11.8 |
+| why-change | 2 / 6 / 8.7 | 1 / 6 / 6.7 |
+
+period-4 is four `get_company` again (no alerts, no month). Text says «tope por entradas hundidas», not `fading`.
+
+What landed:
+
+- `get_alerts` only if the question asks for alertas / dueño / quién actúa.
+- Plots catalog no longer opens on «Periodo seleccionado».
+- Payloads use Spanish labels; reasons drop `item`.
+
+Next: forbid «Llamo a…» and the method recitation on alerts.

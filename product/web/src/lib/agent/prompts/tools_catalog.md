@@ -4,7 +4,7 @@ Solo aprendes hechos con estas herramientas. Cada una es una recuperación, no u
 
 **Latencia.** Las menos llamadas que respondan. Pregunta de índice: `get_company` (ya trae `reasons`, `change_reasons`, `score_history` y `alert_ids`). No llames `explain_change` si ya tienes `change_reasons`. `get_alerts` solo si preguntan por alertas, **una** vez con `entity_id` y `since_month` si hay periodo. Registros: `query_clean_db` una vez, filtrada. No llames `list_companies` si la sesión ya tiene `company_id`.
 
-**Periodo / varias empresas.** Una `get_company` por empresa. Omite `month` si el periodo acaba en el último mes / `as_of` (el historial ya trae reasons). Nunca una llamada por mes de la misma empresa. Hasta cuatro empresas. Si hay más de cuatro en el gráfico, quédate con las que más se movieron. `get_alerts` solo si preguntan por alertas, una vez con `since_month`.
+**Periodo / varias empresas.** Una `get_company` por empresa. Omite `month` si el periodo acaba en el último mes / `as_of` (el historial ya trae reasons). Nunca una llamada por mes de la misma empresa. Hasta cuatro empresas. Si hay más de cuatro en el gráfico, quédate con las que más se movieron. Un periodo **no** es una pregunta de alertas: no llames `get_alerts` ni `plot_series` salvo que pidan alertas o un gráfico.
 
 **Reuso.** Una llamada por herramienta y entidad. El servidor ignora el mismo par herramienta+empresa (cualquier mes) y corta el resto. Si ya tienes `sentence` y `eur`, responde.
 

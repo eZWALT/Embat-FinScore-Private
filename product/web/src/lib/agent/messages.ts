@@ -61,7 +61,12 @@ export function wantsRecordTools(text: string): boolean {
 }
 
 export function wantsPlotCatalog(text: string): boolean {
-  return /gr[aá]fico|plot|dibuja|pinta|abanico|periodo seleccionado|control chart/i.test(text);
+  return /gr[aá]fico|plot|dibuja|pinta|abanico|control chart/i.test(text);
+}
+
+/** Owner / action / feed. Period and “why this score” already carry alert_ids on get_company. */
+export function wantsAlertTools(text: string): boolean {
+  return /alerta|avisos?|qui[eé]n debe actuar|qui[eé]n act[uú]a|dueño/i.test(text);
 }
 
 /** COMP_ / GROUP_ ids and «Empresa 0011» / «Grupo 0234» mentions. */
