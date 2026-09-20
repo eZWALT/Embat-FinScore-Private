@@ -758,4 +758,8 @@ Keep vs main. Control-chart / forecast payloads in Spanish. Suite 1/6, 1/6, 0/5,
 
 Keep vs main. Reason money field is `importe` (unsigned). `signed_eur` no longer fires. Period still writes `limitada a 73`; why-change still recites the 10 pts/month glide from the raw `sentence`.
 
+## Tick 78 — 2026-09-20 08:00 +02
+
+Keep vs main. Model-facing `sentence` drops the 10 pts/month glide. why-change **q=6**. Bench `signed_eur` ignores caja/saldo.
+
 Do not merge. Past min 4h; loop until 08:55.

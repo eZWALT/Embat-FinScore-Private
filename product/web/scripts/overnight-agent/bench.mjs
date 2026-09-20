@@ -118,7 +118,14 @@ function describesOfftopic(text, id) {
 }
 
 function signedEur(text) {
-  return /[-−]\s*\d[\d.,]*\s*k?\s*€/.test(text ?? "");
+  const src = text ?? "";
+  for (const match of src.matchAll(/[-−]\s*\d[\d.,]*\s*k?\s*€/g)) {
+    const start = Math.max(0, match.index ?? 0);
+    const ctx = src.slice(Math.max(0, start - 48), start);
+    if (/caja|saldo|disponible|posici[oó]n|negativ/i.test(ctx)) continue;
+    return true;
+  }
+  return false;
 }
 
 function methodCoda(text) {

@@ -2,6 +2,7 @@ import { getToolName, isTextUIPart, isToolUIPart, type UIMessage } from "ai";
 
 import { entityLabel } from "@/lib/display";
 
+import { clipGlideLecture } from "./clip-sentence";
 import { isPlotSpec, type PlotSpec } from "./plot-spec";
 import type { DashboardView } from "./view-context";
 
@@ -65,15 +66,6 @@ export function alertQuotesFromPart(part: UIMessage["parts"][number]): string[] 
     })
     .filter(Boolean)
     .slice(0, 4);
-}
-
-/** UI quote only: drop the 10 pts/month glide lecture. The model still sees the full `sentence`. */
-function clipGlideLecture(text: string): string {
-  const clipped = text
-    .replace(/\s*:?\s*la puntuación baja como máximo 10 puntos al mes hacia \d+[^.]*\.?/gi, "")
-    .replace(/\s{2,}/g, " ")
-    .trim();
-  return clipped || text;
 }
 
 export function reasonQuotesFromPart(part: UIMessage["parts"][number]): { text: string; money?: string; empresa?: string }[] {

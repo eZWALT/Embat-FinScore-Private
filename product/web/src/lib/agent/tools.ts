@@ -18,6 +18,7 @@ import type {
   ScoreRepository,
 } from "@/lib/data/types";
 
+import { clipGlideLecture } from "./clip-sentence";
 import { neonQuery, coreIsMounted } from "./neon-sql";
 import { buildCatalogPlot, PLOT_KINDS } from "./plot-catalog";
 import { checkSql, toCoreSql, UnsafeQuery } from "./sql-guard";
@@ -91,7 +92,7 @@ function slimReason(reason: Reason, currency: string | null = "EUR") {
   return {
     points: reason.points,
     importe: reason.eur != null ? formatMoney(reason.eur, currency) : null,
-    sentence: reason.sentence,
+    sentence: clipGlideLecture(reason.sentence),
   };
 }
 
