@@ -173,10 +173,29 @@ function itemsFromMonth(rec: MonthRecord): Record<string, ItemRow> {
   return slimItems(raw);
 }
 
+function entitySay(id: string): string {
+  const digits = id.replace(/^(COMP|GROUP)_/i, "").replace(/^0+/, "") || id;
+  return id.startsWith("GROUP") ? `Grupo ${digits.padStart(4, "0")}` : `Empresa ${digits.padStart(4, "0")}`;
+}
+
+function speakIdsInText(value: string): string {
+  return value
+    .replace(/\bCOMP_(\d{4})\b/g, "Empresa $1")
+    .replace(/\bGROUP_(\d{4})\b/g, "Grupo $1");
+}
+
+function slimEvidence(evidence: Alert["evidence"]) {
+  const out: Record<string, string | number | boolean | null> = {};
+  for (const [key, value] of Object.entries(evidence ?? {})) {
+    out[key] = typeof value === "string" ? speakIdsInText(value) : value;
+  }
+  return out;
+}
+
 function slimAlert(alert: Alert) {
   return {
     alert_id: alert.alert_id,
-    entity: alert.entity,
+    entity: entitySay(alert.entity.id),
     month: alert.month,
     title: alert.title,
     summary: alert.summary,
@@ -185,7 +204,7 @@ function slimAlert(alert: Alert) {
     severity: speakSeverity(alert.severity),
     action: alert.action,
     persistence: alert.persistence,
-    evidence: alert.evidence,
+    evidence: slimEvidence(alert.evidence),
   };
 }
 
@@ -540,7 +559,7 @@ function createGetAlerts(session?: ToolSession) {
   const scope = alertScope(session);
   return tool({
     description:
-      "Alertas del feed, más nuevas primero. Pasa entity_id (COMP_ o GROUP_). Sin id, el servidor acota a la sesión y a las empresas nombradas — nunca el feed entero. Una vez por periodo. Cita title y action tal cual.",
+      "Alertas del feed, más nuevas primero. Una sola llamada. Omite entity_id si SESSION ya tiene empresa y grupo: el servidor acota. Sin id nunca devuelve el feed entero. Cita title y action tal cual.",
     inputSchema: z.object({
       entity_id: z.string().optional(),
       kinds: z.array(z.enum(ALERT_KINDS)).optional(),
@@ -552,9 +571,10 @@ function createGetAlerts(session?: ToolSession) {
       try {
         const feed = await repo().getAlerts();
         let alerts = feed.alerts;
-        const scoped = entity_id ? [entity_id] : [...scope];
-        if (entity_id) alerts = alerts.filter((alert) => alert.entity.id === entity_id);
-        else if (scope.size) alerts = alerts.filter((alert) => scope.has(alert.entity.id));
+        const wanted = new Set(scope);
+        if (entity_id) wanted.add(entity_id);
+        const scoped = [...wanted];
+        if (wanted.size) alerts = alerts.filter((alert) => wanted.has(alert.entity.id));
         if (kinds?.length) alerts = alerts.filter((alert) => kinds.includes(alert.kind));
         if (severities?.length) alerts = alerts.filter((alert) => severities.includes(alert.severity));
         if (since_month) alerts = alerts.filter((alert) => alert.month >= since_month);
@@ -781,7 +801,7 @@ export const TOOL_CALL_CAP: Record<string, number> = {
   get_company: 4,
   explain_change: 2,
   get_group: 2,
-  get_alerts: 2,
+  get_alerts: 1,
   get_control_chart: 2,
   compare_with_cluster: 2,
   get_forecast: 2,

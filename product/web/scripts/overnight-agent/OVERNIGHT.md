@@ -141,3 +141,25 @@ What landed:
 - Payloads use Spanish labels; reasons drop `item`.
 
 Next: forbid «Llamo a…» and the method recitation on alerts.
+
+## Tick 7 — 2026-09-20 03:36 +02
+
+Keep vs main sample suite (`--ignore-latency`).
+
+| Case | main tools / q / s | tick 7 tools / q / s |
+|---|---|---|
+| why-score | 1 / 6 / 8.7 | 1 / 6 / 4.8 |
+| alerts | 2 / 6 / 11.0 | **1 / 6** / 7.8 |
+| refuse | 0 / 5 / 2.4 | 0 / 5 / 1.6 |
+| period-4 | 11 / 2 / 17.0 | **4 / 6** / 12.7 |
+| why-change | 2 / 6 / 8.7 | 1 / 6 / 7.8 |
+
+alerts is one empty-input `get_alerts` (session company + group). period-4 has no «Llamo a…».
+
+What landed:
+
+- `get_alerts` cap 1; filter = session ∪ entity_id.
+- No announce-the-call / method-recitation in BREVITY.
+- Alert entity + evidence ids as Empresa/Grupo.
+
+Next: stats/lift only if they ask fiabilidad.
