@@ -738,4 +738,8 @@ Keep vs main. SQL-guard errors in Spanish. Plot titles/series use Empresa labels
 
 Keep vs main. SESSION keys: `modo` / `pantalla` / `foco` / `grupo`.
 
+## Tick 73 — 2026-09-20 08:25 +02
+
+Keep vs main sample suite (`--ignore-latency`). 1/6, 1/6, 0/5, 4/6, 1/6. SQL comments in Spanish; cluster `nota`.
+
 Do not merge. Past min 4h; loop until 08:55.

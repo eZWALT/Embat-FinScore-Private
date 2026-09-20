@@ -17,7 +17,7 @@ Solo estas tablas, prefijo `clean.`. Solo `SELECT`. Siempre `WHERE company_id` (
 Patrones útiles:
 
 ```sql
--- monthly operating inflows / outflows
+-- entradas / salidas operativas por mes
 select date_trunc('month', date) m,
        sum(case when amount > 0 then amount end) inflow,
        sum(case when amount < 0 then -amount end) outflow
@@ -25,14 +25,14 @@ from clean.transactions
 where company_id = ? and category <> 'transfer'
 group by 1 order by 1 limit 30;
 
--- open receivables by counterparty, overdue first
+-- cobros abiertos por contrapartida, vencidos primero
 select counterparty_id, count(*) n, sum(pending_amount) open_amount,
        min(due_date) oldest_due
 from clean.invoices
 where company_id = ? and amount > 0 and pending_amount > 0
 group by 1 order by open_amount desc limit 20;
 
--- what did last quarter's top customer bill by month
+-- qué facturó el cliente principal del trimestre, por mes
 select date_trunc('month', issuance_date) m, sum(amount)
 from clean.invoices
 where company_id = ? and counterparty_id = ? and amount > 0

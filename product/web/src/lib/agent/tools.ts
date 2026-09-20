@@ -803,7 +803,7 @@ const compare_with_cluster = tool({
         grupo_pares: cluster.meta.label,
         descripcion: cluster.meta.description,
         n_empresas: cluster.meta.n_companies,
-        quality_note: qualityNote,
+        nota: qualityNote,
         month: speakMonth(cluster.month, true),
         vs_pares: cluster.vs_cluster.map((row) => ({
           metrica: row.metric === "score" ? "índice" : (CATEGORY_LABELS[row.metric as CategoryId] ?? row.metric),
