@@ -7,8 +7,8 @@
   "mainSha": "0c7771b",
   "mainUrl": "https://hack-spain.vercel.app",
   "tick": 2,
-  "bestScore": "sample-suite period-4 q 2→5, tools 11→4",
+  "bestScore": "sample period-4 q 2→6, tools 11→5",
   "loopPid": 497061,
   "loopIntervalSec": 1200,
-  "notes": "Keep tick 1. Fair compare is --suite sample. Do not merge to main tonight."
+  "notes": "Keep tick 2. Fair compare is --suite sample --ignore-latency. Do not merge to main tonight."
 }

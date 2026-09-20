@@ -42,6 +42,24 @@ export function coerceUiMessages(input: unknown): UIMessage[] {
   });
 }
 
+export function lastUserText(messages: UIMessage[]): string {
+  for (let index = messages.length - 1; index >= 0; index -= 1) {
+    const message = messages[index];
+    if (message.role !== "user") continue;
+    return (message.parts ?? [])
+      .map((part) => (part.type === "text" && "text" in part ? String(part.text) : ""))
+      .join("");
+  }
+  return "";
+}
+
+/** Invoice / movement / debt questions. Score, alerts and period plots do not need the records schema. */
+export function wantsRecordTools(text: string): boolean {
+  return /factura|contrapart|movimient|saldo|deuda|invoice|sql|registro|proveedor|cobro pendiente|pr[eé]stamo|banking/i.test(
+    text,
+  );
+}
+
 export function sessionExtra(input: {
   companyId?: string;
   groupId?: string;

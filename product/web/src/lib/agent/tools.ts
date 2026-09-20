@@ -125,6 +125,12 @@ function slimItems(items: Record<string, ItemRow>): Record<string, ItemRow> {
   );
 }
 
+function itemsFromMonth(rec: MonthRecord): Record<string, ItemRow> {
+  const raw = (rec as MonthRecord & { items?: Record<string, ItemRow> }).items;
+  if (!raw || typeof raw !== "object") return {};
+  return slimItems(raw);
+}
+
 function slimAlert(alert: Alert) {
   return {
     alert_id: alert.alert_id,
@@ -359,7 +365,7 @@ const get_company = tool({
         coverage: rec.coverage,
         trail_months: rec.trail_months,
         categories: rec.categories,
-        items: extras?.items ? slimItems(extras.items) : {},
+        items: extras?.items ? slimItems(extras.items) : itemsFromMonth(rec),
         reasons: (rec.reasons ?? []).map(slimReason),
         change_reasons: (rec.change_reasons ?? []).map(slimReason),
         score_history: scoreHistory(detail.months, rec.month),
@@ -392,8 +398,9 @@ const explain_change = tool({
       const cur = months[idx];
       const prev = months[idx - 1];
       const extras = await loadScoreExtras(company_id, cur.month);
+      const itemSource = extras?.items ?? itemsFromMonth(cur);
       const deltas = Object.fromEntries(
-        Object.entries(extras?.items ?? {})
+        Object.entries(itemSource)
           .filter(([, item]) => item.delta != null)
           .map(([key, item]) => [key, item.delta])
           .sort((a, b) => Math.abs(Number(b[1])) - Math.abs(Number(a[1]))),
@@ -767,17 +774,24 @@ export function countToolCallsByName(steps: { toolCalls?: { toolName: string }[]
   return counts;
 }
 
+/** First model step: score path only. Records join if the user asked about invoices / debt. */
+const OPENING_TOOLS = new Set(["get_company", "get_alerts", "get_group", "plot_series"]);
+
 export function activeToolsUnderCap(
   names: string[],
   steps: {
     toolCalls?: { toolName: string }[];
     toolResults?: { toolName: string; output?: unknown; result?: unknown }[];
   }[],
+  options?: { records?: boolean },
 ): string[] {
   const counts = countToolCallsByName(steps);
   const hasCompany = retrievedCompanyOk(steps);
   const hasChangeReasons = companyHasChangeReasons(steps);
+  const opening = new Set(OPENING_TOOLS);
+  if (options?.records) opening.add("query_clean_db");
   return names.filter((name) => {
+    if (steps.length === 0 && !opening.has(name)) return false;
     if ((counts.get(name) ?? 0) >= (TOOL_CALL_CAP[name] ?? 2)) return false;
     if (name === "explain_change" && hasChangeReasons) return false;
     if (name === "list_companies" && hasCompany) return false;

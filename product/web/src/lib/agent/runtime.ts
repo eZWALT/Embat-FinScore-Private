@@ -1,7 +1,7 @@
 import { convertToModelMessages, isStepCount, smoothStream, streamText } from "ai";
 
 import { createHelmcodeModel, helmcodeApiKey, helmcodeTemperature } from "./llm";
-import { coerceUiMessages, sessionExtra } from "./messages";
+import { coerceUiMessages, lastUserText, sessionExtra, wantsRecordTools } from "./messages";
 import { loadSystemPrompt, type AgentRole } from "./prompt-loader";
 import { activeToolsUnderCap, chatTools, quickTools, sentinelTools, shouldForceTextStep } from "./tools";
 import type { DashboardView } from "./view-context";
@@ -34,7 +34,11 @@ export async function streamAgentResponse({
     return Response.json({ error: "messages is required" }, { status: 400 });
   }
 
-  const system = await loadSystemPrompt(role, sessionExtra({ companyId, groupId, asOf, view }), { thinking });
+  const records = wantsRecordTools(lastUserText(uiMessages));
+  const system = await loadSystemPrompt(role, sessionExtra({ companyId, groupId, asOf, view }), {
+    thinking,
+    records,
+  });
   const modelMessages = await convertToModelMessages(uiMessages);
   const tools = role === "sentinel" ? sentinelTools() : role === "quick" ? quickTools() : chatTools();
 
@@ -52,7 +56,7 @@ export async function streamAgentResponse({
       if (shouldForceTextStep(steps)) {
         return { activeTools: [], toolChoice: "none" };
       }
-      return { activeTools: activeToolsUnderCap(names as string[], steps) as typeof names };
+      return { activeTools: activeToolsUnderCap(names as string[], steps, { records }) as typeof names };
     },
     abortSignal,
     temperature: helmcodeTemperature(),

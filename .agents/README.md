@@ -51,6 +51,7 @@ Add a new dated file after meaningful work. Do not rewrite old ones. If the new 
 | `persistent-memory/2026-09-20-0148-tools-then-text.md` | After 6 steps or 8 calls, strip tools and write. Do not stop the stream on call count. ×n ticks. |
 | `persistent-memory/2026-09-20-0155-overnight-agent-optimize.md` | Pregunta overnight: branch `agent/overnight-optimize` only. Same tools. Bench vs `main`. 4–7 h. |
 | `persistent-memory/2026-09-20-0215-get-company-period-history.md` | Overnight keep: `get_company` history carries period reasons; Pregunta skips FORMAT; force text at 4 steps. |
+| `persistent-memory/2026-09-20-0231-opening-tools-records-schema.md` | Overnight: first step is score tools only; `clean_schema` only on record questions. |
 | `persistent-memory/2026-09-20-0115-thinking-no-verbose.md` | Brain on: drop the length cap. Do not ask for a longer reply. |
 | `persistent-memory/2026-09-20-0120-thinking-max-exa.md` | Exa + `max` superseded. |
 | `persistent-memory/2026-09-20-0130-drop-exa.md` | No Exa. No `search_web`. No `EXA_API_KEY`. |

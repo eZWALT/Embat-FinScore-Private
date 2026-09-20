@@ -54,3 +54,26 @@ Loop PID 497061, every 20 min, until 05:55–08:55 +02. Do not merge to main ton
 ## Tick 1b — 2026-09-20 02:16 +02
 
 Keep (no quality drop on why-score q=6 / 1 tool). After four successful `get_company`, force the text step. Control charts return the last 8 months + `persistent_now`, no CUSUM arrays. Local Pregunta opens; a Next hydration overlay on `app-header` can sit on the FAB (pre-existing, not this branch).
+
+## Tick 2 — 2026-09-20 02:31 +02
+
+Keep vs main sample suite (`--ignore-latency`).
+
+| Case | main q / tools | tick 2 q / tools / s |
+|---|---|---|
+| why-score | 6 / 1 | 6 / 1 / 5.7 |
+| alerts | 6 / 2 | 6 / 2 / 9.1 |
+| refuse | 5 / 0 | 5 / 0 / 1.8 |
+| period-4 | 2 / 11 | **6 / 5** / 17.9 |
+| why-change | 6 / 2 | 6 / 1 / 6.0 |
+
+period-4: four `get_company` (no `month`) + one `get_alerts`. why-score text 747 chars, still grounded.
+
+What landed:
+
+- First step only `get_company` / `get_alerts` / `get_group` / `plot_series`.
+- `clean_schema.md` only if the user asked about facturas / saldos / deuda.
+- Bundle `items` when Neon extras are missing.
+- Period shape: 1 line + 1 bullet per empresa.
+
+Production `/empresa` still shows the main picker; the known waste there is still `explain_change` fan-out (this branch). Loop continues. Do not merge.
