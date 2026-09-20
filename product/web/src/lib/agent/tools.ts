@@ -266,7 +266,6 @@ function slimAlert(alert: Alert) {
     entity: entityLabel(alert.entity.id),
     month: speakMonth(alert.month),
     title: alert.title,
-    summary: alert.summary,
     reasons: (alert.reasons ?? []).map((reason) => slimReason(reason)),
     owner: speakOwner(alert.owner),
     severity: speakSeverity(alert.severity),
@@ -649,8 +648,14 @@ function createGetAlerts(session?: ToolSession) {
         let alerts = feed.alerts;
         const wanted = new Set(scope);
         if (entity_id) wanted.add(entity_id);
+        if (!wanted.size) {
+          return {
+            error: "sin empresa",
+            ask: "¿Sobre qué Empresa o Grupo? Elige una en Rápido o nómbrala (Empresa 0030).",
+          };
+        }
         const scoped = [...wanted];
-        if (wanted.size) alerts = alerts.filter((alert) => wanted.has(alert.entity.id));
+        alerts = alerts.filter((alert) => wanted.has(alert.entity.id));
         if (kinds?.length) alerts = alerts.filter((alert) => kinds.includes(alert.kind));
         if (severities?.length) alerts = alerts.filter((alert) => severities.includes(alert.severity));
         if (since_month) {

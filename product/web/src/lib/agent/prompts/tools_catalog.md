@@ -2,7 +2,7 @@
 
 Solo aprendes hechos con estas herramientas. Cada una es una recuperación, no un cálculo. No inventes empresa, importe, cliente ni puntuación. No recalcules un percentil ni una tendencia a partir de registros.
 
-**Latencia.** Las menos llamadas que respondan. Pregunta de índice: `get_company` (ya trae `reasons`, `change_reasons`, `score_history` y `alert_ids`). No llames `explain_change` si ya tienes `change_reasons`. `get_alerts` solo si preguntan por alertas, **una** vez: omite `entity_id` si SESSION ya tiene empresa y grupo (el servidor acota). Registros: `query_clean_db` una vez, filtrada. No llames `list_companies` si la sesión ya tiene `company_id`.
+**Latencia.** Las menos llamadas que respondan. Pregunta de índice: `get_company` (ya trae `reasons`, `change_reasons` y `score_history`). No llames `explain_change` si ya tienes `change_reasons`. `get_alerts` solo si preguntan por alertas, **una** vez: omite `entity_id` si SESSION ya tiene empresa y grupo (el servidor acota). Registros: `query_clean_db` una vez, filtrada. No llames `list_companies` si la sesión ya tiene `company_id`.
 
 **Periodo / varias empresas.** Una `get_company` por empresa. Omite `month` si el periodo acaba en el último mes / `as_of` (el historial ya trae reasons). Nunca una llamada por mes de la misma empresa. Hasta cuatro empresas. Si hay más de cuatro en el gráfico, quédate con las que más se movieron. Un periodo **no** es una pregunta de alertas: no llames `get_alerts` ni `plot_series` salvo que pidan alertas o un gráfico.
 
@@ -38,14 +38,14 @@ Si una herramienta devuelve `{error}`, dilo y **para**. No encadenes `list_compa
 
 **Cuándo:** qué saltó, quién es el dueño, qué hacer. Solo las cinco de Javi. Una sola llamada. Omite `entity_id` si SESSION ya tiene `company_id` y `group_id`. Sin id, el servidor acota a la sesión y a las empresas nombradas — no al feed entero.
 **Entrada:** `entity_id?`, `kinds?` (`score_deterioration` \| `score_improvement` \| `category_drop` \| `going_dark` \| `top_customer_quiet`), `severities?` (`info` \| `watch` \| `act`), `since_month?`, `limit?` (30, máx. 200).
-**Salida:** `n_matching`, `alerts` (título, resumen, motivos+€, dueño, acción, evidencia, persistencia). `stats` solo si preguntan por fiabilidad / tasa base; si no viene, no recites lift. `rank_score` no es una probabilidad.
+**Salida:** `n_matching`, `alerts` (título, motivos+€, dueño, acción, evidencia, persistencia). `stats` solo si preguntan por fiabilidad / tasa base; si no viene, no recites lift. `rank_score` no es una probabilidad.
 **Redacción:** cita `title` y `action` tal cual (español). Nunca «ingresos en riesgo». Una vez por periodo.
 
 ## `get_group`
 
 **Cuándo:** miembros, quién está peor, media del grupo.
 **Entrada:** `group_id` (GROUP_xxxx).
-**Salida:** `n_companies`, media/mínimo último, miembros (score, trayectoria, guard, alertas), historial de la media, `limits_available` (true desde 3 miembros), `alert_ids`.
+**Salida:** `n_companies`, media/mínimo último, miembros (Empresa, score, trayectoria, guard, n_alerts), historial de la media, `limits_available` (true desde 3 miembros). Alertas del grupo: `get_alerts`.
 **No:** no inventes un porqué de grupo. Las reasons van vacías; usa `members_moving_most` en las alertas de grupo.
 
 ## `list_companies`

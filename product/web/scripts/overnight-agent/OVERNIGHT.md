@@ -289,3 +289,17 @@ Keep vs main sample suite (`--ignore-latency`).
 | why-change | 2 / 6 / 8.7 | 1 / 6 / 8.3 |
 
 What landed: Spanish evidence keys; drop `alert_id`; persistence `N de los últimos 4 meses`.
+
+## Tick 17 — 2026-09-20 04:59 +02
+
+Keep vs main sample suite (`--ignore-latency`). Alerts TTFT ~95 s (Helmcode).
+
+| Case | main tools / q / s | tick 17 tools / q / s |
+|---|---|---|
+| why-score | 1 / 6 / 8.7 | 1 / 6 / 5.7 |
+| alerts | 2 / 6 / 11.0 | **1 / 6** / stall (1027 chars, julio 2026) |
+| refuse | 0 / 5 / 2.4 | 0 / 5 / 1.6 (canonical recusa) |
+| period-4 | 11 / 2 / 17.0 | **4 / 6** / 12.2 |
+| why-change | 2 / 6 / 8.7 | 1 / 6 / 6.0 |
+
+What landed: no unscoped feed; drop `summary`; never ask the user for `COMP_*`. Production Rápido (no company) already asked which entity, but leaked tokens.
