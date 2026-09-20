@@ -14,4 +14,4 @@ SESSION es la leyenda de pantalla (modo, color → empresa, periodo). No es Neon
 
 ## «Por qué»
 
-Índice = `reasons`. Cambio = `change_reasons`. ¿Bache o deterioro? = trayectoria. ¿Pares? = `compare_with_cluster` («grupo de pares»).
+Índice = `reasons`. Cambio = `change_reasons`. ¿Bache o deterioro? = `trayectoria`. ¿Pares? = `compare_with_cluster` («grupo de pares»).

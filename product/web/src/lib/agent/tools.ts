@@ -199,7 +199,7 @@ function scoreHistory(
     };
     const trajectory = speakTrajectory(row.trajectory);
     const guard = speakGuard(row.guard);
-    if (trajectory) base.trajectory = trajectory;
+    if (trajectory) base.trayectoria = trajectory;
     if (guard && !(scoresOnly && guard === "sin tope")) base.guard = guard;
     if (scoresOnly || (!moved && !focus && !recent)) return base;
     return {
@@ -513,19 +513,19 @@ function createGetCompany(session?: ToolSession) {
           month: speakMonth(rec.month, true),
           score: speakScore(rec.score),
           guard: speakGuard(rec.guard),
-          trajectory: speakTrajectory(rec.trajectory),
+          trayectoria: speakTrajectory(rec.trajectory),
           reasons,
           score_history: scoreHistory(detail.months, rec.month, historySpan, currency, period),
         };
         if (!period) {
-          payload.confidence = speakConfidence(rec.confidence);
+          payload.confianza = speakConfidence(rec.confidence);
           payload.confidence_note = rec.confidence_note;
           payload.categories = slimCategories(rec.categories);
         }
         if (detail.currency && detail.currency !== "EUR") payload.currency = detail.currency;
         if (change.length) payload.change_reasons = change;
         if (rec.guard && rec.score_pre_cap != null) payload.sin_el_tope = speakScore(rec.score_pre_cap);
-        if ((rec.trail_months ?? 24) < 12) payload.trail_months = rec.trail_months;
+        if ((rec.trail_months ?? 24) < 12) payload.meses_historial = rec.trail_months;
         if (!reasons.length) {
           const extras = await loadScoreExtras(id, rec.month);
           payload.items = extras?.items ? slimItems(extras.items) : itemsFromMonth(rec);

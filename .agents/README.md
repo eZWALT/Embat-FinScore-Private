@@ -134,6 +134,7 @@ Add a new dated file after meaningful work. Do not rewrite old ones. If the new 
 | `persistent-memory/2026-09-20-0838-explain-deltas-es.md` | Overnight: explain_change deltas are spoken Spanish tenths. |
 | `persistent-memory/2026-09-20-0845-tope-not-limite.md` | Overnight: reason sentences say «sin el tope», never límite/salvaguarda. |
 | `persistent-memory/2026-09-20-0850-list-group-es-keys.md` | Overnight: list/group member keys are Spanish (`trayectoria`, `n_alertas`). |
+| `persistent-memory/2026-09-20-0855-company-trayectoria-confianza.md` | Overnight: `get_company` keys are `trayectoria` / `confianza` / `meses_historial`. |
 | `persistent-memory/2026-09-20-0115-thinking-no-verbose.md` | Brain on: drop the length cap. Do not ask for a longer reply. |
 | `persistent-memory/2026-09-20-0120-thinking-max-exa.md` | Exa + `max` superseded. |
 | `persistent-memory/2026-09-20-0130-drop-exa.md` | No Exa. No `search_web`. No `EXA_API_KEY`. |

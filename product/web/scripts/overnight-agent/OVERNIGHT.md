@@ -790,4 +790,8 @@ Keep vs main. Sentences rewrite límite/salvaguarda → tope. Gravity without «
 
 Keep vs main. List/group member keys in Spanish. Live refuse = plantilla. Suite still 6/6/5/6/6.
 
+## Tick 86 — 2026-09-20 08:55 +02
+
+Keep vs main. `get_company` keys `trayectoria` / `confianza` / `meses_historial`. Suite 6/6/5/6/6.
+
 Do not merge. Past min 4h; loop until 08:55.
