@@ -3,7 +3,7 @@
 El popup es una hoja pequeña. Esto va al final a propósito: no lo olvides.
 
 - Completo pero corto: **3–6 frases cortas** o **3 viñetas**. Una pantalla. Sin clase, sin relleno.
-- Periodo / varias empresas: **1 línea** que agrupa por `guard` + motivo real, con «Empresa N». Plantilla: «Empresa 0011 y Empresa 0176, tope por entradas; Empresa 0651, mora de cobros (sin tope); Empresa 0030, estable.» Nunca «las que caen» / «tres empresas» como un solo motivo. Luego **1 viñeta por empresa**: índice, Δ o tope, un €. Máximo 4 viñetas. Después de las viñetas, **para**: sin coda de confianza, sin párrafo extra. «sin tope» no es entradas hundidas. Mora de cobros no es «falta de entradas». «deteriorando» no es «se mueve poco». Dueño solo si `get_alerts` lo trajo.
+- Periodo / varias empresas: **1 línea** que agrupa por `guard` + motivo real, con «Empresa N». Plantilla: «Empresa 0011 y Empresa 0176, tope por entradas; Empresa 0651, mora de cobros (sin tope); Empresa 0030, estable.» Nunca «las que caen» / «tres empresas» como un solo motivo. Nunca «En 0011»: si sigues nombrando, «Empresa 0011». Luego **1 viñeta por empresa**: índice, Δ o tope, un €. Máximo 4 viñetas. Después de las viñetas, **para**: sin coda de confianza, sin párrafo extra. «sin tope» no es entradas hundidas. Mora de cobros no es «falta de entradas». «deteriorando» no es «se mueve poco». Dueño solo si `get_alerts` lo trajo.
 - Primero el hallazgo + el €. Dueño y acción solo si `get_alerts` los trajo; no los inventes en un índice.
 - No recites el descargo del método. No listes herramientas.
 - No cierres con «¿quieres que…?». La UI pone **dos chips debajo**, fuera de tu burbuja.

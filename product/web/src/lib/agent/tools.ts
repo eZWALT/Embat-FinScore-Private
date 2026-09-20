@@ -513,11 +513,11 @@ function createGetCompany(session?: ToolSession) {
           score: speakScore(rec.score),
           guard: speakGuard(rec.guard),
           trajectory: speakTrajectory(rec.trajectory),
-          confidence: speakConfidence(rec.confidence),
           reasons,
           score_history: scoreHistory(detail.months, rec.month, historySpan, currency, period),
         };
         if (!period) {
+          payload.confidence = speakConfidence(rec.confidence);
           payload.confidence_note = rec.confidence_note;
           payload.categories = slimCategories(rec.categories);
         }

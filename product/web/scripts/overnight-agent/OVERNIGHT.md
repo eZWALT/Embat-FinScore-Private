@@ -552,4 +552,18 @@ Keep vs main sample suite (`--ignore-latency`).
 
 What landed: SESSION series/focus without raw `COMP_*`; Spanish control/cluster/forecast/records errors. Period lead is clean (807 chars).
 
+## Tick 50 — 2026-09-20 06:48 +02
+
+Keep vs main sample suite (`--ignore-latency`).
+
+| Case | main tools / q / s | tick 50 tools / q / s |
+|---|---|---|
+| why-score | 1 / 6 / 8.7 | 1 / 6 / 4.9 |
+| alerts | 2 / 6 / 11.0 | **1 / 6** / 7.1 |
+| refuse | 0 / 5 / 2.4 | 0 / 5 / 2.8 |
+| period-4 | 11 / 2 / 17.0 | **4 / 6** / 7.1 |
+| why-change | 2 / 6 / 8.7 | 1 / 6 / 6.7 |
+
+What landed: no glide lecture in PRODUCT; WORDING 2 is the never-predict line; period payload drops `confidence` so the lead cannot write «En 0011». First two benches of this tick were q=5 (bare ids) — discarded.
+
 Do not merge. Past min 4h; loop until 08:55.
