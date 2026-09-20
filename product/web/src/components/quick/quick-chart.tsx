@@ -20,6 +20,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import { companyLabel } from "@/lib/display";
 import { formatMonth } from "@/lib/format-month";
 import type { DashboardCompany } from "@/lib/data/types";
 
@@ -39,7 +40,7 @@ export function QuickChart({
   const config = useMemo(() => {
     const next: ChartConfig = {};
     companies.forEach((company, index) => {
-      next[company.companyId] = { label: company.companyId, color: SERIES_COLORS[index % SERIES_COLORS.length] };
+      next[company.companyId] = { label: companyLabel(company.companyId), color: SERIES_COLORS[index % SERIES_COLORS.length] };
     });
     return next;
   }, [companies]);

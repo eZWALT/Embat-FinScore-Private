@@ -198,3 +198,10 @@ Keep vs main sample suite (`--ignore-latency`).
 | why-change | 2 / 6 / 8.7 | 1 / 6 / 4.9 |
 
 What landed: after an alerts-only question, force the text step. Production Pregunta on hack-spain is still main (this branch is not live there).
+
+## Tick 10 — 2026-09-20 03:45 +02
+
+Visual keep (no quality drop vs last sample suite).
+
+- Local Pregunta: «Leer índice» + two bundle sentences, then the answer. No JSON dump.
+- Chart chips / legend: Empresa 0030. SESSION series use the same label and keep `COMP_*` in parens.

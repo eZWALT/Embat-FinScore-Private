@@ -7,6 +7,7 @@ import { cn } from "cn";
 import { Button } from "@/components/ui/button";
 import { formatPoints } from "@/components/group/labels";
 import { SERIES_COLORS } from "@/components/quick/series";
+import { companyLabel } from "@/lib/display";
 import { OfferStrip } from "@/components/offers/offer-guidance";
 import { QuickChart, type MonthRange } from "@/components/quick/quick-chart";
 import { buildPrompt } from "@/components/quick/quick-explain";
@@ -77,14 +78,14 @@ export function ComparePanel({
               {selected.map((company, index) => (
                 <li
                   key={company.companyId}
-                  className="inline-flex h-7 items-center gap-1.5 rounded-full border px-2.5 font-mono text-xs"
+                  className="inline-flex h-7 items-center gap-1.5 rounded-full border px-2.5 text-xs"
                 >
                   <span
                     className="size-1.5 rounded-full"
                     style={{ background: SERIES_COLORS[index % SERIES_COLORS.length] }}
                     aria-hidden="true"
                   />
-                  {company.companyId}
+                  {companyLabel(company.companyId)}
                   <span className="text-muted-foreground tabular-nums">{company.score.toFixed(0)}</span>
                   {company.delta3m !== null ? (
                     <span className="text-muted-foreground tabular-nums" title="Cambio en 3 meses">

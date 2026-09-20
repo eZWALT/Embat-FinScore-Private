@@ -1,4 +1,15 @@
-import { formatSigned } from "@/lib/display";
+import { companyLabel, formatSigned, groupLabel } from "@/lib/display";
+
+function speakViewTrajectory(value: string): string {
+  const map: Record<string, string> = {
+    improving: "mejorando",
+    stable: "estable",
+    dip: "bache",
+    deteriorating: "deteriorando",
+    "insufficient history": "historial corto",
+  };
+  return map[value] ?? value;
+}
 
 /** What the Pregunta popup can see: the open screen, not a Neon fact. */
 
@@ -161,10 +172,10 @@ export function formatDashboardView(view: DashboardView): string {
   if (view.series?.length) {
     lines.push("series (color = empresa en el gráfico):");
     for (const row of view.series) {
-      const group = row.groupId ? ` ${row.groupId}` : "";
+      const group = row.groupId ? ` ${groupLabel(row.groupId)}` : "";
       const delta = row.delta3m == null ? "" : ` Δ3m ${signed(row.delta3m)}`;
-      const trail = row.trajectory ? ` ${row.trajectory}` : "";
-      lines.push(`- ${row.color}: ${row.companyId}${group} ${row.score.toFixed(0)}${trail}${delta}`);
+      const trail = row.trajectory ? ` ${speakViewTrajectory(row.trajectory)}` : "";
+      lines.push(`- ${row.color}: ${companyLabel(row.companyId)} (${row.companyId})${group} ${row.score.toFixed(0)}${trail}${delta}`);
     }
     lines.push("Si nombran un color, usa este mapa. El naranja a veces lo llaman rojo.");
   }
