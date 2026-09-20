@@ -860,16 +860,16 @@ const get_forecast = tool({
         [forecast.forecast_id],
       );
       return {
-        metric: forecast.metric,
-        method: forecast.method,
-        origin_month: speakMonth(forecast.origin_month, true),
-        horizon_months: forecast.horizon_months,
+        empresa: entityLabel(id),
+        metrica: forecast.metric === "score" ? "índice" : forecast.metric,
+        metodo: forecast.method,
+        origen: speakMonth(forecast.origin_month, true),
+        horizonte_meses: forecast.horizon_months,
         naive_last: speakScore(forecast.naive_last),
-        skill_vs_naive: forecast.skill_vs_naive,
-        note: forecast.note,
-        points: points.map((row) => ({
+        nota: forecast.note,
+        puntos: points.map((row) => ({
           month: speakMonth(row.month),
-          median: speakScore(row.median),
+          mediana: speakScore(row.median),
           lo50: speakScore(row.lo50),
           hi50: speakScore(row.hi50),
           lo80: speakScore(row.lo80),
