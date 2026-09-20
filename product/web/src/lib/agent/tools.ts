@@ -998,7 +998,7 @@ export function activeToolsUnderCap(
     toolCalls?: { toolName: string }[];
     toolResults?: { toolName: string; output?: unknown; result?: unknown }[];
   }[],
-  options?: { records?: boolean; plots?: boolean; alerts?: boolean },
+  options?: { records?: boolean; plots?: boolean; alerts?: boolean; group?: boolean },
 ): string[] {
   const counts = countToolCallsByName(steps);
   const hasCompany = retrievedCompanyOk(steps);
@@ -1007,9 +1007,11 @@ export function activeToolsUnderCap(
   if (options?.records) opening.add("query_clean_db");
   if (!options?.plots) opening.delete("plot_series");
   if (!options?.alerts) opening.delete("get_alerts");
+  if (!options?.group) opening.delete("get_group");
   return names.filter((name) => {
     if (name === "plot_series" && !options?.plots) return false;
     if (name === "get_alerts" && !options?.alerts) return false;
+    if (name === "get_group" && !options?.group) return false;
     if (steps.length === 0 && !opening.has(name)) return false;
     if ((counts.get(name) ?? 0) >= (TOOL_CALL_CAP[name] ?? 2)) return false;
     if (name === "explain_change" && hasChangeReasons) return false;

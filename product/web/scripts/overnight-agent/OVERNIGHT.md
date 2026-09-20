@@ -524,4 +524,18 @@ Keep vs main sample suite (`--ignore-latency`).
 
 What landed: period payload drops note/categories; no confidence coda (818 chars); PRODUCT AUROC moved to monitor. Local Pregunta on Empresa 0011: two reason quotes + chips without `COMP_*`.
 
+## Tick 48 — 2026-09-20 06:44 +02
+
+Keep vs main sample suite (`--ignore-latency`).
+
+| Case | main tools / q / s | tick 48 tools / q / s |
+|---|---|---|
+| why-score | 1 / 6 / 8.7 | 1 / 6 / stall |
+| alerts | 2 / 6 / 11.0 | **1 / 6** / 7.6 |
+| refuse | 0 / 5 / 2.4 | 0 / 5 / 1.7 |
+| period-4 | 11 / 2 / 17.0 | **4 / 6** / 11.0 |
+| why-change | 2 / 6 / 8.7 | 1 / 6 / 5.0 |
+
+What landed: slimmer MAP + WORDING 12; Sentinel catalog note in ROLE; opening `get_group` only if they ask about the group. First bench of the slim called `get_group` on why-score — the cap removed it.
+
 Do not merge. Past min 4h; loop until 08:55.

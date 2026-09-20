@@ -24,7 +24,7 @@ Qué saltó, dueño, acción. Una llamada. Cita `title` y `action`. `stats` solo
 
 ## `get_group`
 
-Miembros, media, quién está peor. Reasons de grupo vacías; usa `miembros`. Alertas: `get_alerts`.
+Solo si preguntan por el grupo o los miembros. Media, quién está peor. Reasons de grupo vacías; usa `miembros`. Alertas: `get_alerts`.
 
 ## `list_companies`
 
@@ -49,7 +49,3 @@ Facturas, contrapartidas, saldos, deuda. `clean.*` + `WHERE company_id` + `LIMIT
 ## `plot_series`
 
 Un `kind` del catálogo. El servidor pone los números. Un gráfico por respuesta.
-
-## Sentinel (respuestas en vivo)
-
-Mismo catálogo menos `list_companies`, `explain_change`, `compare_with_cluster`, `get_forecast`, `query_clean_db`. Corto: hallazgo + € + dueño. No reescribas las tres fichas del mes.

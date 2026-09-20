@@ -12,6 +12,7 @@ import {
   wantsPeriodHistory,
   wantsPlotCatalog,
   wantsRecordTools,
+  wantsGroupTools,
 } from "./messages";
 import { loadSystemPrompt, type AgentRole } from "./prompt-loader";
 import { activeToolsUnderCap, chatTools, quickTools, sentinelTools, shouldForceTextStep } from "./tools";
@@ -49,6 +50,7 @@ export async function streamAgentResponse({
   const records = wantsRecordTools(question);
   const plots = wantsPlotCatalog(question);
   const alerts = wantsAlertTools(question);
+  const group = wantsGroupTools(question);
   const period = wantsPeriodHistory(question);
   const namedCompanies = entitiesFromText(question).filter((id) => id.startsWith("COMP_"));
   const alertsOnly = alerts && !records && !plots && !/índice|por qu[eé]|cambi[oó]|periodo|gr[aá]fico/i.test(question);
@@ -89,7 +91,7 @@ export async function streamAgentResponse({
       if (shouldForceTextStep(steps, { alertsOnly, companyOnly })) {
         return { activeTools: [], toolChoice: "none" };
       }
-      return { activeTools: activeToolsUnderCap(names as string[], steps, { records, plots, alerts }) as typeof names };
+      return { activeTools: activeToolsUnderCap(names as string[], steps, { records, plots, alerts, group }) as typeof names };
     },
     abortSignal,
     temperature: helmcodeTemperature(),

@@ -77,6 +77,12 @@ export function wantsAlertStats(text: string): boolean {
   return /fiabil|lift|tasa base|acierto|estad[ií]st|75\s*%/i.test(text);
 }
 
+/** Group / peers as the subject. A period list with «(Grupo 0234)» is not this. */
+export function wantsGroupTools(text: string): boolean {
+  if (wantsPeriodHistory(text)) return false;
+  return /grupo de pares|los miembros|este grupo|el grupo\b|media del grupo|cl[uú]ster|\bpares\b/i.test(text);
+}
+
 /** Dragged period or a named month range. “este mes” is not this. */
 export function wantsPeriodHistory(text: string): boolean {
   return /periodo seleccionado|periodo:|\d{4}-\d{2}\s*→|desde .+hasta|[a-záéíóú]+ \d{4} →/i.test(text);
