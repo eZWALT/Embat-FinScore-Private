@@ -520,7 +520,8 @@ const explain_change = tool({
       if (!months.length) return { error: "no scored month" };
       let idx = months.length - 1;
       if (month) {
-        idx = months.findIndex((row) => row.month === month);
+        const key = monthKey(month) ?? month;
+        idx = months.findIndex((row) => row.month === key);
         if (idx < 0) return { error: `no scored month ${month}` };
       }
       if (idx === 0) return { error: "first scored month, no previous month" };

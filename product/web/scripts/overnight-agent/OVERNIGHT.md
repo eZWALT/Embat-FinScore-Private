@@ -393,3 +393,7 @@ Keep. TOOLS “dónde” is one line (`api`/`analytics` vs `core`).
 ## Tick 29 — 2026-09-20 05:18 +02
 
 Keep. Catalog matches the unscoped-alerts guard.
+
+## Tick 30 — 2026-09-20 05:17 +02
+
+Keep. `list_companies` catalog in Spanish. `explain_change` parses `agosto 2026`. Alerts 851 chars / q 6.
