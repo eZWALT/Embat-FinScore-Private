@@ -32,7 +32,7 @@ Solo si no hay empresa en SESSION ni en la pregunta. Peor índice primero. `as_o
 
 ## `get_control_chart`
 
-¿Bache o deterioro? Persistencia: 3 de los últimos 4. 7 meses; grupos, 3 miembros.
+¿Bache o deterioro? Persistencia: 3 de los últimos 4. Sale `meses` / `valores` / `centro` hablados. 7 meses; grupos, 3 miembros.
 
 ## `compare_with_cluster`
 
@@ -40,7 +40,7 @@ Solo si no hay empresa en SESSION ni en la pregunta. Peor índice primero. `as_o
 
 ## `get_forecast`
 
-Abanico 1–6. Qué tan lejos, no hacia dónde.
+Abanico 1–6. Qué tan lejos, no hacia dónde. `puntos[].mes` + mediana/bandas.
 
 ## `query_clean_db`
 

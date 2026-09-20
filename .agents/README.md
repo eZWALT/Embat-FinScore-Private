@@ -140,6 +140,7 @@ Add a new dated file after meaningful work. Do not rewrite old ones. If the new 
 | `persistent-memory/2026-09-20-0908-cluster-percentil-es.md` | Overnight: cluster `percentil` / `z` are spoken tenths. |
 | `persistent-memory/2026-09-20-0822-control-forecast-series-es.md` | Overnight: control/forecast series keys are `meses` / `valores` / `mes`. |
 | `persistent-memory/2026-09-20-0825-payload-mes.md` | Overnight: score/alert as-of field is `mes`, not `month`. |
+| `persistent-memory/2026-09-20-0828-catalog-series-keys.md` | Overnight: tools catalog names `meses`/`valores` and `puntos[].mes`. |
 | `persistent-memory/2026-09-20-0115-thinking-no-verbose.md` | Brain on: drop the length cap. Do not ask for a longer reply. |
 | `persistent-memory/2026-09-20-0120-thinking-max-exa.md` | Exa + `max` superseded. |
 | `persistent-memory/2026-09-20-0130-drop-exa.md` | No Exa. No `search_web`. No `EXA_API_KEY`. |

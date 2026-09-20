@@ -814,4 +814,8 @@ Keep vs main. Control/forecast series in Spanish (`meses` / `valores` / `mes`). 
 
 Keep vs main. Payload as-of field is `mes`. Input `month` unchanged. Suite 6/6/5/6/6.
 
+## Tick 92 — 2026-09-20 08:28 +02
+
+Keep vs main. Catalog names the spoken control/forecast keys. Suite 6/6/5/6/6.
+
 Do not merge. Past min 4h; loop until 08:55.
