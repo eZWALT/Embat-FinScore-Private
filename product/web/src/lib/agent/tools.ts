@@ -291,7 +291,7 @@ function slimAlert(alert: Alert) {
   const flagged = alert.persistence?.months_flagged;
   return {
     entity: entityLabel(alert.entity.id),
-    month: speakMonth(alert.month),
+    month: speakMonth(alert.month, true),
     title: alert.title,
     reasons: (alert.reasons ?? []).map((reason) => slimReason(reason)).slice(0, 2),
     owner: speakOwner(alert.owner),

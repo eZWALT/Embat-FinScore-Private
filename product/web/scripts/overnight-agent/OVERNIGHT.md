@@ -614,4 +614,8 @@ Keep vs main sample suite (`--ignore-latency`).
 
 What landed: follow-up chips mention dueño only after `get_alerts`; PRODUCT intro is two sentences.
 
+## Tick 55 — 2026-09-20 06:58 +02
+
+Keep vs main sample suite (`--ignore-latency`). Alert months are long Spanish. Period 636 chars.
+
 Do not merge. Past min 4h; loop until 08:55.
