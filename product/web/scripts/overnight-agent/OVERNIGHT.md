@@ -722,4 +722,8 @@ Keep vs main. `explain_change` deltas speak Spanish labels. Production main stil
 
 Keep vs main. Tool schemas describe Empresa/Grupo. Period calls `get_company({ company_id: "Empresa 0011" })`.
 
+## Tick 69 — 2026-09-20 08:02 +02
+
+Keep vs main. WORDING + bench: do not round 72,6 to 73. why-change cites 72,6 / 81,1.
+
 Do not merge. Past min 4h; loop until 08:55.

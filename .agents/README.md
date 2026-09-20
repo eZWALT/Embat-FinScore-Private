@@ -117,6 +117,7 @@ Add a new dated file after meaningful work. Do not rewrite old ones. If the new 
 | `persistent-memory/2026-09-20-0745-followups-no-owner-without-alerts.md` | Overnight: follow-up owner chips only after `get_alerts`. |
 | `persistent-memory/2026-09-20-0752-spanish-item-deltas.md` | Overnight: explain_change deltas use Spanish item labels. |
 | `persistent-memory/2026-09-20-0758-tool-schema-empresa-labels.md` | Overnight: tool schemas take Empresa/Grupo, not `COMP_*`. |
+| `persistent-memory/2026-09-20-0802-cite-score-tenth.md` | Overnight: cite `72,6`, never round to `73`. |
 | `persistent-memory/2026-09-20-0115-thinking-no-verbose.md` | Brain on: drop the length cap. Do not ask for a longer reply. |
 | `persistent-memory/2026-09-20-0120-thinking-max-exa.md` | Exa + `max` superseded. |
 | `persistent-memory/2026-09-20-0130-drop-exa.md` | No Exa. No `search_web`. No `EXA_API_KEY`. |

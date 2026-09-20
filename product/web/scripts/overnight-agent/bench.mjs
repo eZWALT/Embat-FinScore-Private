@@ -125,6 +125,10 @@ function methodCoda(text) {
   return /explicable y monitorable|se ha alejado de su normalidad|baja como máximo 10 puntos/i.test(text ?? "");
 }
 
+function roundedScore(text) {
+  return /limitada a 73\b|índice (?:de |en )?\*?\*?73\*?\*?\b|queda (?:en|a) 73\b/i.test(text ?? "");
+}
+
 function bareCompanyNumber(text) {
   return /(?<!Empresa )(?<!Grupo )\b0\d{3}\b/.test(text ?? "") || /la de \d+ puntos/i.test(text ?? "");
 }
@@ -165,6 +169,7 @@ function scoreCase(run, id) {
     describes_offtopic: describesOfftopic(text, id),
     signed_eur: signedEur(text),
     method_coda: methodCoda(text),
+    rounded_score: roundedScore(text),
     ttft_ms: run.ttft_ms,
     total_ms: run.total_ms,
   };
@@ -188,6 +193,7 @@ function caseQuality(metrics, id, text = "") {
   if (metrics.bare_id) q -= 1;
   if (metrics.signed_eur) q -= 1;
   if (metrics.method_coda) q -= 1;
+  if (metrics.rounded_score) q -= 1;
   if (id === "period-4") {
     if (/tres de las cuatro.{0,48}(caen por|empresas caen por).{0,40}hundid/i.test(text)) q -= 2;
     if (/tres empresas que caen.{0,100}hundid/i.test(text)) q -= 2;
