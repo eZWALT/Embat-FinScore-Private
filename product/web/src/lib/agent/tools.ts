@@ -474,7 +474,6 @@ function createGetCompany(session?: ToolSession) {
         const detail = await repo().getCompany(company_id);
         const rec = monthRecord(detail, month);
         if ("error" in rec) return rec;
-        const extras = await loadScoreExtras(company_id, rec.month);
         const currency = detail.currency ?? "EUR";
         const reasons = (rec.reasons ?? []).map((reason) => slimReason(reason, currency));
         const change = (rec.change_reasons ?? []).map((reason) => slimReason(reason, currency));
@@ -484,7 +483,6 @@ function createGetCompany(session?: ToolSession) {
           currency: detail.currency,
           month: speakMonth(rec.month, true),
           score: speakScore(rec.score),
-          score_pre_cap: speakScore(rec.score_pre_cap),
           guard: speakGuard(rec.guard),
           trajectory: speakTrajectory(rec.trajectory),
           confidence: speakConfidence(rec.confidence),
@@ -494,10 +492,10 @@ function createGetCompany(session?: ToolSession) {
           change_reasons: change,
           score_history: scoreHistory(detail.months, rec.month, historySpan, currency),
         };
-        if (extras?.slope3 != null) payload.slope3 = extras.slope3;
-        if (extras?.slope6 != null) payload.slope6 = extras.slope6;
+        if (rec.guard && rec.score_pre_cap != null) payload.score_pre_cap = speakScore(rec.score_pre_cap);
         if ((rec.trail_months ?? 24) < 12) payload.trail_months = rec.trail_months;
         if (!reasons.length) {
+          const extras = await loadScoreExtras(company_id, rec.month);
           payload.items = extras?.items ? slimItems(extras.items) : itemsFromMonth(rec);
         }
         return payload;

@@ -349,3 +349,17 @@ What landed: SESSION months and focus labels in Spanish. Rápido empty → pick-
 ## Tick 21 — 2026-09-20 05:10 +02
 
 Keep. One company on the Rápido chart now opens «¿Por qué este índice este mes?» / «¿Qué alertas hay?».
+
+## Tick 22 — 2026-09-20 05:07 +02
+
+Keep vs main sample suite (`--ignore-latency`).
+
+| Case | main tools / q / s | tick 22 tools / q / s |
+|---|---|---|
+| why-score | 1 / 6 / 8.7 | 1 / 6 / 5.2 |
+| alerts | 2 / 6 / 11.0 | **1 / 6** / 7.0 |
+| refuse | 0 / 5 / 2.4 | 0 / 5 / 2.3 |
+| period-4 | 11 / 2 / 17.0 | **4 / 6** / 9.4 |
+| why-change | 2 / 6 / 8.7 | 1 / 6 / 7.2 |
+
+What landed: no extras query when `reasons` exist; `score_pre_cap` only with a tope; no raw slopes.
