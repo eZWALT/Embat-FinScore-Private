@@ -786,4 +786,8 @@ Keep vs main. `explain_change` deltas spoken. Suite still 6/6/5/6/6.
 
 Keep vs main. Sentences rewrite límite/salvaguarda → tope. Gravity without «severidad». Bench extra `limite_calque`. Suite 6/6/5/6/6; vs-main deltas bigger because main still says salvaguarda.
 
+## Tick 85 — 2026-09-20 08:50 +02
+
+Keep vs main. List/group member keys in Spanish. Live refuse = plantilla. Suite still 6/6/5/6/6.
+
 Do not merge. Past min 4h; loop until 08:55.

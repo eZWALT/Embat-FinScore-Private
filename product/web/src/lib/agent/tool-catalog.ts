@@ -84,7 +84,7 @@ export function toolOutputSummary(name: string, output: unknown): string {
             : null,
         row.month,
         row.score != null ? `índice ${row.score}` : null,
-        row.trajectory,
+        row.trayectoria ?? row.trajectory,
       ]
         .filter(Boolean)
         .join(" · ");

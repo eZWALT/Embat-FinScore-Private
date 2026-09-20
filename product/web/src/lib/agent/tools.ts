@@ -474,12 +474,12 @@ const list_companies = tool({
           empresa: entityLabel(company.company_id),
           grupo: company.group_id ? entityLabel(company.group_id) : undefined,
           score: speakScore(company.score),
-          trajectory: speakTrajectory(company.trajectory),
-          confidence: speakConfidence(company.confidence),
+          trayectoria: speakTrajectory(company.trajectory),
+          confianza: speakConfidence(company.confidence),
           guard: speakGuard(company.guard),
           delta_3m: speakDelta(company.delta_3m),
-          n_alerts: company.n_alerts,
-          max_alert_severity: speakSeverity(company.max_alert_severity),
+          n_alertas: company.n_alerts,
+          gravedad: speakSeverity(company.max_alert_severity),
         }));
       return { as_of: speakMonth(manifest.as_of_month, true), companies: rows };
     } catch (error) {
@@ -618,18 +618,18 @@ const get_group = tool({
         .map((row) => ({
           empresa: entityLabel(row.company_id),
           score: speakScore(row.score),
-          trajectory: speakTrajectory(row.trajectory),
-          confidence: speakConfidence(row.confidence),
+          trayectoria: speakTrajectory(row.trajectory),
+          confianza: speakConfidence(row.confidence),
           guard: speakGuard(row.guard),
           delta_3m: speakDelta(row.delta_3m),
-          n_alerts: row.n_alerts,
+          n_alertas: row.n_alerts,
         }));
       const hist = manifest.months
         .map((month, index) => ({
           month: speakMonth(month),
-          mean_score: speakScore(group.mean_scores[index] ?? null),
+          media: speakScore(group.mean_scores[index] ?? null),
         }))
-        .filter((row) => row.mean_score != null);
+        .filter((row) => row.media != null);
       return {
         grupo: entityLabel(id),
         n_empresas: group.n_companies,
