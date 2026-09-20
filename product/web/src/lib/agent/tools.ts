@@ -198,10 +198,56 @@ function itemsFromMonth(rec: MonthRecord): Record<string, ItemRow> {
   return slimItems(raw);
 }
 
-function slimEvidence(evidence: Alert["evidence"]) {
-  const out: Record<string, string | number | boolean | null> = {};
+const EVIDENCE_KEYS: Record<string, string> = {
+  baseline: "habitual",
+  category: "categoría",
+  category_score: "puntos_categoría",
+  chart: "gráfico",
+  counterparty_id: "contrapartida",
+  gap_points: "brecha_pts",
+  last_quarter_amount: "facturado_trimestre",
+  mean_score: "media",
+  members_moving_most: "miembros",
+  months_billed_of_last_3: "meses_facturados_de_3",
+  months_quiet: "meses_en_silencio",
+  n_companies: "n_empresas",
+  open_receivable_eur: "pendiente_cobro",
+  outside_funnel_vs_other_groups: "fuera_embudo",
+  recency_days: "días",
+  score: "índice",
+  score_pre_cap: "sin_tope",
+  share_last_quarter: "cuota_trimestre",
+};
+
+const EVIDENCE_MONEY = new Set(["last_quarter_amount", "open_receivable_eur"]);
+const EVIDENCE_PCT = new Set(["share_last_quarter"]);
+const EVIDENCE_SCORE = new Set(["score", "score_pre_cap", "baseline", "mean_score", "category_score", "gap_points"]);
+const CHART_LABELS: Record<string, string> = {
+  own_history: "vs su histórico",
+  cluster: "vs pares",
+  group_own_history: "grupo vs su histórico",
+  group_vs_groups: "grupo vs otros grupos",
+};
+
+function slimEvidence(evidence: Alert["evidence"], currency: string | null = "EUR") {
+  const out: Record<string, string | number | boolean> = {};
   for (const [key, value] of Object.entries(evidence ?? {})) {
-    out[key] = typeof value === "string" ? relabelEntities(value) : value;
+    if (value == null) continue;
+    const name = EVIDENCE_KEYS[key] ?? key;
+    if (typeof value === "string") {
+      if (key === "category") out[name] = CATEGORY_LABELS[value as CategoryId] ?? value;
+      else if (key === "chart") out[name] = CHART_LABELS[value] ?? value;
+      else out[name] = relabelEntities(value);
+      continue;
+    }
+    if (typeof value === "number") {
+      if (EVIDENCE_MONEY.has(key)) out[name] = formatMoney(value, currency);
+      else if (EVIDENCE_PCT.has(key)) out[name] = `${formatDecimal(value * 100, 0)} %`;
+      else if (EVIDENCE_SCORE.has(key)) out[name] = formatDecimal(value, 1);
+      else out[name] = value;
+      continue;
+    }
+    if (typeof value === "boolean") out[name] = value;
   }
   return out;
 }
@@ -215,8 +261,8 @@ function slimCategories(categories: MonthRecord["categories"]) {
 }
 
 function slimAlert(alert: Alert) {
+  const flagged = alert.persistence?.months_flagged;
   return {
-    alert_id: alert.alert_id,
     entity: entityLabel(alert.entity.id),
     month: speakMonth(alert.month),
     title: alert.title,
@@ -225,7 +271,7 @@ function slimAlert(alert: Alert) {
     owner: speakOwner(alert.owner),
     severity: speakSeverity(alert.severity),
     action: alert.action,
-    persistence: alert.persistence,
+    persistence: flagged != null ? `${flagged} de los últimos 4 meses` : alert.persistence?.rule,
     evidence: slimEvidence(alert.evidence),
   };
 }

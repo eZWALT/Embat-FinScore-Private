@@ -65,6 +65,7 @@ Add a new dated file after meaningful work. Do not rewrite old ones. If the new 
 | `persistent-memory/2026-09-20-0434-slim-chat-role.md` | Overnight: Pregunta ROLE is procedure only; no «tus salidas». |
 | `persistent-memory/2026-09-20-0451-javi-money-reasons.md` | Overnight: reason `eur` is Javi money; never `.map(slimReason)` (index ≠ currency). |
 | `persistent-memory/2026-09-20-0454-spanish-month-score.md` | Overnight: tool months/scores are `agosto 2026` / `88,5`; `parseMonth` accepts both. |
+| `persistent-memory/2026-09-20-0455-spanish-alert-evidence.md` | Overnight: alert evidence in Spanish; no `alert_id`; persistence is `N de 4`. |
 | `persistent-memory/2026-09-20-0115-thinking-no-verbose.md` | Brain on: drop the length cap. Do not ask for a longer reply. |
 | `persistent-memory/2026-09-20-0120-thinking-max-exa.md` | Exa + `max` superseded. |
 | `persistent-memory/2026-09-20-0130-drop-exa.md` | No Exa. No `search_web`. No `EXA_API_KEY`. |

@@ -275,3 +275,17 @@ Keep vs main sample suite (`--ignore-latency`).
 | why-change | 2 / 6 / 8.7 | 1 / 6 / 7.1 |
 
 What landed: `speakMonth` / `speakScore` / `speakDelta`; `parseMonth` for echoed labels; quotes append ` · 34 k€`.
+
+## Tick 16 — 2026-09-20 04:55 +02
+
+Keep vs main sample suite (`--ignore-latency`).
+
+| Case | main tools / q / s | tick 16 tools / q / s |
+|---|---|---|
+| why-score | 1 / 6 / 8.7 | 1 / 6 / 5.4 (606 chars) |
+| alerts | 2 / 6 / 11.0 | **1 / 6** / 8.8 (Javi action quotes) |
+| refuse | 0 / 5 / 2.4 | 0 / 5 / 2.2 |
+| period-4 | 11 / 2 / 17.0 | **4 / 6** / 12.8 |
+| why-change | 2 / 6 / 8.7 | 1 / 6 / 8.3 |
+
+What landed: Spanish evidence keys; drop `alert_id`; persistence `N de los últimos 4 meses`.
