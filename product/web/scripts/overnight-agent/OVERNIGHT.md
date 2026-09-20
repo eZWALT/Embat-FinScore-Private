@@ -417,3 +417,11 @@ Keep vs main sample suite (`--ignore-latency`).
 What landed: slimmer on-demand monitor; period tope only on companies that bring `guard`; dueño/acción only after `get_alerts` (why-score / why-change no longer invent Tesorero). First bench said «tres… tope» — 0651 is cobros; second dropped the alert-only qualifier and invented a dueño on the índice; third keep is clean.
 
 Leftover: period lead still writes bare `0651` / `0030`. Do not merge.
+
+## Tick 33 — 2026-09-20 05:32 +02
+
+Keep vs main sample suite (`--ignore-latency`). New scorer (invented dueño / leaked token / bare id) recomputed on both sides: period-4 d_quality +6.
+
+What landed: tool payloads say Empresa/Grupo; period history is the dragged months + 1 (not 18); «Empresa 0651», never «la de 65 puntos». First bench paraphrased 0651 as 65 puntos — discarded that lead.
+
+Do not merge.

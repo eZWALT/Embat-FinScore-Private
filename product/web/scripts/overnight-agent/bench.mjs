@@ -102,7 +102,21 @@ function entityOf(name, input) {
   return String(input.company_id || input.entity_id || input.group_id || "");
 }
 
-function scoreCase(run) {
+function inventedOwner(text, tools, id) {
+  if (id === "alerts" || id === "refuse") return false;
+  if ((tools ?? []).some((tool) => tool.name === "get_alerts")) return false;
+  return /\b(Tesorero|CFO|Cobros)\b/.test(text ?? "");
+}
+
+function leakedTokens(text) {
+  return /\b(fading|dark|COMP_\d{4}|GROUP_\d{4}|out_vol|fc_ratio|score_pre_cap)\b/i.test(text ?? "");
+}
+
+function bareCompanyNumber(text) {
+  return /(?<!Empresa )(?<!Grupo )\b0\d{3}\b/.test(text ?? "") || /la de \d+ puntos/i.test(text ?? "");
+}
+
+function scoreCase(run, id) {
   const tools = run.tools ?? [];
   const text = (run.text ?? "").trim();
   const keys = tools.map((t) => `${t.name}:${entityOf(t.name, t.input) || "_"}`);
@@ -132,6 +146,9 @@ function scoreCase(run) {
     english_heavy: englishHeavy,
     offers_next: offersNext,
     refused,
+    invented_owner: inventedOwner(text, tools, id),
+    leaked_token: leakedTokens(text),
+    bare_id: bareCompanyNumber(text),
     ttft_ms: run.ttft_ms,
     total_ms: run.total_ms,
   };
@@ -149,11 +166,19 @@ function caseQuality(metrics, id) {
   if (metrics.empty_after_tools) q -= 5;
   if (metrics.english_heavy) q -= 2;
   if (metrics.offers_next) q -= 1;
+  if (metrics.invented_owner) q -= 2;
+  if (metrics.leaked_token) q -= 2;
+  if (metrics.bare_id) q -= 1;
   if (metrics.entity_dups === 0) q += 1;
   if (metrics.month_fanout === 0) q += 1;
   if (metrics.tool_count > 0 && metrics.tool_count <= 6) q += 1;
   if (metrics.tool_count > 8) q -= 2;
   return q;
+}
+
+function qualityOf(run, id) {
+  const metrics = scoreCase({ ...run, tools: run.tools ?? [], text: run.text ?? "", ttft_ms: run.metrics?.ttft_ms, total_ms: run.metrics?.total_ms }, id);
+  return caseQuality({ ...run.metrics, ...metrics }, id);
 }
 
 async function consumeAsk(base, body, timeoutMs = 110_000) {
@@ -230,11 +255,15 @@ function compare(baseline, candidate) {
     const a = baseline.cases[id];
     const b = candidate.cases[id];
     if (!a || !b) continue;
-    const dq = (b.quality ?? 0) - (a.quality ?? 0);
+    const aq = qualityOf(a, id);
+    const bq = qualityOf(b, id);
+    const dq = bq - aq;
     const dt = (b.metrics.total_ms ?? 0) - (a.metrics.total_ms ?? 0);
     const emptyWorse = b.metrics.empty_after_tools && !a.metrics.empty_after_tools;
     const groundWorse = b.metrics.english_heavy && !a.metrics.english_heavy;
-    if (emptyWorse || groundWorse || dq <= -2) {
+    const ownerWorse = b.metrics.invented_owner && !inventedOwner(a.text, a.tools, id);
+    const leakWorse = leakedTokens(b.text) && !leakedTokens(a.text);
+    if (emptyWorse || groundWorse || ownerWorse || leakWorse || dq <= -2) {
       keep = false;
       reasons.push(`${id}: worse quality/grounding`);
     }
@@ -279,7 +308,7 @@ async function main() {
         asOf: c.asOf,
         thinking: false,
       });
-      const metrics = scoreCase(run);
+      const metrics = scoreCase(run, c.id);
       pack.cases[c.id] = {
         metrics,
         quality: caseQuality(metrics, c.id),

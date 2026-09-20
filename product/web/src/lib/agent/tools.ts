@@ -116,6 +116,27 @@ function monthKey(month: string | null | undefined): string | null {
   return parseMonth(month);
 }
 
+function asCompanyId(raw: string): string {
+  const token = raw.match(/COMP_(\d{1,4})/i);
+  if (token) return `COMP_${token[1].padStart(4, "0")}`;
+  const empresa = raw.match(/^(?:Empresa\s+)?(\d{1,4})$/i);
+  if (empresa) return `COMP_${empresa[1].padStart(4, "0")}`;
+  return raw;
+}
+
+function asGroupId(raw: string): string {
+  const token = raw.match(/GROUP_(\d{1,4})/i);
+  if (token) return `GROUP_${token[1].padStart(4, "0")}`;
+  const grupo = raw.match(/^(?:Grupo\s+)?(\d{1,4})$/i);
+  if (grupo) return `GROUP_${grupo[1].padStart(4, "0")}`;
+  return raw;
+}
+
+function asEntityId(raw: string): string {
+  if (/GROUP_|Grupo\s/i.test(raw)) return asGroupId(raw);
+  return asCompanyId(raw);
+}
+
 function speakGuard(guard: string | null | undefined): string | undefined {
   if (guard === "dark") return "sin movimientos (tope 30)";
   if (guard === "fading") return "entradas hundidas (tope 50)";
@@ -461,25 +482,26 @@ const list_companies = tool({
 });
 
 function createGetCompany(session?: ToolSession) {
-  const historySpan = session?.period ? 18 : 4;
+  const historySpan = session?.historySpan ?? (session?.period ? 6 : 4);
   return tool({
     description:
-      "Índice, trayectoria, tope, confianza, categorías, reasons y change_reasons de UNA empresa. score_history trae reasons en el mes pedido, los 3 últimos y los que se movieron ≥2 pts. En un periodo el historial cubre 18 meses; si no, los 4 últimos. No pases month salvo un mes concreto. No llames explain_change si ya hay change_reasons. Sin clúster (usa compare_with_cluster).",
+      "Índice, trayectoria, tope, confianza, categorías, reasons y change_reasons de UNA empresa. score_history trae reasons en el mes pedido, los 3 últimos y los que se movieron ≥2 pts. En un periodo el historial cubre el tramo + 1 mes (máx. 12); si no, los 4 últimos. No pases month salvo un mes concreto. No llames explain_change si ya hay change_reasons. Sin clúster (usa compare_with_cluster).",
     inputSchema: z.object({
-      company_id: z.string().describe("COMP_xxxx"),
+      company_id: z.string().describe("COMP_xxxx o Empresa 0030"),
       month: z.string().optional().describe("YYYY-MM; omite salvo un mes concreto"),
     }),
     execute: async ({ company_id, month }) => {
       try {
-        const detail = await repo().getCompany(company_id);
+        const id = asCompanyId(company_id);
+        const detail = await repo().getCompany(id);
         const rec = monthRecord(detail, month);
         if ("error" in rec) return rec;
         const currency = detail.currency ?? "EUR";
         const reasons = (rec.reasons ?? []).map((reason) => slimReason(reason, currency));
         const change = (rec.change_reasons ?? []).map((reason) => slimReason(reason, currency));
         const payload: Json = {
-          company_id: detail.company_id,
-          group_id: detail.group_id,
+          empresa: entityLabel(detail.company_id),
+          grupo: detail.group_id ? entityLabel(detail.group_id) : undefined,
           currency: detail.currency,
           month: speakMonth(rec.month, true),
           score: speakScore(rec.score),
@@ -495,7 +517,7 @@ function createGetCompany(session?: ToolSession) {
         if (rec.guard && rec.score_pre_cap != null) payload.score_pre_cap = speakScore(rec.score_pre_cap);
         if ((rec.trail_months ?? 24) < 12) payload.trail_months = rec.trail_months;
         if (!reasons.length) {
-          const extras = await loadScoreExtras(company_id, rec.month);
+          const extras = await loadScoreExtras(id, rec.month);
           payload.items = extras?.items ? slimItems(extras.items) : itemsFromMonth(rec);
         }
         return payload;
@@ -513,9 +535,10 @@ const explain_change = tool({
     company_id: z.string().describe("COMP_xxxx"),
     month: z.string().optional().describe("YYYY-MM, default latest"),
   }),
-  execute: async ({ company_id, month }) => {
-    try {
-      const detail = await repo().getCompany(company_id);
+    execute: async ({ company_id, month }) => {
+      try {
+        const id = asCompanyId(company_id);
+        const detail = await repo().getCompany(id);
       const months = detail.months;
       if (!months.length) return { error: "sin mes puntuado" };
       let idx = months.length - 1;
@@ -527,7 +550,7 @@ const explain_change = tool({
       if (idx === 0) return { error: "primer mes puntuado, no hay anterior" };
       const cur = months[idx];
       const prev = months[idx - 1];
-      const extras = await loadScoreExtras(company_id, cur.month);
+      const extras = await loadScoreExtras(id, cur.month);
       const itemSource = extras?.items ?? itemsFromMonth(cur);
       const deltas = Object.fromEntries(
         Object.entries(itemSource)
@@ -536,7 +559,7 @@ const explain_change = tool({
           .sort((a, b) => Math.abs(Number(b[1])) - Math.abs(Number(a[1]))),
       );
       return {
-        company_id,
+        empresa: entityLabel(id),
         from: speakMonth(prev.month, true),
         to: speakMonth(cur.month, true),
         score_from: speakScore(prev.score),
@@ -569,13 +592,14 @@ const get_group = tool({
   }),
   execute: async ({ group_id }) => {
     try {
+      const id = asGroupId(group_id);
       const store = repo();
       const [group, companies, manifest] = await Promise.all([
-        findGroup(group_id),
+        findGroup(id),
         store.listCompanies(),
         store.getManifest(),
       ]);
-      if (!group) return { error: `${entityLabel(group_id)} no está en esta corrida` };
+      if (!group) return { error: `${entityLabel(id)} no está en esta corrida` };
       const byId = new Map(companies.map((company) => [company.company_id, company]));
       const members = group.company_ids
         .map((id) => byId.get(id))
@@ -597,7 +621,7 @@ const get_group = tool({
         }))
         .filter((row) => row.mean_score != null);
       return {
-        group_id,
+        grupo: entityLabel(id),
         n_companies: group.n_companies,
         latest_mean_score: speakScore(group.latest_mean_score),
         latest_min_score: speakScore(group.latest_min_score),
@@ -619,6 +643,7 @@ export type ToolSession = {
   named?: string[];
   stats?: boolean;
   period?: boolean;
+  historySpan?: number;
 };
 
 function alertScope(session?: ToolSession): Set<string> {
@@ -646,7 +671,7 @@ function createGetAlerts(session?: ToolSession) {
         const feed = await repo().getAlerts();
         let alerts = feed.alerts;
         const wanted = new Set(scope);
-        if (entity_id) wanted.add(entity_id);
+        if (entity_id) wanted.add(asEntityId(entity_id));
         if (!wanted.size) {
           return {
             error: "sin empresa",
@@ -683,7 +708,8 @@ const get_control_chart = tool({
   }),
   execute: async ({ entity_id, comparison = "own_history", metric = "score" }) => {
     try {
-      const entityType = entity_id.startsWith("GROUP") ? "group" : "company";
+      const id = asEntityId(entity_id);
+      const entityType = id.startsWith("GROUP") ? "group" : "company";
       const charts = await neonQuery<{
         comparison: string;
         metric: string;
@@ -703,7 +729,7 @@ const get_control_chart = tool({
          FROM analytics.control_charts c
          JOIN api.current_run r ON r.run_id = c.run_id
          WHERE c.entity_type = $1 AND c.entity_id = $2`,
-        [entityType, entity_id],
+        [entityType, id],
       );
       if (!charts.length) {
         return {
@@ -754,15 +780,16 @@ const compare_with_cluster = tool({
   }),
   execute: async ({ company_id }) => {
     try {
+      const id = asCompanyId(company_id);
       const [cluster, qualityNote] = await Promise.all([
-        loadCompanyCluster(company_id),
+        loadCompanyCluster(id),
         loadClusterQualityNote(),
       ]);
       if (!cluster) {
         return { error: "cluster not loaded (trail under 6 months, or analytics.company_cluster empty)" };
       }
       return {
-        company_id,
+        empresa: entityLabel(id),
         cluster: cluster.meta,
         quality_note: qualityNote,
         month: speakMonth(cluster.month, true),
@@ -782,6 +809,7 @@ const get_forecast = tool({
   }),
   execute: async ({ company_id }) => {
     try {
+      const id = asCompanyId(company_id);
       const forecasts = await neonQuery<{
         metric: string;
         method: string;
@@ -796,7 +824,7 @@ const get_forecast = tool({
          FROM analytics.forecasts f
          JOIN api.current_run r ON r.run_id = f.run_id
          WHERE f.company_id = $1`,
-        [company_id],
+        [id],
       );
       const forecast = forecasts[0];
       if (!forecast) {
@@ -877,7 +905,12 @@ const plot_series = tool({
     metric: z.enum(["score", "payment_history", "amounts_owed", "stability"]).optional(),
   }),
   execute: async (input) => {
-    const plot = await buildCatalogPlot(input);
+    const plot = await buildCatalogPlot({
+      ...input,
+      company_id: input.company_id ? asCompanyId(input.company_id) : input.company_id,
+      group_id: input.group_id ? asGroupId(input.group_id) : input.group_id,
+      company_ids: input.company_ids?.map(asCompanyId),
+    });
     if ("error" in plot) return plot;
     return { ok: true, title: plot.title, points: plot.x.length, kind: input.kind, plot };
   },

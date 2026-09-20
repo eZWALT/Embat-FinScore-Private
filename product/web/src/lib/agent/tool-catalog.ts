@@ -77,7 +77,11 @@ export function toolOutputSummary(name: string, output: unknown): string {
   switch (name) {
     case "get_company":
       return [
-        typeof row.company_id === "string" ? entityLabel(row.company_id) : null,
+        typeof row.empresa === "string"
+          ? row.empresa
+          : typeof row.company_id === "string"
+            ? entityLabel(row.company_id)
+            : null,
         row.month,
         row.score != null ? `índice ${row.score}` : null,
         row.trajectory,
@@ -85,7 +89,11 @@ export function toolOutputSummary(name: string, output: unknown): string {
         .filter(Boolean)
         .join(" · ");
     case "explain_change":
-      return [row.company_id, row.from && row.to ? `${row.from} → ${row.to}` : null, row.change != null ? `${row.change} pts` : null]
+      return [
+        typeof row.empresa === "string" ? row.empresa : row.company_id,
+        row.from && row.to ? `${row.from} → ${row.to}` : null,
+        row.change != null ? `${row.change} pts` : null,
+      ]
         .filter(Boolean)
         .join(" · ");
     case "get_alerts": {
@@ -94,7 +102,11 @@ export function toolOutputSummary(name: string, output: unknown): string {
       return `${n} alertas${scoped}`;
     }
     case "get_group":
-      return [row.group_id, row.n_companies != null ? `${row.n_companies} empresas` : null, row.latest_mean_score != null ? `media ${row.latest_mean_score}` : null]
+      return [
+        typeof row.grupo === "string" ? row.grupo : row.group_id,
+        row.n_companies != null ? `${row.n_companies} empresas` : null,
+        row.latest_mean_score != null ? `media ${row.latest_mean_score}` : null,
+      ]
         .filter(Boolean)
         .join(" · ");
     case "list_companies":

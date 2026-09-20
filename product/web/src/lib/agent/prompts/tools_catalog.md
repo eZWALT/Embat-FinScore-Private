@@ -18,7 +18,7 @@ Si una herramienta devuelve `{error}`, dilo y **para**. No encadenes `list_compa
 
 **Cuándo:** por qué el índice es X, trayectoria, motivos con €, ítems, historial.
 **Entrada:** `company_id` (COMP_xxxx), `month?` (omite salvo un mes concreto).
-**Salida:** `month` y `score` ya en español (`agosto 2026`, `88,5`), tope, trayectoria, confianza + nota, categorías, `reasons` (`sentence` + `eur` tipo `34 k€`), `change_reasons` si hubo movimiento, `score_history`. `score_pre_cap` solo si hay tope. `items` solo si no hay `reasons`. Cita `sentence` y `eur` tal cual. Sin clúster. Alertas: `get_alerts`.
+**Salida:** `empresa` / `grupo` (Empresa 0030), `month` y `score` ya en español (`agosto 2026`, `88,5`), tope, trayectoria, confianza + nota, categorías, `reasons` (`sentence` + `eur` tipo `34 k€`), `change_reasons` si hubo movimiento, `score_history` (4 meses; en un periodo el tramo + 1). `score_pre_cap` solo si hay tope. `items` solo si no hay `reasons`. Cita `sentence` y `eur` tal cual. Nunca escribas `COMP_*` ni un `0651` suelto. Sin clúster. Alertas: `get_alerts`.
 **No:** no la uses para listar empresas; no trates `rank_score`. Una vez por empresa. Un periodo = esta llamada, no una por mes.
 
 ## `explain_change`

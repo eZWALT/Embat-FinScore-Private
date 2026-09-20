@@ -1,5 +1,5 @@
 {
-  "at": "2026-09-20T03:23:38.114Z",
+  "at": "2026-09-20T03:30:02.901Z",
   "target": "http://localhost:3010",
   "cases": {
     "why-score": {
@@ -10,12 +10,15 @@
         "month_fanout": 0,
         "has_text": true,
         "empty_after_tools": false,
-        "text_len": 708,
+        "text_len": 492,
         "english_heavy": false,
         "offers_next": false,
         "refused": false,
-        "ttft_ms": 3454,
-        "total_ms": 5520
+        "invented_owner": false,
+        "leaked_token": false,
+        "bare_id": false,
+        "ttft_ms": 94474,
+        "total_ms": 95950
       },
       "quality": 6,
       "tools": [
@@ -26,7 +29,7 @@
           }
         }
       ],
-      "text": "Empresa 0030 cierra **agosto 2026** con un índice de **88,5**, trayectoria estable. Confianza **media**: sin pagos de facturas en la ventana y sin datos de concentración de clientes, así que la comparación con empresas de datos completos no es homogénea.\n\nLo que resta este mes:\n- **Volatilidad de salidas:** las salidas mensuales oscilan un 164 % de su media en 6 meses (desviación típica 34 k€) → −8,5 puntos.\n- **Comisiones:** comisiones e intereses bancarios en el 0,0 % de las entradas de caja de los últimos 5 meses (118 € pagados) → −3,1 puntos.\n\nEl movimiento frente a julio es mínimo: +0,62 puntos, por esas mismas comisiones (118 €). Liquidez y deuda (94,9) y nuevo crédito (100) sostienen la nota."
+      "text": "**Empresa 0030** cierra agosto 2026 en **88,5** (estable, confianza media: sin pagos de facturas en la ventana).\n\n- **Volatilidad de salidas (−8,5 pts):** «Las salidas mensuales oscilan un 164 % de su media en 6 meses (desviación típica 34 k€).»\n- **Comisiones (−3,1 pts):** «Las comisiones e intereses bancarios supusieron el 0,0 % de las entradas de caja en los últimos 5 meses (118 € pagados).»\n\nRespecto a julio (87,8) sube 0,6 pts: las comisiones bajan de 344 € a 118 €. Sin tope activo."
     },
     "alerts": {
       "metrics": {
@@ -36,12 +39,15 @@
         "month_fanout": 0,
         "has_text": true,
         "empty_after_tools": false,
-        "text_len": 884,
+        "text_len": 909,
         "english_heavy": false,
         "offers_next": false,
         "refused": false,
-        "ttft_ms": 5055,
-        "total_ms": 7623
+        "invented_owner": false,
+        "leaked_token": false,
+        "bare_id": false,
+        "ttft_ms": 2954,
+        "total_ms": 5607
       },
       "quality": 6,
       "tools": [
@@ -50,7 +56,7 @@
           "input": {}
         }
       ],
-      "text": "**3 alertas abiertas** (Empresa 0016 y Grupo 0070):\n\n- **Empresa 0016 — se deteriora frente a su propio histórico.** Índice 50 frente a un habitual de 81,3 (−20,4 pts). Actúa el **Tesorero**: confirma que las conexiones bancarias están completas y después contacta con la empresa. Persistencia: 3 de los últimos 4 meses. Origen: las entradas cayeron al 3 % del nivel previo (32 k€ al mes frente a 938 k€), con 108 k€ pagados tarde a proveedores.\n- **Empresa 0016 — liquidez y deuda.** Vigilar, dueño **CFO**: 11 k€ en comisiones e intereses bancarios (0,9 % de las entradas en 5 meses). Acción: comparar condiciones entre bancos y renegociar las más costosas. Persistencia: 4 de los últimos 4 meses.\n- **Grupo 0070 — la media del grupo se deteriora** (63,6 frente a 75,3 habitual). Informativa, dueño **CFO**: revisar los miembros que más caen. Persistencia: 4 de los últimos 4 meses."
+      "text": "Hay **3 alertas** abiertas para Empresa 0016 y Grupo 0070.\n\n- **Empresa 0016 — deterioro de la puntuación (jul 2026, actuar).** Índice 50 frente a un habitual de 81,3. El detonante: las entradas de caja cayeron al 3 % del nivel propio (32 k€/mes frente a 938 k€), lo que limita la puntuación a 50 (sin el límite sería 58). Se mantiene 3 de los últimos 4 meses. **Tesorero**: confirma que las conexiones bancarias están completas y después contacta con la empresa.\n- **Empresa 0016 — Liquidez y deuda (sept 2025, vigilar).** Comisiones e intereses bancarios en el 0,9 % de las entradas (11 k€). **CFO**: compara condiciones entre bancos y renegocia las más costosas.\n- **Grupo 0070 — la puntuación media se deteriora (jun 2026, informativa).** Media 63,6 frente a 75,3 habitual. **CFO**: trata cada miembro con la acción de su propia alerta; los que más han caído son Empresa 0461, Empresa 0626 y Empresa 0131."
     },
     "refuse": {
       "metrics": {
@@ -64,12 +70,15 @@
         "english_heavy": false,
         "offers_next": false,
         "refused": true,
-        "ttft_ms": 1352,
-        "total_ms": 1591
+        "invented_owner": false,
+        "leaked_token": false,
+        "bare_id": false,
+        "ttft_ms": 1545,
+        "total_ms": 1785
       },
       "quality": 5,
       "tools": [],
-      "text": "Eso queda fuera de Health Sentinel. ¿Miramos el índice o las alertas de esta empresa?"
+      "text": "Eso queda fuera de Health Sentinel. ¿Miramos el índice o las alertas de Empresa 0030?"
     },
     "period-4": {
       "metrics": {
@@ -79,12 +88,15 @@
         "month_fanout": 0,
         "has_text": true,
         "empty_after_tools": false,
-        "text_len": 1399,
+        "text_len": 1089,
         "english_heavy": false,
         "offers_next": false,
         "refused": false,
-        "ttft_ms": 5279,
-        "total_ms": 9939
+        "invented_owner": false,
+        "leaked_token": false,
+        "bare_id": false,
+        "ttft_ms": 6000,
+        "total_ms": 9454
       },
       "quality": 6,
       "tools": [
@@ -113,7 +125,7 @@
           }
         }
       ],
-      "text": "En junio–agosto el deterioro se concentra en dos empresas con entradas de caja hundidas; 0651 ya venía de un declive de pagos y cobros, y 0030 no se movió.\n\n- **Empresa 0011 — 73 → 72,6 (bache), con tope por entradas hundidas (sin el tope sería 81,1).** Las entradas de caja se hundieron hasta el 6 % del nivel anterior de la propia empresa (31 k€ al mes frente a 566 k€), −8,55 pts y 535 k€; la caja cubrió 0,1 meses de salidas (42 k€) y las salidas oscilan un 198 % de su media (572 k€).\n- **Empresa 0176 — 59,4 (bache), con tope por entradas hundidas (sin el tope sería 81,6).** Las entradas se hundieron al 0 % del nivel anterior (0 € al mes frente a 37 k€), −9,2 pts y 37 k€; entró dinero en 2 de los últimos 6 meses y las comisiones e intereses suponen el 35,7 % de las entradas (104 €).\n- **Empresa 0651 — 33 (deteriorando), confianza alta y sin tope.** Se pagó a proveedores 64 días después del vencimiento (18 k€), el 100 % de los pagos pendientes llevaba más de 30 días vencido (75 k€) y el 100 % de los cobros pendientes también (1,0 M€), con los clientes pagando 27 días tarde (223 k€); la caja es negativa (−1,2 k€).\n- **Empresa 0030 — 88,5 (estable), confianza media por «sin pagos de facturas en la ventana».** Sin movimiento relevante: las salidas mensuales oscilan un 164 % de su media en 6 meses (34 k€) y las comisiones e intereses apenas suponen el 0,0 % de las entradas (118 €)."
+      "text": "En el periodo las dos caídas fuertes vienen de entradas de caja hundidas, no de impagos; las otras dos se mueven por retrasos de cobro y pago.\n\n- **Empresa 0011** (72,6, desde 82,6): con tope por entradas hundidas —sin el tope sería 81,1—. Las entradas cayeron al 6 % de su nivel anterior (31 k€ al mes frente a 566 k€; −8,5 pts, 535 k€) y la caja cubre 0,1 meses de salidas. Confianza media.\n- **Empresa 0176** (59,4, desde 69,4): también con tope por entradas hundidas —sin el tope sería 81,6—. Las entradas bajaron al 0 % (0 € al mes frente a 37 k€; −9,2 pts, 37 k€) y solo entró dinero en 2 de los últimos 6 meses. Confianza media.\n- **Empresa 0651** (33, desde 35): sin tope, deteriorando con confianza alta. Se pagó a proveedores 64 días tras el vencimiento (18 k€), el 100 % de los cobros pendientes de clientes llevaba más de 30 días vencido (1,0 M€) y los clientes pagaron 27 días tarde (223 k€).\n- **Empresa 0030** (88,5, desde 87,8): estable. Confianza media, sin pagos de facturas en la ventana. Lo que resta son las salidas mensuales, que oscilan un 164 % de su media (34 k€)."
     },
     "why-change": {
       "metrics": {
@@ -123,12 +135,15 @@
         "month_fanout": 0,
         "has_text": true,
         "empty_after_tools": false,
-        "text_len": 743,
+        "text_len": 730,
         "english_heavy": false,
         "offers_next": false,
         "refused": false,
-        "ttft_ms": 3201,
-        "total_ms": 5507
+        "invented_owner": false,
+        "leaked_token": false,
+        "bare_id": false,
+        "ttft_ms": 3972,
+        "total_ms": 6278
       },
       "quality": 6,
       "tools": [
@@ -139,7 +154,7 @@
           }
         }
       ],
-      "text": "**Empresa 0011** baja de **82,6** a **72,6** en **agosto 2026** (trayectoria: bache). Ojo: hay **tope por entradas hundidas**: las entradas están en el 6 % de su nivel anterior (31 k€ al mes frente a 566 k€), la puntuación se limita a 73 y **sin el tope sería 81,1**.\n\nEsa caída de 10 puntos es justamente el tope (baja como máximo 10 al mes hacia 50) — el motivo principal son **535 k€** de entradas hundidas. Le siguen **847 €** de cobros vencidos: el 25 % de los pendientes de clientes llevaba más de 30 días.\n\nDe fondo, la liquidez aprieta: la caja cubre 0,1 meses de salidas (**42 k€** frente a 288 k€ de salidas al mes) y las salidas oscilan un 198 % de su media (**572 k€**). Confianza **media**, condicionada por las entradas hundidas."
+      "text": "**Empresa 0011** cae de 82,6 en julio a **72,6 en agosto 2026**, con tope por entradas hundidas (sin el tope sería 81,1) y trayectoria en bache.\n\n- El hundimiento de las entradas explica la bajada: **535 k€**, 31 k€ al mes frente a 566 k€ del nivel propio anterior (6 %).\n- Los cobros vencidos añaden **847 €**: el 25 % de lo pendiente de clientes llevaba más de 30 días pasados.\n- Presionan también la caja, que cubre 0,1 meses de salidas (**42 k€** frente a 288 k€ mensuales), y la volatilidad de salidas (**572 k€** de desviación, 198 % de su media).\n\nLa confianza es media (entradas hundidas limitan la puntuación): sin la salvaguarda la puntuación sería 81,1, así que parte de la caída es el tope, no el deterioro subyacente."
     }
   },
   "compare": {
@@ -150,37 +165,37 @@
     "rows": [
       {
         "id": "why-score",
-        "d_quality": 0,
+        "d_quality": 2,
         "d_tools": 0,
-        "d_ms": -3183,
+        "d_ms": 87247,
         "empty_after_tools": false
       },
       {
         "id": "alerts",
-        "d_quality": 0,
+        "d_quality": 1,
         "d_tools": -1,
-        "d_ms": -3401,
+        "d_ms": -5417,
         "empty_after_tools": false
       },
       {
         "id": "refuse",
         "d_quality": 0,
         "d_tools": 0,
-        "d_ms": -786,
+        "d_ms": -592,
         "empty_after_tools": false
       },
       {
         "id": "period-4",
-        "d_quality": 4,
+        "d_quality": 6,
         "d_tools": -7,
-        "d_ms": -7059,
+        "d_ms": -7544,
         "empty_after_tools": false
       },
       {
         "id": "why-change",
-        "d_quality": 0,
+        "d_quality": 2,
         "d_tools": -1,
-        "d_ms": -3195,
+        "d_ms": -2424,
         "empty_after_tools": false
       }
     ]

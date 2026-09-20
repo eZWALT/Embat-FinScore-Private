@@ -1,7 +1,7 @@
 import type { ModelMessage, UIMessage } from "ai";
 
 import { companyLabel, groupLabel } from "@/lib/display";
-import { formatMonth } from "@/lib/format-month";
+import { formatMonth, parseMonth } from "@/lib/format-month";
 
 import { formatDashboardView, type DashboardView } from "./view-context";
 
@@ -80,6 +80,22 @@ export function wantsAlertStats(text: string): boolean {
 /** Dragged period or a named month range. “este mes” is not this. */
 export function wantsPeriodHistory(text: string): boolean {
   return /periodo seleccionado|periodo:|\d{4}-\d{2}\s*→|desde .+hasta|[a-záéíóú]+ \d{4} →/i.test(text);
+}
+
+/** Months of score_history for a period question: the span + one month before, capped at 12. */
+export function periodHistorySpan(text: string): number | undefined {
+  if (!wantsPeriodHistory(text)) return undefined;
+  const arrow = text.match(
+    /([a-záéíóúñ]+ \d{4}|\d{4}-\d{2})\s*→\s*([a-záéíóúñ]+ \d{4}|\d{4}-\d{2})/i,
+  );
+  if (!arrow) return 6;
+  const from = parseMonth(arrow[1]);
+  const to = parseMonth(arrow[2]);
+  if (!from || !to) return 6;
+  const [fy, fm] = from.split("-").map(Number);
+  const [ty, tm] = to.split("-").map(Number);
+  const months = (ty - fy) * 12 + (tm - fm) + 1;
+  return Math.min(12, Math.max(4, months + 1));
 }
 
 /** COMP_ / GROUP_ ids and «Empresa 0011» / «Grupo 0234» mentions. */

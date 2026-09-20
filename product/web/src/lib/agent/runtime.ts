@@ -8,6 +8,7 @@ import {
   sessionExtra,
   wantsAlertStats,
   wantsAlertTools,
+  periodHistorySpan,
   wantsPeriodHistory,
   wantsPlotCatalog,
   wantsRecordTools,
@@ -70,6 +71,7 @@ export async function streamAgentResponse({
     named: entitiesFromText(question),
     stats: wantsAlertStats(question),
     period,
+    historySpan: periodHistorySpan(question),
   };
   const tools = role === "sentinel" ? sentinelTools(session) : role === "quick" ? quickTools(session) : chatTools(session);
 
