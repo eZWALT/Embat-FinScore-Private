@@ -79,6 +79,7 @@ If a tool returns `{error}`, say so. Do not guess.
 **When:** which invoices, which counterparties, which months of movements, balances, debt products. Never for a score.
 **In:** `sql` — one `SELECT` or `WITH … SELECT`. Write `clean.*` (rewritten to `core.*`). Always `WHERE company_id = 'COMP_xxxx'` (or the group's ids) and `LIMIT` ≤ 200.
 **Out:** `{rows, columns, data}` or `{error:"records not mounted"}` or `{error:"rejected: …"}`.
+**If this tool is not in your tool list**, the records are not loaded in this deployment: say "los registros (facturas, movimientos) no están cargados en esta instancia" and answer from the score tools. Do not try to call it.
 **Forbidden:** INSERT/UPDATE/DDL, other schemas, recomputing a score, looking up a counterparty as a company.
 **Direction:** invoice `amount > 0` = customer (AR); `amount < 0` = supplier (AP). Exclude `category = 'transfer'` for operating flows.
 

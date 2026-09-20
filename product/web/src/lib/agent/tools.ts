@@ -697,6 +697,46 @@ export function shouldForceTextStep(steps: { toolCalls?: { toolName: string }[] 
   return steps.length >= TOOL_STEP_BUDGET || totalToolCalls(steps) >= TOOL_CALL_BUDGET;
 }
 
+/**
+ * Over the cap, the tool answers with a short error instead of disappearing from the tool list
+ * (an unavailable tool surfaces as an SDK error chip; a tool result the model can read does not).
+ * Sits inside the memoize wrapper, so repeating an identical call does not count.
+ */
+function withCap<T extends Record<string, { execute?: (...args: never[]) => unknown }>>(tools: T): T {
+  const counts = new Map<string, number>();
+  return Object.fromEntries(
+    Object.entries(tools).map(([name, definition]) => {
+      const execute = definition.execute;
+      if (typeof execute !== "function") return [name, definition];
+      return [
+        name,
+        {
+          ...definition,
+          execute: ((input: never, options: never) => {
+            const used = (counts.get(name) ?? 0) + 1;
+            counts.set(name, used);
+            const cap = TOOL_CALL_CAP[name] ?? 2;
+            if (used > cap) {
+              return { error: `límite de ${cap} llamadas a ${name} en esta respuesta; responde con lo que ya tienes` };
+            }
+            return execute(input, options);
+          }) as (typeof definition)["execute"],
+        },
+      ];
+    }),
+  ) as T;
+}
+
+let coreMountedCache: { at: number; value: boolean } | null = null;
+
+/** `core` (invoices, transactions) is loaded in Neon or not; checked at most every 5 minutes per process. */
+export async function coreMounted(): Promise<boolean> {
+  if (coreMountedCache && Date.now() - coreMountedCache.at < 5 * 60_000) return coreMountedCache.value;
+  const value = await coreIsMounted();
+  coreMountedCache = { at: Date.now(), value };
+  return value;
+}
+
 function withMemoize<T extends Record<string, { execute?: (...args: never[]) => unknown }>>(tools: T): T {
   const cache = new Map<string, Promise<unknown>>();
   return Object.fromEntries(
@@ -744,21 +784,24 @@ function timeAll<T extends Record<string, { execute?: (...args: never[]) => unkn
   ) as T;
 }
 
-export function chatTools() {
+/** `records` false = Neon `core` is not loaded: the SQL tool is not offered, so the model does not burn calls on "records not mounted". */
+export function chatTools({ records = true }: { records?: boolean } = {}) {
   return withMemoize(
-    timeAll({
-      list_companies,
-      get_company,
-      explain_change,
-      get_group,
-      get_alerts,
-      get_control_chart,
-      compare_with_cluster,
-      get_forecast,
-      query_clean_db,
-      plot_series,
-      plot_from,
-    }),
+    withCap(
+      timeAll({
+        list_companies,
+        get_company,
+        explain_change,
+        get_group,
+        get_alerts,
+        get_control_chart,
+        compare_with_cluster,
+        get_forecast,
+        ...(records ? { query_clean_db } : {}),
+        plot_series,
+        plot_from,
+      }),
+    ),
   );
 }
 
@@ -773,13 +816,15 @@ export function quickTools() {
 
 export function sentinelTools() {
   return withMemoize(
-    timeAll({
-      get_company,
-      get_group,
-      get_alerts,
-      get_control_chart,
-      plot_series,
-      plot_from,
-    }),
+    withCap(
+      timeAll({
+        get_company,
+        get_group,
+        get_alerts,
+        get_control_chart,
+        plot_series,
+        plot_from,
+      }),
+    ),
   );
 }

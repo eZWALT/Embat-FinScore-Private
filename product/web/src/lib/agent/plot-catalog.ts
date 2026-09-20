@@ -1,6 +1,7 @@
 import { createScoreRepository } from "@/lib/data/repository";
 import { CATEGORY_LABELS } from "@/lib/data/plain-language";
 import type { CategoryId } from "@/lib/data/types";
+import { entityLabel } from "@/lib/display";
 
 import { neonQuery } from "./neon-sql";
 import type { PlotSpec } from "./plot-spec";
@@ -212,7 +213,7 @@ async function groupMembers(groupId: string): Promise<PlotSpec> {
   const badges: Record<string, string> = {};
   for (const row of members) if (row.n_alerts > 0) badges[row.company_id] = "alerta";
   return asPlot({
-    title: `Empresas de ${groupId}, de peor a mejor`,
+    title: `Empresas de ${entityLabel(groupId)}, de peor a mejor`,
     x: members.map((row) => row.company_id),
     series: { Índice: members.map((row) => row.score) },
     kind: "bar",

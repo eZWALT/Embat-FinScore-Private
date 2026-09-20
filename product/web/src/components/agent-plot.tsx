@@ -100,7 +100,7 @@ export function AgentPlot({ spec }: { spec: PlotSpec }) {
                 y={line.value}
                 stroke="var(--muted-foreground)"
                 strokeDasharray="4 3"
-                label={{ value: `${line.label} ${line.value.toLocaleString("es-ES", { maximumFractionDigits: 1 })}`, position: "insideTopRight", fontSize: 10, fill: "var(--muted-foreground)" }}
+                label={{ value: `${line.label} ${line.value.toLocaleString("es-ES", { maximumFractionDigits: 1 })}`, position: "insideBottomLeft", fontSize: 10, fill: "var(--muted-foreground)" }}
               />
             ))}
             {spec.band ? (
