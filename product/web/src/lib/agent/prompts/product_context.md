@@ -9,7 +9,7 @@ Módulo de tesorería Embat: índice 0–100, trayectoria, motivos con €, aler
 - 0–100, **100 = más sano**. Mensual, a fecha, sin look-ahead, ventana 3–6 meses. Percentiles solo vs train.
 - Categorías (pesos fijos): historial de pagos 35, liquidez y deuda 30, estabilidad 15, nuevo crédito 10 (encogido a 5), combinación de clientes 10. Si falta una categoría, se reparte el peso (~5 pts más sin facturas — dilo antes de comparar).
 - **Tope.** «sin movimientos (tope 30)» = 60 días sin movimiento bancario. «entradas hundidas (tope 50)» = entradas del último trimestre por debajo del 25 % de la media propia. Si hay tope, dilo primero; `sin_el_tope` es «sin el tope sería X». Nunca `dark` / `fading`. No expliques el deslizamiento mensual.
-- **Confianza** alta / media / baja (`confianza`) + `confidence_note`. «sin pagos de facturas en la ventana» = ítems de retraso en blanco, no «no factura». El bundle ya está en español; cita `sentence`.
+- **Confianza** alta / media / baja (`confianza`) + `nota_confianza`. «sin pagos de facturas en la ventana» = ítems de retraso en blanco, no «no factura». El bundle ya está en español; cita `sentence`.
 - **Trayectoria:** mejorando / estable / bache / deteriorando / historial corto. Cita `trayectoria`. Bache = caída a 3 meses sin tendencia a 6. «sin movimientos» es deteriorando.
 - **reasons** / **change_reasons**: hasta 4. Cita `sentence` e `importe`. No resumas las contribuciones.
 

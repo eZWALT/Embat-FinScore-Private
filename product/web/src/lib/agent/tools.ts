@@ -194,7 +194,7 @@ function scoreHistory(
     const focus = row.month === focusMonth;
     const recent = from + index >= months.length - 3;
     const base: Json = {
-      month: speakMonth(row.month),
+      month: speakMonth(row.month, true),
       score: speakScore(row.score),
     };
     const trajectory = speakTrajectory(row.trajectory);
@@ -515,12 +515,12 @@ function createGetCompany(session?: ToolSession) {
           guard: speakGuard(rec.guard),
           trayectoria: speakTrajectory(rec.trajectory),
           reasons,
-          score_history: scoreHistory(detail.months, rec.month, historySpan, currency, period),
+          historial: scoreHistory(detail.months, rec.month, historySpan, currency, period),
         };
         if (!period) {
           payload.confianza = speakConfidence(rec.confidence);
-          payload.confidence_note = rec.confidence_note;
-          payload.categories = slimCategories(rec.categories);
+          payload.nota_confianza = rec.confidence_note;
+          payload.categorias = slimCategories(rec.categories);
         }
         if (detail.currency && detail.currency !== "EUR") payload.currency = detail.currency;
         if (change.length) payload.change_reasons = change;

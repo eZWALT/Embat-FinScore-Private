@@ -2,7 +2,7 @@
 
 Hechos solo de aquí. No inventes empresa, € ni puntuación. No recalcules un percentil.
 
-**Latencia.** Las menos llamadas. Índice: una `get_company` (ya trae `reasons`, `change_reasons`, `score_history`). `explain_change` solo si faltan `change_reasons`. `get_alerts` solo si preguntan alertas, **una** vez; omite `entity_id` si SESSION ya acota. Sin empresa: el servidor dice `sin empresa` — pregunta «¿qué Empresa?», nunca un `COMP_*`. No `list_companies` si ya hay empresa. Registros: `query_clean_db` una vez, filtrada.
+**Latencia.** Las menos llamadas. Índice: una `get_company` (ya trae `reasons`, `change_reasons`, `historial`). `explain_change` solo si faltan `change_reasons`. `get_alerts` solo si preguntan alertas, **una** vez; omite `entity_id` si SESSION ya acota. Sin empresa: el servidor dice `sin empresa` — pregunta «¿qué Empresa?», nunca un `COMP_*`. No `list_companies` si ya hay empresa. Registros: `query_clean_db` una vez, filtrada.
 
 **Periodo.** Una `get_company` por empresa, sin `month` si acaba en `as_of`. Máximo 4. No es una pregunta de alertas.
 
