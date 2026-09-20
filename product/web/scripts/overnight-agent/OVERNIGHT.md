@@ -262,6 +262,16 @@ Keep vs main sample suite (`--ignore-latency`). First bench of this tick was **n
 
 What landed: `eur` is `formatMoney`; WORDING cites it as-is; `formatMoney` ignores a non-string currency.
 
-## Tick 15 — next
+## Tick 15 — 2026-09-20 04:54 +02
 
-Spanish month labels + rounded scores in the payload so the bubble does not write `2026-08` / `88,45`.
+Keep vs main sample suite (`--ignore-latency`).
+
+| Case | main tools / q / s | tick 15 tools / q / s |
+|---|---|---|
+| why-score | 1 / 6 / 8.7 | 1 / 6 / 6.4 (`agosto 2026`, `88,5`) |
+| alerts | 2 / 6 / 11.0 | **1 / 6** / 6.3 (`jul 2026`) |
+| refuse | 0 / 5 / 2.4 | 0 / 5 / 1.9 |
+| period-4 | 11 / 2 / 17.0 | **4 / 6** / 11.6 |
+| why-change | 2 / 6 / 8.7 | 1 / 6 / 7.1 |
+
+What landed: `speakMonth` / `speakScore` / `speakDelta`; `parseMonth` for echoed labels; quotes append ` · 34 k€`.

@@ -1,7 +1,8 @@
 import { tool } from "ai";
 import { z } from "zod";
 
-import { entityLabel, formatMoney, relabelEntities } from "@/lib/display";
+import { entityLabel, formatDecimal, formatMoney, formatSigned, relabelEntities } from "@/lib/display";
+import { formatMonth, formatMonthShort, parseMonth } from "@/lib/format-month";
 import { CATEGORY_LABELS } from "@/lib/data/plain-language";
 import { createScoreRepository } from "@/lib/data/repository";
 import type {
@@ -94,6 +95,27 @@ function slimReason(reason: Reason, currency: string | null = "EUR") {
   };
 }
 
+function speakMonth(month: string | null | undefined, long = false): string | undefined {
+  if (!month) return undefined;
+  const key = parseMonth(month) ?? month;
+  if (!/^\d{4}-\d{2}$/.test(key)) return month;
+  return long ? formatMonth(key) : formatMonthShort(key);
+}
+
+function speakScore(value: number | null | undefined): string | undefined {
+  if (value == null || Number.isNaN(Number(value))) return undefined;
+  return formatDecimal(Number(value), 1);
+}
+
+function speakDelta(value: number | null | undefined): string | undefined {
+  if (value == null || Number.isNaN(Number(value))) return undefined;
+  return formatSigned(Number(value), 1);
+}
+
+function monthKey(month: string | null | undefined): string | null {
+  return parseMonth(month);
+}
+
 function speakGuard(guard: string | null | undefined): string | undefined {
   if (guard === "dark") return "sin movimientos (tope 30)";
   if (guard === "fading") return "entradas hundidas (tope 50)";
@@ -144,8 +166,8 @@ function scoreHistory(months: MonthRecord[], focusMonth: string, span = 18, curr
     const focus = row.month === focusMonth;
     const recent = from + index >= months.length - 3;
     const base: Json = {
-      month: row.month,
-      score: row.score,
+      month: speakMonth(row.month),
+      score: speakScore(row.score),
     };
     const trajectory = speakTrajectory(row.trajectory);
     const guard = speakGuard(row.guard);
@@ -187,8 +209,8 @@ function slimEvidence(evidence: Alert["evidence"]) {
 function slimCategories(categories: MonthRecord["categories"]) {
   return Object.entries(categories).map(([id, row]) => ({
     name: CATEGORY_LABELS[id as CategoryId] ?? id,
-    score: row.score,
-    pts: row.contribution,
+    score: speakScore(row.score),
+    pts: round(row.contribution, 1),
   }));
 }
 
@@ -196,7 +218,7 @@ function slimAlert(alert: Alert) {
   return {
     alert_id: alert.alert_id,
     entity: entityLabel(alert.entity.id),
-    month: alert.month,
+    month: speakMonth(alert.month),
     title: alert.title,
     summary: alert.summary,
     reasons: (alert.reasons ?? []).map((reason) => slimReason(reason)),
@@ -249,9 +271,10 @@ function monthRecord(
   const months = detail.months;
   if (!months.length) return { error: `${detail.company_id} has no scored month` };
   if (month) {
-    const rec = months.find((row) => row.month === month);
+    const key = monthKey(month) ?? month;
+    const rec = months.find((row) => row.month === key);
     if (!rec) {
-      return { error: `${detail.company_id} has no scored month ${month}`, scored_months: months.map((m) => m.month) };
+      return { error: `${detail.company_id} has no scored month ${month}`, scored_months: months.map((m) => speakMonth(m.month)) };
     }
     return rec;
   }
@@ -375,17 +398,17 @@ const list_companies = tool({
         .sort((a, b) => a.score - b.score)
         .slice(0, limit)
         .map((company) => ({
-          company_id: company.company_id,
-          group_id: company.group_id,
-          score: company.score,
+          company_id: entityLabel(company.company_id),
+          group_id: company.group_id ? entityLabel(company.group_id) : company.group_id,
+          score: speakScore(company.score),
           trajectory: speakTrajectory(company.trajectory),
           confidence: speakConfidence(company.confidence),
           guard: speakGuard(company.guard),
-          delta_3m: company.delta_3m,
+          delta_3m: speakDelta(company.delta_3m),
           n_alerts: company.n_alerts,
           max_alert_severity: speakSeverity(company.max_alert_severity),
         }));
-      return { as_of: manifest.as_of_month, companies: rows };
+      return { as_of: speakMonth(manifest.as_of_month, true), companies: rows };
     } catch (error) {
       return asError(error);
     }
@@ -414,9 +437,9 @@ function createGetCompany(session?: ToolSession) {
           company_id: detail.company_id,
           group_id: detail.group_id,
           currency: detail.currency,
-          month: rec.month,
-          score: rec.score,
-          score_pre_cap: rec.score_pre_cap,
+          month: speakMonth(rec.month, true),
+          score: speakScore(rec.score),
+          score_pre_cap: speakScore(rec.score_pre_cap),
           guard: speakGuard(rec.guard),
           trajectory: speakTrajectory(rec.trajectory),
           confidence: speakConfidence(rec.confidence),
@@ -470,11 +493,11 @@ const explain_change = tool({
       );
       return {
         company_id,
-        from: prev.month,
-        to: cur.month,
-        score_from: prev.score,
-        score_to: cur.score,
-        change: round(cur.score - prev.score, 1),
+        from: speakMonth(prev.month, true),
+        to: speakMonth(cur.month, true),
+        score_from: speakScore(prev.score),
+        score_to: speakScore(cur.score),
+        change: speakDelta(cur.score - prev.score),
         trajectory_from: speakTrajectory(prev.trajectory),
         trajectory_to: speakTrajectory(cur.trajectory),
         guard_from: speakGuard(prev.guard),
@@ -513,29 +536,31 @@ const get_group = tool({
       const members = group.company_ids
         .map((id) => byId.get(id))
         .filter((row): row is NonNullable<typeof row> => Boolean(row))
+        .sort((a, b) => a.score - b.score)
         .map((row) => ({
-          company_id: row.company_id,
-          score: row.score,
+          company: entityLabel(row.company_id),
+          score: speakScore(row.score),
           trajectory: speakTrajectory(row.trajectory),
           confidence: speakConfidence(row.confidence),
           guard: speakGuard(row.guard),
-          delta_3m: row.delta_3m,
+          delta_3m: speakDelta(row.delta_3m),
           n_alerts: row.n_alerts,
-        }))
-        .sort((a, b) => a.score - b.score);
+        }));
       const hist = manifest.months
-        .map((month, index) => ({ month, mean_score: group.mean_scores[index] ?? null }))
+        .map((month, index) => ({
+          month: speakMonth(month),
+          mean_score: speakScore(group.mean_scores[index] ?? null),
+        }))
         .filter((row) => row.mean_score != null);
       return {
         group_id,
         n_companies: group.n_companies,
-        latest_mean_score: group.latest_mean_score,
-        latest_min_score: group.latest_min_score,
-        latest_min_company_id: group.latest_min_company_id ? entityLabel(group.latest_min_company_id) : null,
+        latest_mean_score: speakScore(group.latest_mean_score),
+        latest_min_score: speakScore(group.latest_min_score),
+        latest_min_company: group.latest_min_company_id ? entityLabel(group.latest_min_company_id) : null,
         limits_available: group.limits_available,
         members,
         mean_score_history: hist.slice(-12),
-        alert_ids: group.alert_ids,
         control_charts: group.control?.map((chart) => chart.comparison) ?? [],
       };
     } catch (error) {
@@ -582,7 +607,10 @@ function createGetAlerts(session?: ToolSession) {
         if (wanted.size) alerts = alerts.filter((alert) => wanted.has(alert.entity.id));
         if (kinds?.length) alerts = alerts.filter((alert) => kinds.includes(alert.kind));
         if (severities?.length) alerts = alerts.filter((alert) => severities.includes(alert.severity));
-        if (since_month) alerts = alerts.filter((alert) => alert.month >= since_month);
+        if (since_month) {
+          const since = monthKey(since_month) ?? since_month;
+          alerts = alerts.filter((alert) => alert.month >= since);
+        }
         const cap = entity_id || scope.size ? limit : Math.min(limit, 8);
         const out = alerts.slice(0, cap).map(slimAlert);
         const payload: Json = { n_matching: alerts.length, alerts: out, scoped_to: scoped.map(entityLabel) };
@@ -650,7 +678,7 @@ const get_control_chart = tool({
       return {
         comparison: chart.comparison,
         metric: chart.metric,
-        months: slice(chart.months),
+        months: (slice(chart.months) ?? []).map((month) => speakMonth(month) ?? month),
         values: slice(chart.values),
         center: slice(chart.center),
         lower: slice(chart.lower),
@@ -687,7 +715,7 @@ const compare_with_cluster = tool({
         company_id,
         cluster: cluster.meta,
         quality_note: qualityNote,
-        month: cluster.month,
+        month: speakMonth(cluster.month, true),
         vs_cluster: cluster.vs_cluster,
       };
     } catch (error) {
@@ -741,12 +769,19 @@ const get_forecast = tool({
       return {
         metric: forecast.metric,
         method: forecast.method,
-        origin_month: forecast.origin_month,
+        origin_month: speakMonth(forecast.origin_month, true),
         horizon_months: forecast.horizon_months,
-        naive_last: forecast.naive_last,
+        naive_last: speakScore(forecast.naive_last),
         skill_vs_naive: forecast.skill_vs_naive,
         note: forecast.note,
-        points,
+        points: points.map((row) => ({
+          month: speakMonth(row.month),
+          median: speakScore(row.median),
+          lo50: speakScore(row.lo50),
+          hi50: speakScore(row.hi50),
+          lo80: speakScore(row.lo80),
+          hi80: speakScore(row.hi80),
+        })),
       };
     } catch (error) {
       return { error: "forecast not loaded", detail: error instanceof Error ? error.message : String(error) };
