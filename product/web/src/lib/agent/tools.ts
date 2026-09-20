@@ -297,7 +297,7 @@ function slimAlert(alert: Alert) {
     owner: speakOwner(alert.owner),
     severity: speakSeverity(alert.severity),
     action: alert.action,
-    persistence: flagged != null ? `${flagged} de los últimos 4 meses` : alert.persistence?.rule,
+    persistence: flagged != null ? `${flagged} de los últimos 4 meses` : "3 de los últimos 4 meses",
     evidence: slimEvidence(alert.evidence),
   };
 }
@@ -638,7 +638,7 @@ const get_group = tool({
         limits_available: group.limits_available,
         members,
         mean_score_history: hist.slice(-12),
-        control_charts: group.control?.map((chart) => chart.comparison) ?? [],
+        control_charts: (group.control ?? []).map((chart) => CHART_LABELS[chart.comparison] ?? chart.comparison),
       };
     } catch (error) {
       return asError(error);

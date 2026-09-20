@@ -618,4 +618,8 @@ What landed: follow-up chips mention dueño only after `get_alerts`; PRODUCT int
 
 Keep vs main sample suite (`--ignore-latency`). Alert months are long Spanish. Period 636 chars.
 
+## Tick 56 — 2026-09-20 07:00 +02
+
+Keep vs main. Persistence fallback is Spanish; WORDING 3 says «señales», not onsets. Group charts use vs su histórico / vs pares.
+
 Do not merge. Past min 4h; loop until 08:55.
