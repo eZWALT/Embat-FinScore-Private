@@ -762,4 +762,8 @@ Keep vs main. Reason money field is `importe` (unsigned). `signed_eur` no longer
 
 Keep vs main. Model-facing `sentence` drops the 10 pts/month glide. why-change **q=6**. Bench `signed_eur` ignores caja/saldo.
 
+## Tick 79 — 2026-09-20 08:08 +02
+
+Keep vs main. Reason `points` spoken as `−8,6`. Suite **6 / 6 / 5 / 6 / 6**. Period: sign on points, `535 k€` unsigned.
+
 Do not merge. Past min 4h; loop until 08:55.

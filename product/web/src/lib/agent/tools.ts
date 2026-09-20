@@ -90,7 +90,7 @@ function asError(error: unknown): Json {
 
 function slimReason(reason: Reason, currency: string | null = "EUR") {
   return {
-    points: reason.points,
+    points: speakDelta(reason.points),
     importe: reason.eur != null ? formatMoney(reason.eur, currency) : null,
     sentence: clipGlideLecture(reason.sentence),
   };
