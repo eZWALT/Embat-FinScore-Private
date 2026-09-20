@@ -742,14 +742,14 @@ const get_control_chart = tool({
       );
       if (!charts.length) {
         return {
-          error: "control charts not loaded",
-          hint: "ScoreRepository.listGroups sets control: null; analytics.control_charts has no row for this entity (needs 7 scored months; groups need 3 members).",
+          error: "sin gráfico de control",
+          hint: "Hacen falta 7 meses puntuados; un grupo, 3 miembros.",
         };
       }
       const chart = charts.find((row) => row.comparison === comparison && row.metric === metric);
       if (!chart) {
         return {
-          error: "no such chart (needs 7 scored months; groups need 3 members)",
+          error: "sin ese gráfico (hacen falta 7 meses; grupos, 3 miembros)",
           available: charts.map((row) => [row.comparison, row.metric]),
         };
       }
@@ -776,7 +776,7 @@ const get_control_chart = tool({
         method,
       };
     } catch (error) {
-      return { error: "control charts not loaded", detail: error instanceof Error ? error.message : String(error) };
+      return { error: "sin gráfico de control", detail: error instanceof Error ? error.message : String(error) };
     }
   },
 });
@@ -795,7 +795,7 @@ const compare_with_cluster = tool({
         loadClusterQualityNote(),
       ]);
       if (!cluster) {
-        return { error: "cluster not loaded (trail under 6 months, or analytics.company_cluster empty)" };
+        return { error: "clúster no cargado (historial < 6 meses)" };
       }
       return {
         empresa: entityLabel(id),
@@ -805,7 +805,7 @@ const compare_with_cluster = tool({
         vs_cluster: cluster.vs_cluster,
       };
     } catch (error) {
-      return { error: "cluster not loaded", detail: error instanceof Error ? error.message : String(error) };
+      return { error: "clúster no cargado", detail: error instanceof Error ? error.message : String(error) };
     }
   },
 });
@@ -837,7 +837,7 @@ const get_forecast = tool({
       );
       const forecast = forecasts[0];
       if (!forecast) {
-        return { error: "forecast not loaded (under 4 scored months, or analytics.forecasts empty)" };
+        return { error: "previsión no cargada (historial < 4 meses)" };
       }
       const points = await neonQuery<{
         month: string;
@@ -871,7 +871,7 @@ const get_forecast = tool({
         })),
       };
     } catch (error) {
-      return { error: "forecast not loaded", detail: error instanceof Error ? error.message : String(error) };
+      return { error: "previsión no cargada", detail: error instanceof Error ? error.message : String(error) };
     }
   },
 });
@@ -886,7 +886,7 @@ const query_clean_db = tool({
     try {
       const guarded = checkSql(sql);
       if (!(await coreIsMounted())) {
-        return { error: "records not mounted" };
+        return { error: "registros no montados" };
       }
       const rewritten = toCoreSql(guarded);
       const data = await neonQuery<Record<string, unknown>>(rewritten);
@@ -896,7 +896,7 @@ const query_clean_db = tool({
       if (error instanceof UnsafeQuery) return { error: `rejected: ${error.message}` };
       const first = error instanceof Error ? error.message.split("\n")[0] : String(error);
       if (/does not exist|not mounted|permission denied/i.test(first)) {
-        return { error: "records not mounted" };
+        return { error: "registros no montados" };
       }
       return { error: first };
     }

@@ -538,4 +538,18 @@ Keep vs main sample suite (`--ignore-latency`).
 
 What landed: slimmer MAP + WORDING 12; Sentinel catalog note in ROLE; opening `get_group` only if they ask about the group. First bench of the slim called `get_group` on why-score — the cap removed it.
 
+## Tick 49 — 2026-09-20 06:46 +02
+
+Keep vs main sample suite (`--ignore-latency`).
+
+| Case | main tools / q / s | tick 49 tools / q / s |
+|---|---|---|
+| why-score | 1 / 6 / 8.7 | 1 / 6 / 5.7 |
+| alerts | 2 / 6 / 11.0 | **1 / 6** / 4.9 |
+| refuse | 0 / 5 / 2.4 | 0 / 5 / 1.7 |
+| period-4 | 11 / 2 / 17.0 | **4 / 6** / 6.8 |
+| why-change | 2 / 6 / 8.7 | 1 / 6 / 5.5 |
+
+What landed: SESSION series/focus without raw `COMP_*`; Spanish control/cluster/forecast/records errors. Period lead is clean (807 chars).
+
 Do not merge. Past min 4h; loop until 08:55.

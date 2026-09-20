@@ -47,11 +47,11 @@ export type DashboardView = {
 };
 
 const SCREENS: Record<DashboardView["screen"], string> = {
-  inicio: "Rápido, sin gráfico aún: tres opciones (mejores 5, peores 5, buscar).",
-  rapido_chart: "Rápido: índice 0–100 por mes, una línea por empresa. El color es el de la leyenda.",
-  resumen: "Resumen de una empresa: índice, cambio mensual, trayectoria, confianza, señal principal, gráfico de evolución con control y predicción, puntuación por categoría al pasar el cursor por el índice, Alerts (últimos 3 meses).",
-  grupo: "Resumen de un grupo: media del índice, cambio mensual, empresa más débil, gráfico de la media con control intra e inter-grupo, Alerts del grupo y de sus empresas, mapa de calor y tabla de empresas.",
-  indice: "Índice de salud: varias empresas en el mismo gráfico, una línea por color.",
+  inicio: "Rápido, sin gráfico: mejores 5, peores 5, buscar.",
+  rapido_chart: "Rápido: índice 0–100 por mes, una línea por empresa.",
+  resumen: "Resumen: índice, Δ, trayectoria, confianza, gráfico con control y previsión, categorías, Vigilancia (3 meses).",
+  grupo: "Resumen de grupo: media, empresa más débil, control, Vigilancia, mapa y tabla.",
+  indice: "Índice de salud: varias empresas, una línea por color.",
 };
 
 function cleanId(value: unknown, pattern: RegExp): string | undefined {
@@ -156,10 +156,10 @@ export function formatDashboardView(view: DashboardView): string {
     SCREENS[view.screen],
   ];
   if (view.asOf) lines.push(`as_of=${formatMonth(view.asOf)}`);
-  if (view.focusCompanyId) lines.push(`focus=${companyLabel(view.focusCompanyId)} (${view.focusCompanyId})`);
-  if (view.focusGroupId) lines.push(`group=${groupLabel(view.focusGroupId)} (${view.focusGroupId})`);
+  if (view.focusCompanyId) lines.push(`focus=${companyLabel(view.focusCompanyId)}`);
+  if (view.focusGroupId) lines.push(`group=${groupLabel(view.focusGroupId)}`);
   if (view.score !== undefined) {
-    const trail = view.trajectory ? ` ${view.trajectory}` : "";
+    const trail = view.trajectory ? ` ${speakViewTrajectory(view.trajectory)}` : "";
     const delta = view.delta1m == null ? "" : ` Δ1m ${signed(view.delta1m)}`;
     lines.push(`leyenda=${view.score.toFixed(0)}${trail}${delta}`);
   }
@@ -178,7 +178,7 @@ export function formatDashboardView(view: DashboardView): string {
       const group = row.groupId ? ` ${groupLabel(row.groupId)}` : "";
       const delta = row.delta3m == null ? "" : ` Δ3m ${signed(row.delta3m)}`;
       const trail = row.trajectory ? ` ${speakViewTrajectory(row.trajectory)}` : "";
-      lines.push(`- ${row.color}: ${companyLabel(row.companyId)} (${row.companyId})${group} ${row.score.toFixed(0)}${trail}${delta}`);
+      lines.push(`- ${row.color}: ${companyLabel(row.companyId)}${group} ${row.score.toFixed(0)}${trail}${delta}`);
     }
     lines.push("Si nombran un color, usa este mapa. El naranja a veces lo llaman rojo.");
   }
