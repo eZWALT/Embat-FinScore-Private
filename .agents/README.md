@@ -60,6 +60,7 @@ Add a new dated file after meaningful work. Do not rewrite old ones. If the new 
 | `persistent-memory/2026-09-20-0339-alert-quotes-stats-on-demand.md` | Overnight: alert title quotes in the UI; `stats` only if they ask fiabilidad; Spanish categories. |
 | `persistent-memory/2026-09-20-0341-alerts-only-force-text.md` | Overnight: after a successful alerts-only `get_alerts`, strip tools and write. |
 | `persistent-memory/2026-09-20-0345-chart-session-empresa-labels.md` | Overnight: Rápido chart + SESSION series say Empresa, not `COMP_*`. |
+| `persistent-memory/2026-09-20-0351-company-only-slim-history.md` | Overnight: write after one company read; 4-month history unless the question is a period. |
 | `persistent-memory/2026-09-20-0115-thinking-no-verbose.md` | Brain on: drop the length cap. Do not ask for a longer reply. |
 | `persistent-memory/2026-09-20-0120-thinking-max-exa.md` | Exa + `max` superseded. |
 | `persistent-memory/2026-09-20-0130-drop-exa.md` | No Exa. No `search_web`. No `EXA_API_KEY`. |

@@ -64,7 +64,7 @@ export function wantsPlotCatalog(text: string): boolean {
   return /gr[aá]fico|plot|dibuja|pinta|abanico|control chart/i.test(text);
 }
 
-/** Owner / action / feed. Period and “why this score” already carry alert_ids on get_company. */
+/** Owner / action / feed. Period and “why this score” use get_company; this mounts the feed. */
 export function wantsAlertTools(text: string): boolean {
   return /alerta|avisos?|qui[eé]n debe actuar|qui[eé]n act[uú]a|dueño/i.test(text);
 }
@@ -72,6 +72,11 @@ export function wantsAlertTools(text: string): boolean {
 /** Lift / false-alarm numbers. “qué alertas hay” is not this. */
 export function wantsAlertStats(text: string): boolean {
   return /fiabil|lift|tasa base|acierto|estad[ií]st|75\s*%/i.test(text);
+}
+
+/** Dragged period or a named month range. “este mes” is not this. */
+export function wantsPeriodHistory(text: string): boolean {
+  return /periodo seleccionado|periodo:|\d{4}-\d{2}\s*→|desde .+hasta|[a-záéíóú]+ \d{4} →/i.test(text);
 }
 
 /** COMP_ / GROUP_ ids and «Empresa 0011» / «Grupo 0234» mentions. */

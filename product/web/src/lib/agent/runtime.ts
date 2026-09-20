@@ -8,6 +8,7 @@ import {
   sessionExtra,
   wantsAlertStats,
   wantsAlertTools,
+  wantsPeriodHistory,
   wantsPlotCatalog,
   wantsRecordTools,
 } from "./messages";
@@ -47,7 +48,10 @@ export async function streamAgentResponse({
   const records = wantsRecordTools(question);
   const plots = wantsPlotCatalog(question);
   const alerts = wantsAlertTools(question);
+  const period = wantsPeriodHistory(question);
+  const namedCompanies = entitiesFromText(question).filter((id) => id.startsWith("COMP_"));
   const alertsOnly = alerts && !records && !plots && !/índice|por qu[eé]|cambi[oó]|periodo|gr[aá]fico/i.test(question);
+  const companyOnly = !alerts && !records && !plots && !period && namedCompanies.length <= 1;
   const system = await loadSystemPrompt(role, sessionExtra({ companyId, groupId, asOf, view }), {
     thinking,
     records,
@@ -59,6 +63,7 @@ export async function streamAgentResponse({
     groupId,
     named: entitiesFromText(question),
     stats: wantsAlertStats(question),
+    period,
   };
   const tools = role === "sentinel" ? sentinelTools(session) : role === "quick" ? quickTools(session) : chatTools(session);
 
@@ -73,7 +78,7 @@ export async function streamAgentResponse({
     stopWhen: [isStepCount(8)],
     prepareStep({ steps }) {
       const names = Object.keys(tools) as (keyof typeof tools)[];
-      if (shouldForceTextStep(steps, { alertsOnly })) {
+      if (shouldForceTextStep(steps, { alertsOnly, companyOnly })) {
         return { activeTools: [], toolChoice: "none" };
       }
       return { activeTools: activeToolsUnderCap(names as string[], steps, { records, plots, alerts }) as typeof names };

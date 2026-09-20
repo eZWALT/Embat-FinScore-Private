@@ -133,9 +133,10 @@ function speakSeverity(value: string | null | undefined): string | undefined {
 }
 
 /** Full reasons on the focus month, the last 3, or a move of ≥2 pts. One call covers a period. */
-function scoreHistory(months: MonthRecord[], focusMonth: string) {
+function scoreHistory(months: MonthRecord[], focusMonth: string, span = 18) {
   const focusIdx = months.findIndex((row) => row.month === focusMonth);
-  const from = Math.max(0, months.length - 18, focusIdx >= 0 ? focusIdx - 6 : 0);
+  const lookback = span >= 12 ? 6 : 1;
+  const from = Math.max(0, months.length - span, focusIdx >= 0 ? focusIdx - lookback : 0);
   const window = months.slice(from);
   return window.map((row, index) => {
     const prev = window[index - 1] ?? months[from - 1];
@@ -391,50 +392,52 @@ const list_companies = tool({
   },
 });
 
-const get_company = tool({
-  description:
-    "Índice, trayectoria, tope, confianza, categorías, reasons y change_reasons de UNA empresa. score_history trae reasons en el mes pedido, los 3 últimos y los que se movieron ≥2 pts: una llamada cubre un periodo. No pases month salvo un mes concreto. No llames explain_change si ya hay change_reasons. Sin clúster (usa compare_with_cluster).",
-  inputSchema: z.object({
-    company_id: z.string().describe("COMP_xxxx"),
-    month: z.string().optional().describe("YYYY-MM; omite salvo un mes concreto"),
-  }),
-  execute: async ({ company_id, month }) => {
-    try {
-      const detail = await repo().getCompany(company_id);
-      const rec = monthRecord(detail, month);
-      if ("error" in rec) return rec;
-      const extras = await loadScoreExtras(company_id, rec.month);
-      const reasons = (rec.reasons ?? []).map(slimReason);
-      const change = (rec.change_reasons ?? []).map(slimReason);
-      const payload: Json = {
-        company_id: detail.company_id,
-        group_id: detail.group_id,
-        currency: detail.currency,
-        month: rec.month,
-        score: rec.score,
-        score_pre_cap: rec.score_pre_cap,
-        guard: speakGuard(rec.guard),
-        trajectory: speakTrajectory(rec.trajectory),
-        confidence: speakConfidence(rec.confidence),
-        confidence_note: rec.confidence_note,
-        categories: slimCategories(rec.categories),
-        reasons,
-        change_reasons: change,
-        score_history: scoreHistory(detail.months, rec.month),
-        alert_ids: detail.alert_ids,
-      };
-      if (extras?.slope3 != null) payload.slope3 = extras.slope3;
-      if (extras?.slope6 != null) payload.slope6 = extras.slope6;
-      if ((rec.trail_months ?? 24) < 12) payload.trail_months = rec.trail_months;
-      if (!reasons.length) {
-        payload.items = extras?.items ? slimItems(extras.items) : itemsFromMonth(rec);
+function createGetCompany(session?: ToolSession) {
+  const historySpan = session?.period ? 18 : 4;
+  return tool({
+    description:
+      "Índice, trayectoria, tope, confianza, categorías, reasons y change_reasons de UNA empresa. score_history trae reasons en el mes pedido, los 3 últimos y los que se movieron ≥2 pts. En un periodo el historial cubre 18 meses; si no, los 4 últimos. No pases month salvo un mes concreto. No llames explain_change si ya hay change_reasons. Sin clúster (usa compare_with_cluster).",
+    inputSchema: z.object({
+      company_id: z.string().describe("COMP_xxxx"),
+      month: z.string().optional().describe("YYYY-MM; omite salvo un mes concreto"),
+    }),
+    execute: async ({ company_id, month }) => {
+      try {
+        const detail = await repo().getCompany(company_id);
+        const rec = monthRecord(detail, month);
+        if ("error" in rec) return rec;
+        const extras = await loadScoreExtras(company_id, rec.month);
+        const reasons = (rec.reasons ?? []).map(slimReason);
+        const change = (rec.change_reasons ?? []).map(slimReason);
+        const payload: Json = {
+          company_id: detail.company_id,
+          group_id: detail.group_id,
+          currency: detail.currency,
+          month: rec.month,
+          score: rec.score,
+          score_pre_cap: rec.score_pre_cap,
+          guard: speakGuard(rec.guard),
+          trajectory: speakTrajectory(rec.trajectory),
+          confidence: speakConfidence(rec.confidence),
+          confidence_note: rec.confidence_note,
+          categories: slimCategories(rec.categories),
+          reasons,
+          change_reasons: change,
+          score_history: scoreHistory(detail.months, rec.month, historySpan),
+        };
+        if (extras?.slope3 != null) payload.slope3 = extras.slope3;
+        if (extras?.slope6 != null) payload.slope6 = extras.slope6;
+        if ((rec.trail_months ?? 24) < 12) payload.trail_months = rec.trail_months;
+        if (!reasons.length) {
+          payload.items = extras?.items ? slimItems(extras.items) : itemsFromMonth(rec);
+        }
+        return payload;
+      } catch (error) {
+        return asError(error);
       }
-      return payload;
-    } catch (error) {
-      return asError(error);
-    }
-  },
-});
+    },
+  });
+}
 
 const explain_change = tool({
   description:
@@ -545,6 +548,7 @@ export type ToolSession = {
   groupId?: string;
   named?: string[];
   stats?: boolean;
+  period?: boolean;
 };
 
 function alertScope(session?: ToolSession): Set<string> {
@@ -912,11 +916,12 @@ export function shouldForceTextStep(
     toolCalls?: { toolName: string }[];
     toolResults?: { toolName: string; output?: unknown; result?: unknown }[];
   }[],
-  options?: { alertsOnly?: boolean },
+  options?: { alertsOnly?: boolean; companyOnly?: boolean },
 ): boolean {
   if (steps.length >= TOOL_STEP_BUDGET || totalToolCalls(steps) >= TOOL_CALL_BUDGET) return true;
   const scored = companyPayloads(steps).filter((row) => typeof row.error !== "string" && row.score != null);
   if (scored.length >= 4) return true;
+  if (options?.companyOnly && scored.length >= 1) return true;
   return Boolean(options?.alertsOnly && retrievedAlertsOk(steps));
 }
 
@@ -981,7 +986,7 @@ export function chatTools(session?: ToolSession) {
   return withMemoize(
     timeAll({
       list_companies,
-      get_company,
+      get_company: createGetCompany(session),
       explain_change,
       get_group,
       get_alerts: createGetAlerts(session),
@@ -998,7 +1003,7 @@ export function chatTools(session?: ToolSession) {
 export function quickTools(session?: ToolSession) {
   return withMemoize(
     timeAll({
-      get_company,
+      get_company: createGetCompany(session),
       explain_change,
       get_alerts: createGetAlerts(session),
     }),
@@ -1008,7 +1013,7 @@ export function quickTools(session?: ToolSession) {
 export function sentinelTools(session?: ToolSession) {
   return withMemoize(
     timeAll({
-      get_company,
+      get_company: createGetCompany(session),
       get_group,
       get_alerts: createGetAlerts(session),
       get_control_chart,
