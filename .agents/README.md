@@ -129,6 +129,7 @@ Add a new dated file after meaningful work. Do not rewrite old ones. If the new 
 | `persistent-memory/2026-09-20-0800-clip-glide-sentence.md` | Overnight: tools clip the 10 pts/month glide from `sentence` before the model sees it. |
 | `persistent-memory/2026-09-20-0808-speak-reason-points.md` | Overnight: reason `points` is spoken `−8,6`, not raw `-8.55`. |
 | `persistent-memory/2026-09-20-0815-chart-is-period.md` | Overnight: «explica este gráfico» is period, not a new `plot_series`. |
+| `persistent-memory/2026-09-20-0822-speak-category-pts.md` | Overnight: category `pts` is a Spanish tenth, not a raw float. |
 | `persistent-memory/2026-09-20-0115-thinking-no-verbose.md` | Brain on: drop the length cap. Do not ask for a longer reply. |
 | `persistent-memory/2026-09-20-0120-thinking-max-exa.md` | Exa + `max` superseded. |
 | `persistent-memory/2026-09-20-0130-drop-exa.md` | No Exa. No `search_web`. No `EXA_API_KEY`. |

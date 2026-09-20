@@ -770,4 +770,8 @@ Keep vs main. Reason `points` spoken as `−8,6`. Suite **6 / 6 / 5 / 6 / 6**. P
 
 Keep vs main. On-screen «explica este gráfico» is period (no plots catalog). Quote label spacing. Suite still 6/6/5/6/6.
 
+## Tick 81 — 2026-09-20 08:22 +02
+
+Keep vs main. Category `pts` spoken. Live chart chip: ×3, no glide, no dueño chips.
+
 Do not merge. Past min 4h; loop until 08:55.

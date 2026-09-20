@@ -284,7 +284,7 @@ function slimCategories(categories: MonthRecord["categories"]) {
   return Object.entries(categories).map(([id, row]) => ({
     name: CATEGORY_LABELS[id as CategoryId] ?? id,
     score: speakScore(row.score),
-    pts: round(row.contribution, 1),
+    pts: speakScore(row.contribution),
   }));
 }
 
