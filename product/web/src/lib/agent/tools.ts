@@ -799,10 +799,16 @@ const compare_with_cluster = tool({
       }
       return {
         empresa: entityLabel(id),
-        cluster: cluster.meta,
+        grupo_pares: cluster.meta.label,
+        descripcion: cluster.meta.description,
+        n_empresas: cluster.meta.n_companies,
         quality_note: qualityNote,
         month: speakMonth(cluster.month, true),
-        vs_cluster: cluster.vs_cluster,
+        vs_pares: cluster.vs_cluster.map((row) => ({
+          metrica: row.metric === "score" ? "índice" : (CATEGORY_LABELS[row.metric as CategoryId] ?? row.metric),
+          percentil: row.percentile,
+          z: row.robust_z,
+        })),
       };
     } catch (error) {
       return { error: "clúster no cargado", detail: error instanceof Error ? error.message : String(error) };
