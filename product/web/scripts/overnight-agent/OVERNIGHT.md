@@ -450,4 +450,8 @@ Keep. Omit `currency` when EUR. Period scorer only flags «tres… caen por hund
 
 Keep vs main. Follow-up chips: never `COMP_*`. SESSION `nombra=` lists Empresa labels from the question. Period q=6, no bare ids.
 
+## Tick 40 — 2026-09-20 05:52 +02
+
+Keep. Shorter `get_company` tool description. Same 1/1/0/4/1 tools, q 6/6/5/6/6.
+
 Do not merge.

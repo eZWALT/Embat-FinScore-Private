@@ -88,6 +88,7 @@ Add a new dated file after meaningful work. Do not rewrite old ones. If the new 
 | `persistent-memory/2026-09-20-0544-eur-is-amount.md` | Overnight: `eur` is the amount; the sign is on `points`. |
 | `persistent-memory/2026-09-20-0549-omit-eur-currency.md` | Overnight: omit `currency` when EUR; `eur` already says `k€`. |
 | `persistent-memory/2026-09-20-0550-followup-no-comp.md` | Overnight: follow-up chips never `COMP_*` or a bare id. |
+| `persistent-memory/2026-09-20-0552-slim-get-company-desc.md` | Overnight: short `get_company` tool description; same behaviour. |
 | `persistent-memory/2026-09-20-0115-thinking-no-verbose.md` | Brain on: drop the length cap. Do not ask for a longer reply. |
 | `persistent-memory/2026-09-20-0120-thinking-max-exa.md` | Exa + `max` superseded. |
 | `persistent-memory/2026-09-20-0130-drop-exa.md` | No Exa. No `search_web`. No `EXA_API_KEY`. |

@@ -485,7 +485,7 @@ function createGetCompany(session?: ToolSession) {
   const historySpan = session?.historySpan ?? (session?.period ? 6 : 4);
   return tool({
     description:
-      "Índice, trayectoria, tope, confianza, categorías, reasons y change_reasons de UNA empresa. score_history trae reasons en el mes pedido, los 3 últimos y los que se movieron ≥2 pts. En un periodo el historial cubre el tramo + 1 mes (máx. 12); si no, los 4 últimos. No pases month salvo un mes concreto. No llames explain_change si ya hay change_reasons. Sin clúster (usa compare_with_cluster).",
+      "Índice, tope, trayectoria, reasons y change_reasons de UNA empresa. Historial: periodo = tramo+1 mes (máx. 12); si no, 4. Omite month salvo un mes concreto. Sin clúster.",
     inputSchema: z.object({
       company_id: z.string().describe("COMP_xxxx o Empresa 0030"),
       month: z.string().optional().describe("YYYY-MM; omite salvo un mes concreto"),
